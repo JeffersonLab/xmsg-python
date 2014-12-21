@@ -13,331 +13,305 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='xMsgData.proto',
   package='',
-  serialized_pb='\n\x0exMsgData.proto\"\x9f\x06\n\x08xMsgData\x12\n\n\x02id\x18\x01 \x01(\x07\x12\x0f\n\x07\x61uthour\x18\x02 \x01(\t\x12\x1c\n\x04\x64\x61ta\x18\x03 \x01(\x0b\x32\x0e.xMsgData.Data\x12\x0c\n\x04type\x18\x04 \x01(\t\x12\x11\n\tbyteOrder\x18\x05 \x01(\t\x12\x17\n\x0f\x64\x61taDescription\x18\x06 \x01(\t\x12\"\n\x07payload\x18\x07 \x03(\x0b\x32\x11.xMsgData.Payload\x1a\x9a\x02\n\x04\x44\x61ta\x12\x10\n\x08VLSINT32\x18\x01 \x01(\x11\x12\x10\n\x08VLSINT64\x18\x02 \x01(\x12\x12\x10\n\x08\x46LSINT32\x18\x03 \x01(\x0f\x12\x10\n\x08\x46LSINT64\x18\x04 \x01(\x10\x12\r\n\x05\x46LOAT\x18\x05 \x01(\x02\x12\x0e\n\x06\x44OUBLE\x18\x06 \x01(\x01\x12\x0e\n\x06STRING\x18\x07 \x01(\t\x12\r\n\x05\x42YTES\x18\x08 \x01(\x0c\x12\x11\n\tVLSINT32A\x18\t \x03(\x11\x12\x11\n\tVLSINT64A\x18\n \x03(\x12\x12\x11\n\tFLSINT32A\x18\x0b \x03(\x0f\x12\x11\n\tFLSINT64A\x18\x0c \x03(\x10\x12\x0e\n\x06\x46LOATA\x18\r \x03(\x02\x12\x0f\n\x07\x44OUBLEA\x18\x0e \x03(\x01\x12\x0f\n\x07STRINGA\x18\x0f \x03(\t\x12\x0e\n\x06\x42YTESA\x18\x10 \x03(\x0c\x1ao\n\x07Payload\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x0c\n\x04type\x18\x02 \x02(\t\x12\x1c\n\x04\x64\x61ta\x18\x03 \x02(\x0b\x32\x0e.xMsgData.Data\x12\x11\n\tbyteOrder\x18\x04 \x01(\t\x12\x17\n\x0f\x64\x61taDescription\x18\x05 \x01(\t\"\xeb\x01\n\x08\x44\x61taType\x12\x0c\n\x08VLSINT32\x10\x01\x12\x0c\n\x08VLSINT64\x10\x02\x12\x0c\n\x08\x46LSINT32\x10\x03\x12\x0c\n\x08\x46LSINT64\x10\x04\x12\t\n\x05\x46LOAT\x10\x05\x12\n\n\x06\x44OUBLE\x10\x06\x12\n\n\x06STRING\x10\x07\x12\t\n\x05\x42YTES\x10\x08\x12\r\n\tVLSINT32A\x10\t\x12\r\n\tVLSINT64A\x10\n\x12\r\n\tFLSINT32A\x10\x0b\x12\r\n\tFLSINT64A\x10\x0c\x12\n\n\x06\x46LOATA\x10\r\x12\x0b\n\x07\x44OUBLEA\x10\x0e\x12\x0b\n\x07STRINGA\x10\x0f\x12\n\n\x06\x42YTESA\x10\x10\x12\x0b\n\x07PAYLOAD\x10\x11\x42\tB\x05xMsgDH\x01')
+  serialized_pb='\n\x0exMsgData.proto\"\x91\x05\n\x04\x44\x61ta\x12\n\n\x02id\x18\x01 \x01(\x07\x12\x0e\n\x06\x61uthor\x18\x02 \x01(\t\x12\x10\n\x08VLSINT32\x18\x03 \x01(\x11\x12\x10\n\x08VLSINT64\x18\x04 \x01(\x12\x12\x10\n\x08\x46LSINT32\x18\x05 \x01(\x0f\x12\x10\n\x08\x46LSINT64\x18\x06 \x01(\x10\x12\r\n\x05\x46LOAT\x18\x07 \x01(\x02\x12\x0e\n\x06\x44OUBLE\x18\x08 \x01(\x01\x12\x0e\n\x06STRING\x18\t \x01(\t\x12\r\n\x05\x42YTES\x18\n \x01(\x0c\x12\x11\n\tVLSINT32A\x18\x0b \x03(\x11\x12\x11\n\tVLSINT64A\x18\x0c \x03(\x12\x12\x11\n\tFLSINT32A\x18\r \x03(\x0f\x12\x11\n\tFLSINT64A\x18\x0e \x03(\x10\x12\x0e\n\x06\x46LOATA\x18\x0f \x03(\x02\x12\x0f\n\x07\x44OUBLEA\x18\x10 \x03(\x01\x12\x0f\n\x07STRINGA\x18\x11 \x03(\t\x12\x0e\n\x06\x42YTESA\x18\x12 \x03(\x0c\x12\x1d\n\x05xtype\x18\x13 \x01(\x0e\x32\x0e.Data.DataType\x12\x11\n\tbyteOrder\x18\x14 \x01(\t\x12\x17\n\x0f\x64\x61taDescription\x18\x15 \x01(\t\"\x8d\x02\n\x08\x44\x61taType\x12\x0e\n\nT_VLSINT32\x10\x01\x12\x0e\n\nT_VLSINT64\x10\x02\x12\x0e\n\nT_FLSINT32\x10\x03\x12\x0e\n\nT_FLSINT64\x10\x04\x12\x0b\n\x07T_FLOAT\x10\x05\x12\x0c\n\x08T_DOUBLE\x10\x06\x12\x0c\n\x08T_STRING\x10\x07\x12\x0b\n\x07T_BYTES\x10\x08\x12\x0f\n\x0bT_VLSINT32A\x10\t\x12\x0f\n\x0bT_VLSINT64A\x10\n\x12\x0f\n\x0bT_FLSINT32A\x10\x0b\x12\x0f\n\x0bT_FLSINT64A\x10\x0c\x12\x0c\n\x08T_FLOATA\x10\r\x12\r\n\tT_DOUBLEA\x10\x0e\x12\r\n\tT_STRINGA\x10\x0f\x12\x0c\n\x08T_BYTESA\x10\x10\x12\r\n\tT_PAYLOAD\x10\x11\"Q\n\x07Payload\x12\x1b\n\x04item\x18\x01 \x03(\x0b\x32\r.Payload.Item\x1a)\n\x04Item\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x13\n\x04\x64\x61ta\x18\x02 \x02(\x0b\x32\x05.DataB\x02H\x01')
 
 
 
-_XMSGDATA_DATATYPE = _descriptor.EnumDescriptor(
+_DATA_DATATYPE = _descriptor.EnumDescriptor(
   name='DataType',
-  full_name='xMsgData.DataType',
+  full_name='Data.DataType',
   filename=None,
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='VLSINT32', index=0, number=1,
+      name='T_VLSINT32', index=0, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='VLSINT64', index=1, number=2,
+      name='T_VLSINT64', index=1, number=2,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FLSINT32', index=2, number=3,
+      name='T_FLSINT32', index=2, number=3,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FLSINT64', index=3, number=4,
+      name='T_FLSINT64', index=3, number=4,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FLOAT', index=4, number=5,
+      name='T_FLOAT', index=4, number=5,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='DOUBLE', index=5, number=6,
+      name='T_DOUBLE', index=5, number=6,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='STRING', index=6, number=7,
+      name='T_STRING', index=6, number=7,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='BYTES', index=7, number=8,
+      name='T_BYTES', index=7, number=8,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='VLSINT32A', index=8, number=9,
+      name='T_VLSINT32A', index=8, number=9,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='VLSINT64A', index=9, number=10,
+      name='T_VLSINT64A', index=9, number=10,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FLSINT32A', index=10, number=11,
+      name='T_FLSINT32A', index=10, number=11,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FLSINT64A', index=11, number=12,
+      name='T_FLSINT64A', index=11, number=12,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='FLOATA', index=12, number=13,
+      name='T_FLOATA', index=12, number=13,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='DOUBLEA', index=13, number=14,
+      name='T_DOUBLEA', index=13, number=14,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='STRINGA', index=14, number=15,
+      name='T_STRINGA', index=14, number=15,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='BYTESA', index=15, number=16,
+      name='T_BYTESA', index=15, number=16,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PAYLOAD', index=16, number=17,
+      name='T_PAYLOAD', index=16, number=17,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=583,
-  serialized_end=818,
+  serialized_start=407,
+  serialized_end=676,
 )
 
 
-_XMSGDATA_DATA = _descriptor.Descriptor(
+_DATA = _descriptor.Descriptor(
   name='Data',
-  full_name='xMsgData.Data',
+  full_name='Data',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='VLSINT32', full_name='xMsgData.Data.VLSINT32', index=0,
-      number=1, type=17, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='VLSINT64', full_name='xMsgData.Data.VLSINT64', index=1,
-      number=2, type=18, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='FLSINT32', full_name='xMsgData.Data.FLSINT32', index=2,
-      number=3, type=15, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='FLSINT64', full_name='xMsgData.Data.FLSINT64', index=3,
-      number=4, type=16, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='FLOAT', full_name='xMsgData.Data.FLOAT', index=4,
-      number=5, type=2, cpp_type=6, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='DOUBLE', full_name='xMsgData.Data.DOUBLE', index=5,
-      number=6, type=1, cpp_type=5, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='STRING', full_name='xMsgData.Data.STRING', index=6,
-      number=7, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='BYTES', full_name='xMsgData.Data.BYTES', index=7,
-      number=8, type=12, cpp_type=9, label=1,
-      has_default_value=False, default_value="",
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='VLSINT32A', full_name='xMsgData.Data.VLSINT32A', index=8,
-      number=9, type=17, cpp_type=1, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='VLSINT64A', full_name='xMsgData.Data.VLSINT64A', index=9,
-      number=10, type=18, cpp_type=2, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='FLSINT32A', full_name='xMsgData.Data.FLSINT32A', index=10,
-      number=11, type=15, cpp_type=1, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='FLSINT64A', full_name='xMsgData.Data.FLSINT64A', index=11,
-      number=12, type=16, cpp_type=2, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='FLOATA', full_name='xMsgData.Data.FLOATA', index=12,
-      number=13, type=2, cpp_type=6, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='DOUBLEA', full_name='xMsgData.Data.DOUBLEA', index=13,
-      number=14, type=1, cpp_type=5, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='STRINGA', full_name='xMsgData.Data.STRINGA', index=14,
-      number=15, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='BYTESA', full_name='xMsgData.Data.BYTESA', index=15,
-      number=16, type=12, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=185,
-  serialized_end=467,
-)
-
-_XMSGDATA_PAYLOAD = _descriptor.Descriptor(
-  name='Payload',
-  full_name='xMsgData.Payload',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='xMsgData.Payload.name', index=0,
-      number=1, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='type', full_name='xMsgData.Payload.type', index=1,
-      number=2, type=9, cpp_type=9, label=2,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='data', full_name='xMsgData.Payload.data', index=2,
-      number=3, type=11, cpp_type=10, label=2,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='byteOrder', full_name='xMsgData.Payload.byteOrder', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='dataDescription', full_name='xMsgData.Payload.dataDescription', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  extension_ranges=[],
-  serialized_start=469,
-  serialized_end=580,
-)
-
-_XMSGDATA = _descriptor.Descriptor(
-  name='xMsgData',
-  full_name='xMsgData',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='xMsgData.id', index=0,
+      name='id', full_name='Data.id', index=0,
       number=1, type=7, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='authour', full_name='xMsgData.authour', index=1,
+      name='author', full_name='Data.author', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='data', full_name='xMsgData.data', index=2,
-      number=3, type=11, cpp_type=10, label=1,
+      name='VLSINT32', full_name='Data.VLSINT32', index=2,
+      number=3, type=17, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='VLSINT64', full_name='Data.VLSINT64', index=3,
+      number=4, type=18, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='FLSINT32', full_name='Data.FLSINT32', index=4,
+      number=5, type=15, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='FLSINT64', full_name='Data.FLSINT64', index=5,
+      number=6, type=16, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='FLOAT', full_name='Data.FLOAT', index=6,
+      number=7, type=2, cpp_type=6, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='DOUBLE', full_name='Data.DOUBLE', index=7,
+      number=8, type=1, cpp_type=5, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='STRING', full_name='Data.STRING', index=8,
+      number=9, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='BYTES', full_name='Data.BYTES', index=9,
+      number=10, type=12, cpp_type=9, label=1,
+      has_default_value=False, default_value="",
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='VLSINT32A', full_name='Data.VLSINT32A', index=10,
+      number=11, type=17, cpp_type=1, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='VLSINT64A', full_name='Data.VLSINT64A', index=11,
+      number=12, type=18, cpp_type=2, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='FLSINT32A', full_name='Data.FLSINT32A', index=12,
+      number=13, type=15, cpp_type=1, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='FLSINT64A', full_name='Data.FLSINT64A', index=13,
+      number=14, type=16, cpp_type=2, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='FLOATA', full_name='Data.FLOATA', index=14,
+      number=15, type=2, cpp_type=6, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='DOUBLEA', full_name='Data.DOUBLEA', index=15,
+      number=16, type=1, cpp_type=5, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='STRINGA', full_name='Data.STRINGA', index=16,
+      number=17, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='BYTESA', full_name='Data.BYTESA', index=17,
+      number=18, type=12, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='xtype', full_name='Data.xtype', index=18,
+      number=19, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=1,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='byteOrder', full_name='Data.byteOrder', index=19,
+      number=20, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='dataDescription', full_name='Data.dataDescription', index=20,
+      number=21, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _DATA_DATATYPE,
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=19,
+  serialized_end=676,
+)
+
+
+_PAYLOAD_ITEM = _descriptor.Descriptor(
+  name='Item',
+  full_name='Payload.Item',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='name', full_name='Payload.Item.name', index=0,
+      number=1, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='data', full_name='Payload.Item.data', index=1,
+      number=2, type=11, cpp_type=10, label=2,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  options=None,
+  is_extendable=False,
+  extension_ranges=[],
+  serialized_start=718,
+  serialized_end=759,
+)
+
+_PAYLOAD = _descriptor.Descriptor(
+  name='Payload',
+  full_name='Payload',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
     _descriptor.FieldDescriptor(
-      name='type', full_name='xMsgData.type', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='byteOrder', full_name='xMsgData.byteOrder', index=4,
-      number=5, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='dataDescription', full_name='xMsgData.dataDescription', index=5,
-      number=6, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=unicode("", "utf-8"),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='payload', full_name='xMsgData.payload', index=6,
-      number=7, type=11, cpp_type=10, label=3,
+      name='item', full_name='Payload.item', index=0,
+      number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -345,44 +319,43 @@ _XMSGDATA = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_XMSGDATA_DATA, _XMSGDATA_PAYLOAD, ],
+  nested_types=[_PAYLOAD_ITEM, ],
   enum_types=[
-    _XMSGDATA_DATATYPE,
   ],
   options=None,
   is_extendable=False,
   extension_ranges=[],
-  serialized_start=19,
-  serialized_end=818,
+  serialized_start=678,
+  serialized_end=759,
 )
 
-_XMSGDATA_DATA.containing_type = _XMSGDATA;
-_XMSGDATA_PAYLOAD.fields_by_name['data'].message_type = _XMSGDATA_DATA
-_XMSGDATA_PAYLOAD.containing_type = _XMSGDATA;
-_XMSGDATA.fields_by_name['data'].message_type = _XMSGDATA_DATA
-_XMSGDATA.fields_by_name['payload'].message_type = _XMSGDATA_PAYLOAD
-_XMSGDATA_DATATYPE.containing_type = _XMSGDATA;
-DESCRIPTOR.message_types_by_name['xMsgData'] = _XMSGDATA
+_DATA.fields_by_name['xtype'].enum_type = _DATA_DATATYPE
+_DATA_DATATYPE.containing_type = _DATA;
+_PAYLOAD_ITEM.fields_by_name['data'].message_type = _DATA
+_PAYLOAD_ITEM.containing_type = _PAYLOAD;
+_PAYLOAD.fields_by_name['item'].message_type = _PAYLOAD_ITEM
+DESCRIPTOR.message_types_by_name['Data'] = _DATA
+DESCRIPTOR.message_types_by_name['Payload'] = _PAYLOAD
 
-class xMsgData(_message.Message):
+class Data(_message.Message):
+  __metaclass__ = _reflection.GeneratedProtocolMessageType
+  DESCRIPTOR = _DATA
+
+  # @@protoc_insertion_point(class_scope:Data)
+
+class Payload(_message.Message):
   __metaclass__ = _reflection.GeneratedProtocolMessageType
 
-  class Data(_message.Message):
+  class Item(_message.Message):
     __metaclass__ = _reflection.GeneratedProtocolMessageType
-    DESCRIPTOR = _XMSGDATA_DATA
+    DESCRIPTOR = _PAYLOAD_ITEM
 
-    # @@protoc_insertion_point(class_scope:xMsgData.Data)
+    # @@protoc_insertion_point(class_scope:Payload.Item)
+  DESCRIPTOR = _PAYLOAD
 
-  class Payload(_message.Message):
-    __metaclass__ = _reflection.GeneratedProtocolMessageType
-    DESCRIPTOR = _XMSGDATA_PAYLOAD
-
-    # @@protoc_insertion_point(class_scope:xMsgData.Payload)
-  DESCRIPTOR = _XMSGDATA
-
-  # @@protoc_insertion_point(class_scope:xMsgData)
+  # @@protoc_insertion_point(class_scope:Payload)
 
 
 DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), 'B\005xMsgDH\001')
+DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), 'H\001')
 # @@protoc_insertion_point(module_scope)

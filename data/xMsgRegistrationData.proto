@@ -3,7 +3,6 @@
 // date: 10.06.14
 
 option optimize_for = SPEED;
-option java_outer_classname = "xMsgR";
 
 message xMsgRegistrationData {
 
@@ -17,7 +16,7 @@ message xMsgRegistrationData {
 
     required string domain = 3;
     optional string subject = 4 [default = "undefined"];
-    optional string tip = 5 [default = "undefined"];
+    optional string xtype = 5 [default = "undefined"];
 
     optional OwnerType ownerType = 6;
 

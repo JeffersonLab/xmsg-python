@@ -1,4 +1,4 @@
-from core import xMsgConstants
+from core.xMsgConstants import xMsgConstants
 
 __author__ = 'gurjyan'
 

@@ -17,25 +17,25 @@ class xMsgRegDiscDriver:
     _lnConnection = xMsgConstants.UNDEFINED
 
     # zmq context
-    _context = xMsgConstants.UNDEFINED
+    context = xMsgConstants.UNDEFINED
 
     def __init__(self, feHost=None):
-        _context = zmq.Context()
+        self.context = zmq.Context()
 
         if feHost is None:
 
-            self._lnConnection = self.__zmqSocket(_context, zmq.REQ,
+            self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
                                                   xMsgUtil.host_to_ip("localhost"),
                                                   xMsgConstants.REGISTRAR_PORT,
                                                   xMsgConstants.CONNECT)
             self._feConnection = self._lnConnection
         else:
-            self._feConnection = self.__zmqSocket(_context, zmq.REQ,
+            self._feConnection = self.zmqSocket(self.context, zmq.REQ,
                                                   xMsgUtil.host_to_ip(feHost),
                                                   xMsgConstants.REGISTRAR_PORT,
                                                   xMsgConstants.CONNECT)
 
-            self._lnConnection = self.__zmqSocket(_context, zmq.REQ,
+            self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
                                                   xMsgUtil.host_to_ip("localhost"),
                                                   xMsgConstants.REGISTRAR_PORT,
                                                   xMsgConstants.CONNECT)
@@ -45,7 +45,7 @@ class xMsgRegDiscDriver:
           Returns the main zmq socket context
             :return zmq context
         """
-        return self._context
+        return self.context
 
     def _register(self, connectionSocket, name, data, isPublisher):
         """
@@ -62,7 +62,7 @@ class xMsgRegDiscDriver:
         """
 
         # Data serialization
-        if data.isInitialized():
+        if data.IsInitialized():
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
@@ -87,7 +87,7 @@ class xMsgRegDiscDriver:
                 r_sender = msg[1]
                 r_data = msg[2]
                 # data sent back from the registration server should a string = "success"
-                if r_data is not xMsgConstants.SUCCESS:
+                if r_data != xMsgConstants.SUCCESS:
                     raise Exception("failed")
             else:
                 raise Exception("Timeout processing registration request")
@@ -297,7 +297,7 @@ class xMsgRegDiscDriver:
         """
         return self._find(self._feConnection, name, data, isPublisher)
 
-    def __zmqSocket(self, context, socket_type, h, port, boc):
+    def zmqSocket(self, context, socket_type, h, port, boc):
         """
             Creates and returns zmq socket object
 

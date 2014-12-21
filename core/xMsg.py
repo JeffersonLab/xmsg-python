@@ -1,10 +1,11 @@
 from multiprocessing import Pool
 
 import zmq
+from core.xMsgConstants import xMsgConstants
 
 from data import xMsgData_pb2
+from data import xMsgRegistrationData_pb2
 from net.xMsgConnection import xMsgConnection
-from core import xMsgConstants
 from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
 
 
@@ -25,7 +26,7 @@ class xMsg(xMsgRegDiscDriver):
     """
 
     # zmq context object
-    _context = xMsgConstants.UNDEFINED
+    # _context = xMsgConstants.UNDEFINED
 
     # Private db of stored connections
     _connections = dict()
@@ -34,7 +35,7 @@ class xMsg(xMsgRegDiscDriver):
     threadPool = xMsgConstants.UNDEFINED
     pool_size = xMsgConstants.UNDEFINED
 
-    def __init__(self, feHost, pool_size):
+    def __init__(self, feHost, pool_size=16):
         """
         Constructor, requires the name of the FrontEnd host that is used
         to create to the registrar service running within the xMsgFE.
@@ -44,7 +45,7 @@ class xMsg(xMsgRegDiscDriver):
         :param pool_size: thread pool size
         """
         xMsgRegDiscDriver.__init__(self, feHost)
-        self._context = self.getContext()
+        # self._context = self.getContext()
 
         # create fixed size thread pool
         self.pool_size = pool_size
@@ -77,22 +78,29 @@ class xMsg(xMsgRegDiscDriver):
             # Return the reference to the connection object
             feCon = xMsgConnection()
             feCon.setAddress(address)
-            feCon.setPubSock(self.__zmqSocket(self._context,
-                                              zmq.PUB,
-                                              address.getHost(),
-                                              address.getPort(),
-                                              xMsgConstants.BIND))
+            soc_p = self.zmqSocket(self.context,
+                                   zmq.PUB,
+                                   address.getHost(),
+                                   address.getPort(),
+                                   xMsgConstants.BIND)
+            feCon.setPubSock(soc_p)
 
-            feCon.setSubSock(self.__zmqSocket(self._context,
-                                              zmq.SUB,
-                                              address.getHost(),
-                                              address.getPort() + 1,
-                                              xMsgConstants.CONNECT))
+            soc_s = self.zmqSocket(self.context,
+                                   zmq.SUB,
+                                   address.getHost(),
+                                   address.getPort() + 1,
+                                   xMsgConstants.CONNECT)
+            feCon.setSubSock(soc_s)
 
             self._connections[address.getKey()] = feCon
             return feCon
 
-    def registerPublisher(self, name, r_data):
+    def registerPublisher(self, name,
+                          domain,
+                          subject,
+                          xtype,
+                          host="localhost",
+                          port=xMsgConstants.DEFAULT_PORT):
         """
         If you are periodically publishing data, use this method to
         register yourself as a publisher with the local registrar.
@@ -103,9 +111,23 @@ class xMsg(xMsgRegDiscDriver):
                      the xMsg zmq message structure definition. (topic, sender, data)
         :param r_data: xMsgRegistrationData object
         """
+
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.domain = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+
         self.register_local(name, r_data, True)
 
-    def registerSubscriber(self, name, r_data):
+    def registerSubscriber(self, name,
+                           domain,
+                           subject,
+                           xtype,
+                           host="localhost",
+                           port=xMsgConstants.DEFAULT_PORT):
         """
         If you are a subscriber and want to listen messages on a specific
         topic from a future publishers, you should register yourself as
@@ -118,9 +140,23 @@ class xMsg(xMsgRegDiscDriver):
                      the xMsg zmq message structure definition. (topic, sender, data)
         :param r_data: xMsgRegistrationData object
         """
+
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+
         self.register_local(name, r_data, False)
 
-    def removePublisherRegistration(self, name, r_data):
+    def removePublisherRegistration(self, name,
+                                    domain,
+                                    subject,
+                                    xtype,
+                                    host="localhost",
+                                    port=xMsgConstants.DEFAULT_PORT):
         """
         Removes publisher registration both from the local and then from the
         global registration databases
@@ -129,10 +165,24 @@ class xMsg(xMsgRegDiscDriver):
                      the xMsg zmq message structure definition. (topic, sender, data)
         :param r_data: xMsgRegistrationData object
         """
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+
         self.removeRegistration_local(name, r_data, True)
         self.removeRegistration_fe(name, r_data, True)
 
-    def removeSubscriberRegistration(self, name, r_data):
+    def removeSubscriberRegistration(self, name,
+                                     domain,
+                                     subject,
+                                     xtype,
+                                     host="localhost",
+                                     port=xMsgConstants.DEFAULT_PORT):
+
         """
         Removes subscriber registration both from the local and then from the
         global registration databases
@@ -141,10 +191,23 @@ class xMsg(xMsgRegDiscDriver):
                      the xMsg zmq message structure definition. (topic, sender, data)
         :param r_data: xMsgRegistrationData object
         """
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+
         self.removeRegistration_local(name, r_data, False)
         self.removeRegistration_fe(name, r_data, False)
 
-    def findLocalPublisher(self, name, r_data):
+    def findLocalPublisher(self, name,
+                           domain,
+                           subject,
+                           xtype,
+                           host="localhost",
+                           port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all local publishers, publishing  to a specified topic
         defined within the input registration data object: xMsgRegistrationData
@@ -155,9 +218,22 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistrationData object
         :return: List of xMsgRegistrationData objects
         """
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+
         return self.findLocal(name, r_data, True)
 
-    def findLocalSubscriber(self, name, r_data):
+    def findLocalSubscriber(self, name,
+                            domain,
+                            subject,
+                            xtype,
+                            host="localhost",
+                            port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all local subscribers, subscribing  to a specified topic
         defined within the input registration data object: xMsgRegistrationData
@@ -168,9 +244,22 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistrationData object
         :return: List of xMsgRegistrationData objects
         """
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+
         return self.findLocal(name, r_data, False)
 
-    def findPublisher(self, name, r_data):
+    def findPublisher(self, name,
+                      domain,
+                      subject,
+                      xtype,
+                      host="localhost",
+                      port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all publishers, publishing  to a specified topic
         defined within the input registration data object: xMsgRegistrationData
@@ -181,9 +270,22 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistrationData object
         :return: List of xMsgRegistrationData objects
         """
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+
         return self.findGlobal(name, r_data, True)
 
-    def findSubscriber(self, name, r_data):
+    def findSubscriber(self, name,
+                       domain,
+                       subject,
+                       xtype,
+                       host="localhost",
+                       port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all subscribers, subscribing  to a specified topic
         defined within the input registration data object: xMsgRegistrationData
@@ -194,6 +296,14 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistrationData object
         :return: List of xMsgRegistrationData objects
         """
+        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data.host = host
+        r_data.port = port
+        r_data.doamin = domain
+        r_data.subject = subject
+        r_data.xtype = xtype
+        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+
         return self.findGlobal(name, r_data, False)
 
     def publish(self, connection, domain, subject, tip, publisherName, data):

@@ -88,7 +88,7 @@ class xMsgNode(xMsgRegDiscDriver):
 def main():
     if len(sys.argv) == 3:
         if str(sys.argv[0]) == "-h":
-            xn = xMsgNode(str(sys.argv[1]))
+            xn = xMsgNode(str(sys.argv[2]))
             signal.signal(signal.SIGTERM, xn.exit_gracefully)
             signal.signal(signal.SIGINT, xn.exit_gracefully)
         else:

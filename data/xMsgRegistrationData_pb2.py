@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='xMsgRegistrationData.proto',
   package='',
-  serialized_pb='\n\x1axMsgRegistrationData.proto\"\xd6\x01\n\x14xMsgRegistrationData\x12\x0c\n\x04host\x18\x01 \x02(\t\x12\x0c\n\x04port\x18\x02 \x02(\x0f\x12\x0e\n\x06\x64omain\x18\x03 \x02(\t\x12\x1a\n\x07subject\x18\x04 \x01(\t:\tundefined\x12\x16\n\x03tip\x18\x05 \x01(\t:\tundefined\x12\x32\n\townerType\x18\x06 \x01(\x0e\x32\x1f.xMsgRegistrationData.OwnerType\"*\n\tOwnerType\x12\r\n\tPUBLISHER\x10\x01\x12\x0e\n\nSUBSCRIBER\x10\x02\x42\tB\x05xMsgRH\x01')
+  serialized_pb='\n\x1axMsgRegistrationData.proto\"\xd8\x01\n\x14xMsgRegistrationData\x12\x0c\n\x04host\x18\x01 \x02(\t\x12\x0c\n\x04port\x18\x02 \x02(\x0f\x12\x0e\n\x06\x64omain\x18\x03 \x02(\t\x12\x1a\n\x07subject\x18\x04 \x01(\t:\tundefined\x12\x18\n\x05xtype\x18\x05 \x01(\t:\tundefined\x12\x32\n\townerType\x18\x06 \x01(\x0e\x32\x1f.xMsgRegistrationData.OwnerType\"*\n\tOwnerType\x12\r\n\tPUBLISHER\x10\x01\x12\x0e\n\nSUBSCRIBER\x10\x02\x42\x02H\x01')
 
 
 
@@ -34,8 +34,8 @@ _XMSGREGISTRATIONDATA_OWNERTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=203,
-  serialized_end=245,
+  serialized_start=205,
+  serialized_end=247,
 )
 
 
@@ -75,7 +75,7 @@ _XMSGREGISTRATIONDATA = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='tip', full_name='xMsgRegistrationData.tip', index=4,
+      name='xtype', full_name='xMsgRegistrationData.xtype', index=4,
       number=5, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=unicode("undefined", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
@@ -99,7 +99,7 @@ _XMSGREGISTRATIONDATA = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=31,
-  serialized_end=245,
+  serialized_end=247,
 )
 
 _XMSGREGISTRATIONDATA.fields_by_name['ownerType'].enum_type = _XMSGREGISTRATIONDATA_OWNERTYPE
@@ -114,5 +114,5 @@ class xMsgRegistrationData(_message.Message):
 
 
 DESCRIPTOR.has_options = True
-DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), 'B\005xMsgRH\001')
+DESCRIPTOR._options = _descriptor._ParseOptions(descriptor_pb2.FileOptions(), 'H\001')
 # @@protoc_insertion_point(module_scope)
