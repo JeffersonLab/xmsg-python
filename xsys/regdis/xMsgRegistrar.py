@@ -81,6 +81,8 @@ class xMsgRegistrar(threading.Thread):
                 r_sender = res[1]
                 r_data = res[2]
 
+                print " Received a request from " + r_sender + " to " + r_topic
+
                 # de-serialize r_data
                 ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
                 ds_data.ParseFromString(r_data)
@@ -94,8 +96,8 @@ class xMsgRegistrar(threading.Thread):
                     key = ds_data.domain
                     if ds_data.subject != xMsgConstants.UNDEFINED:
                         key = key + ":" + ds_data.subject
-                    if ds_data.tip != xMsgConstants.UNDEFINED:
-                        key = key + ":" + ds_data.tip
+                    if ds_data.xtype != xMsgConstants.UNDEFINED:
+                        key = key + ":" + ds_data.xtype
 
                 if r_topic == xMsgConstants.REGISTER_PUBLISHER:
                     self.publishers_db[key] = ds_data
@@ -140,7 +142,7 @@ class xMsgRegistrar(threading.Thread):
 
                 elif r_topic == xMsgConstants.FIND_PUBLISHER:
 
-                    res = self._getRegistration(ds_data.domain, ds_data.subject, ds_data.tip, True)
+                    res = self._getRegistration(ds_data.domain, ds_data.subject, ds_data.xtype, True)
                     d = []
                     for rd in res:
                         # Serialize and add to the reply message
@@ -154,7 +156,7 @@ class xMsgRegistrar(threading.Thread):
 
                 elif r_topic == xMsgConstants.FIND_SUBSCRIBER:
 
-                    res = self._getRegistration(ds_data.domain, ds_data.subject, ds_data.tip, False)
+                    res = self._getRegistration(ds_data.domain, ds_data.subject, ds_data.xtype, False)
                     d = []
                     for rd in res:
                         # Serialize and add to the reply message

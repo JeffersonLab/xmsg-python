@@ -107,7 +107,7 @@ class xMsgRegDiscDriver:
         """
 
         # Data serialization
-        if data.isInitialized():
+        if data.IsInitialized():
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
@@ -192,7 +192,7 @@ class xMsgRegDiscDriver:
 
         """
         # Data serialization
-        if data.isInitialized():
+        if data.IsInitialized():
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
@@ -219,8 +219,11 @@ class xMsgRegDiscDriver:
                 r_data = msg[2:]
                 for r_d in r_data:
                     # de-serialize r_d
-                    ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData
-                    ds_data.ParseFromString(r_d)
+                    if type(r_d) is str:
+                        ds_data = r_d
+                    else:
+                        ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+                        ds_data.ParseFromString(r_d)
 
                     result.append(ds_data)
                 return result

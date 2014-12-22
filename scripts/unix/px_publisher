@@ -1,0 +1,10 @@
+#!/bin/csh -f
+
+# author gurjyan
+# date 12.16.14
+
+setenv PYTHONPATH $PXMSG_HOME\:$PXMSG_HOME/core\:$PXMSG_HOME/sys\:$PXMSG_HOME/sys/regdis\:$PXMSG_HOME/data\:$PXMSG_HOME/net
+
+cd "$PXMSG_HOME/examples"
+
+python Publisher.py $1

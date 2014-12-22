@@ -42,7 +42,7 @@ def main():
     t_data = xMsgData_pb2.Data()
     t_data.author = publisher.myName
     t_data.id = 0
-    t_data.dataDescription = xMsgConstants.UNDEFINED
+    t_data.dataDescription = "python_publisher"
     t_data.xtype = xMsgData_pb2.Data.T_FLSINT32A
 
     for i in range(0, int(size)):

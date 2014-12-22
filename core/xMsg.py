@@ -82,7 +82,7 @@ class xMsg(xMsgRegDiscDriver):
                                    zmq.PUB,
                                    address.getHost(),
                                    address.getPort(),
-                                   xMsgConstants.BIND)
+                                   xMsgConstants.CONNECT)
             feCon.setPubSock(soc_p)
 
             soc_s = self.zmqSocket(self.context,
@@ -144,7 +144,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
@@ -168,7 +168,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
@@ -194,7 +194,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
@@ -221,7 +221,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
@@ -247,7 +247,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
@@ -273,7 +273,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
@@ -299,7 +299,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
         r_data.host = host
         r_data.port = port
-        r_data.doamin = domain
+        r_data.domain = domain
         r_data.subject = subject
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
@@ -339,12 +339,17 @@ class xMsg(xMsgRegDiscDriver):
                 if tip is not None and tip != "*":
                     topic = topic + ":" + tip
 
+        # print data.author
+        # print data.id
+        # print data.dataDescription
+        # print data.xtype
+        # print len(data.FLSINT32A)
 
         # data serialization
         s_data = data.SerializeToString()
 
         # send topic, sender, followed by the data
-        con.send_multipart([topic, publisherName, s_data])
+        con.send_multipart([str(topic), str(publisherName), str(s_data)])
 
     def subscribe(self, connection, domain, subject, tip, cb, isSync):
         """
@@ -386,25 +391,28 @@ class xMsg(xMsgRegDiscDriver):
                     topic = topic + ":" + tip
 
         # subscribe to the topic
-        con.subscribe(topic)
+        con.setsockopt(zmq.SUBSCRIBE, topic)
+        # con.subscribe(topic)
 
         # wait for messages published to a required topic
         while True:
             try:
-                res = connection.recv_multipart()
+                # res = connection.recv_multipart()
+                res = con.recv_multipart()
                 r_topic = res[0]
                 r_sender = res[1]
                 r_data = res[2]
 
                 # de-serialize r_data
-                ds_data = xMsgData_pb2.xMsgData
+                ds_data = xMsgData_pb2.Data()
                 ds_data.ParseFromString(r_data)
+                result = ds_data
 
                 # usr callback
                 if isSync:
-                    cb.callback(ds_data)
+                    cb(result)
                 else:
-                    self.threadPool.apply_async(cb, ds_data)
+                    self.threadPool.apply_async(cb, result)
             except KeyboardInterrupt:
                     return
 
