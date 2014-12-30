@@ -1,7 +1,7 @@
 import zmq
+
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
-
 from data import xMsgRegistrationData_pb2
 
 

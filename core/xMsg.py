@@ -1,10 +1,10 @@
 from multiprocessing import Pool
 
 import zmq
-from core.xMsgConstants import xMsgConstants
 
-from data import xMsgData_pb2
+from core.xMsgConstants import xMsgConstants
 from data import xMsgRegistrationData_pb2
+from data import xMsgData_pb2
 from net.xMsgConnection import xMsgConnection
 from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
 

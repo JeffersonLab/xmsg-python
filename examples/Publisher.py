@@ -1,10 +1,11 @@
 import random
 import sys
+
 from core.xMsg import xMsg
-from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from data import xMsgData_pb2
 from net.xMsgAddress import xMsgAddress
+
 
 __author__ = 'gurjyan'
 
