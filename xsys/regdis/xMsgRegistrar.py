@@ -10,6 +10,7 @@ from xsys.regdis.xMsgFeRegT import xMsgFeRegT
 
 __author__ = 'gurjyan'
 
+
 class xMsgRegistrar(threading.Thread):
     """
      The main registrar service, that always runs in a
@@ -39,7 +40,7 @@ class xMsgRegistrar(threading.Thread):
     subscribers_db = dict()
 
     # Registrar accepted requests from any host (*)
-    host = xMsgConstants.ANY_HOST
+    host = xMsgConstants.ANY
 
     # Default port of the registrar
     port = xMsgConstants.REGISTRAR_PORT
@@ -47,11 +48,11 @@ class xMsgRegistrar(threading.Thread):
     # Used as a prefix to the name of this registrar.
     # The name of the registrar is used to set the sender field
     # when it creates a request message to be sent to the requester.
-    localhost_ip = xMsgUtil.host_to_ip("localhost")
+    localhost_ip = xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST)
 
     def __init__(self, context, feHost=None):
         """
-        Constructor used by xMSgNode objects.
+        Constructor used by xMsgNode objects.
         xMsgNode needs periodically report/update xMsgFe registration
         database with data stored in its local databases. This process
         makes sure we have proper duplication of the registration data
@@ -70,7 +71,7 @@ class xMsgRegistrar(threading.Thread):
 
     def run(self):
 
-        #  Create registrar REP socket
+        # Create registrar REP socket
         request = self.context.socket(zmq.REP)
         request.bind("tcp://%s:%s" % (str(self.host), str(self.port)))
 
@@ -90,8 +91,9 @@ class xMsgRegistrar(threading.Thread):
                 s_host = xMsgConstants.UNDEFINED
                 key = xMsgConstants.UNDEFINED
 
+                # Define the xMsg key
                 if r_topic == xMsgConstants.REMOVE_ALL_REGISTRATION:
-                    s_host = r_data
+                    s_host = ds_data.domain
                 else:
                     key = ds_data.domain
                     if ds_data.subject != xMsgConstants.UNDEFINED:
@@ -134,7 +136,7 @@ class xMsgRegistrar(threading.Thread):
                     self._cleanDbByHost(s_host, self.publishers_db)
 
                     # Remove subscribers registration data from a specified host
-                    self._cleanDbByHost(s_host, self.subscribers_db);
+                    self._cleanDbByHost(s_host, self.subscribers_db)
                     # send a reply message
                     request.send_multipart([r_topic,
                                             xMsgUtil.get_local_ip() + ":" + xMsgConstants.REGISTRAR,
@@ -143,35 +145,27 @@ class xMsgRegistrar(threading.Thread):
                 elif r_topic == xMsgConstants.FIND_PUBLISHER:
 
                     res = self._getRegistration(ds_data.domain, ds_data.subject, ds_data.xtype, True)
-                    d = []
+                    d = [r_topic, xMsgUtil.get_local_ip() + ":" + xMsgConstants.REGISTRAR]
                     for rd in res:
                         # Serialize and add to the reply message
                         s_rd = rd.SerializeToString()
                         d.append(s_rd)
-
-                    s_dt = xMsgUtil.list_to_string(d)
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" + xMsgConstants.REGISTRAR,
-                                            s_dt])
+                    request.send_multipart(d)
 
                 elif r_topic == xMsgConstants.FIND_SUBSCRIBER:
 
                     res = self._getRegistration(ds_data.domain, ds_data.subject, ds_data.xtype, False)
-                    d = []
+                    d = [r_topic, xMsgUtil.get_local_ip() + ":" + xMsgConstants.REGISTRAR]
                     for rd in res:
                         # Serialize and add to the reply message
                         s_rd = rd.SerializeToString()
                         d.append(s_rd)
-
-                    s_dt = xMsgUtil.list_to_string(d)
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" + xMsgConstants.REGISTRAR,
-                                            s_dt])
+                    request.send_multipart(d)
                 else:
                     print " Warning: unknown registration request type..."
 
             except KeyboardInterrupt:
-                    return
+                return
 
     def _getRegistration(self, domain, subject, tip, isPublisher):
         """
@@ -190,29 +184,22 @@ class xMsgRegistrar(threading.Thread):
         :return: set of xMsgRegistrationData object
         """
 
-        # create a list containing defined input key elements
-        st = [domain]
-        if subject != xMsgConstants.UNDEFINED:
-            st.append(subject)
-        if tip != xMsgConstants.UNDEFINED:
-            st.append(tip)
-
         result = list()
 
         if isPublisher:
             for k in self.publishers_db:
-                for s in st:
-                    if s in k:
-                        x = self.publishers_db[k]
-                        if x not in result:
-                            result.append(x)
+                if ((xMsgUtil.get_domain(k) == domain) and
+                        (xMsgUtil.get_subject(k) == subject or subject == xMsgConstants.UNDEFINED or subject == xMsgConstants.ANY) and
+                        (xMsgUtil.get_type(k) == tip or tip == xMsgConstants.UNDEFINED or tip == xMsgConstants.ANY)):
+                    x = self.publishers_db[k]
+                    result.append(x)
         else:
             for k in self.subscribers_db:
-                for s in st:
-                    if s in k:
-                        x = self.subscribers_db[k]
-                        if x not in result:
-                            result.append(x)
+                if ((xMsgUtil.get_domain(k) == domain) and
+                        (xMsgUtil.get_subject(k) == subject or subject == xMsgConstants.UNDEFINED or subject == xMsgConstants.ANY) and
+                        (xMsgUtil.get_type(k) == tip or tip == xMsgConstants.UNDEFINED or tip == xMsgConstants.ANY)):
+                    x = self.subscribers_db[k]
+                    result.append(x)
         return result
 
     def _cleanDbByHost(self, host, db):
@@ -232,7 +219,7 @@ class xMsgRegistrar(threading.Thread):
         for k in db:
             if db[k].host == host:
                 rk.append(k)
-        #Remove all identified keys
+        # Remove all identified keys
         for k in rk:
             db.remove(k)
 

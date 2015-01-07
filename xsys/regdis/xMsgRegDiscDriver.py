@@ -25,7 +25,7 @@ class xMsgRegDiscDriver:
         if feHost is None:
 
             self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                  xMsgUtil.host_to_ip("localhost"),
+                                                  xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST),
                                                   xMsgConstants.REGISTRAR_PORT,
                                                   xMsgConstants.CONNECT)
             self._feConnection = self._lnConnection
@@ -36,7 +36,7 @@ class xMsgRegDiscDriver:
                                                   xMsgConstants.CONNECT)
 
             self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                  xMsgUtil.host_to_ip("localhost"),
+                                                  xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST),
                                                   xMsgConstants.REGISTRAR_PORT,
                                                   xMsgConstants.CONNECT)
 
@@ -196,7 +196,7 @@ class xMsgRegDiscDriver:
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
-            # Topic of the message is a string = "registerPublisher" or "registerSubscriber"
+            # Topic of the message is a string = "findPublisher" or "findSubscriber"
             if isPublisher:
                 topic = xMsgConstants.FIND_PUBLISHER
             else:
@@ -218,13 +218,8 @@ class xMsgRegDiscDriver:
                 result = []
                 r_data = msg[2:]
                 for r_d in r_data:
-                    # de-serialize r_d
-                    if type(r_d) is str:
-                        ds_data = r_d
-                    else:
-                        ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-                        ds_data.ParseFromString(r_d)
-
+                    ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+                    ds_data.ParseFromString(r_d)
                     result.append(ds_data)
                 return result
 

@@ -1,3 +1,5 @@
+import socket
+
 __author__ = 'gurjyan'
 
 class xMsgConstants:
@@ -5,27 +7,35 @@ class xMsgConstants:
     def __init__(self):
         pass
 
-    UNDEFINED = "undefined"
-    SUCCESS = "success"
-    ANY_HOST = "*"
+    UNDEFINED = b"undefined"
+    SUCCESS = b"success"
+    ANY = b"*"
+    LOCALHOST = socket.gethostname()
 
-    REGISTRAR = "xMsg_Registrar"
+    REGISTRAR = b"xMsg_Registrar"
 
-    REGISTER_PUBLISHER = "registerPublisher"
-    REGISTER_SUBSCRIBER = "registerSubscriber"
+    REGISTER_PUBLISHER = b"registerPublisher"
+    REGISTER_SUBSCRIBER = b"registerSubscriber"
     REGISTER_REQUEST_TIMEOUT = 3000
 
-    REMOVE_PUBLISHER = "removePublisherRegistration"
-    REMOVE_SUBSCRIBER = "removeSubscriberRegistration"
-    REMOVE_ALL_REGISTRATION = "removeAllRegistration"
+    REMOVE_PUBLISHER = b"removePublisherRegistration"
+    REMOVE_SUBSCRIBER = b"removeSubscriberRegistration"
+    REMOVE_ALL_REGISTRATION = b"removeAllRegistration"
     REMOVE_REQUEST_TIMEOUT = 3000
 
     FIND_REQUEST_TIMEOUT = 3000
-    FIND_PUBLISHER = "findPublisher"
-    FIND_SUBSCRIBER = "findSubscriber"
+    FIND_PUBLISHER = b"findPublisher"
+    FIND_SUBSCRIBER = b"findSubscriber"
 
-    BIND = "bind"
-    CONNECT = "connect"
+    INFO = b"info"
+    WARNING = b"warning"
+    ERROR = b"error"
+
+    NO_RESULT = b"none"
+    DONE = b"done"
+
+    BIND = b"bind"
+    CONNECT = b"connect"
 
     DEFAULT_PORT = 7771
     REGISTRAR_PORT = 8888

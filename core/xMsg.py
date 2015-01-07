@@ -1,8 +1,10 @@
 from multiprocessing import Pool
+import threading
 
 import zmq
 
 from core.xMsgConstants import xMsgConstants
+from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistrationData_pb2
 from data import xMsgData_pb2
 from net.xMsgConnection import xMsgConnection
@@ -35,7 +37,7 @@ class xMsg(xMsgRegDiscDriver):
     threadPool = xMsgConstants.UNDEFINED
     pool_size = xMsgConstants.UNDEFINED
 
-    def __init__(self, feHost, pool_size=16):
+    def __init__(self, feHost, pool_size=2):
         """
         Constructor, requires the name of the FrontEnd host that is used
         to create to the registrar service running within the xMsgFE.
@@ -95,11 +97,37 @@ class xMsg(xMsgRegDiscDriver):
             self._connections[address.getKey()] = feCon
             return feCon
 
+    def get_new_connection(self, address):
+        """
+        Returns a new xMsgConnection object to the xMsg proxy,
+        using new zmq context
+        :param address: xMsgAddress object
+        :return: xMsgConnection object
+        """
+        new_context = zmq.Context()
+        feCon = xMsgConnection()
+        feCon.setAddress(address)
+        soc_p = self.zmqSocket(new_context,
+                               zmq.PUB,
+                               address.getHost(),
+                               address.getPort(),
+                               xMsgConstants.CONNECT)
+        feCon.setPubSock(soc_p)
+
+        soc_s = self.zmqSocket(new_context,
+                               zmq.SUB,
+                               address.getHost(),
+                               address.getPort() + 1,
+                               xMsgConstants.CONNECT)
+        feCon.setSubSock(soc_s)
+        return feCon
+
     def registerPublisher(self, name,
                           domain,
                           subject,
                           xtype,
-                          host="localhost",
+                          description=xMsgConstants.UNDEFINED,
+                          host=xMsgConstants.LOCALHOST,
                           port=xMsgConstants.DEFAULT_PORT):
         """
         If you are periodically publishing data, use this method to
@@ -113,7 +141,9 @@ class xMsg(xMsgRegDiscDriver):
         """
 
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.description = description
+        r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -126,7 +156,8 @@ class xMsg(xMsgRegDiscDriver):
                            domain,
                            subject,
                            xtype,
-                           host="localhost",
+                           description=xMsgConstants.UNDEFINED,
+                           host=xMsgConstants.LOCALHOST,
                            port=xMsgConstants.DEFAULT_PORT):
         """
         If you are a subscriber and want to listen messages on a specific
@@ -142,7 +173,9 @@ class xMsg(xMsgRegDiscDriver):
         """
 
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.description = description
+        r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -155,7 +188,7 @@ class xMsg(xMsgRegDiscDriver):
                                     domain,
                                     subject,
                                     xtype,
-                                    host="localhost",
+                                    host=xMsgConstants.LOCALHOST,
                                     port=xMsgConstants.DEFAULT_PORT):
         """
         Removes publisher registration both from the local and then from the
@@ -166,7 +199,8 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistrationData object
         """
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -180,7 +214,7 @@ class xMsg(xMsgRegDiscDriver):
                                      domain,
                                      subject,
                                      xtype,
-                                     host="localhost",
+                                     host=xMsgConstants.LOCALHOST,
                                      port=xMsgConstants.DEFAULT_PORT):
 
         """
@@ -192,7 +226,8 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistrationData object
         """
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -206,7 +241,7 @@ class xMsg(xMsgRegDiscDriver):
                            domain,
                            subject,
                            xtype,
-                           host="localhost",
+                           description=xMsgConstants.UNDEFINED,
                            port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all local publishers, publishing  to a specified topic
@@ -215,11 +250,12 @@ class xMsg(xMsgRegDiscDriver):
 
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition. (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
         :return: List of xMsgRegistrationData objects
         """
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.description = description
+        r_data.host = xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -232,7 +268,7 @@ class xMsg(xMsgRegDiscDriver):
                             domain,
                             subject,
                             xtype,
-                            host="localhost",
+                            description=xMsgConstants.UNDEFINED,
                             port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all local subscribers, subscribing  to a specified topic
@@ -241,11 +277,12 @@ class xMsg(xMsgRegDiscDriver):
 
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition. (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
         :return: List of xMsgRegistrationData objects
         """
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.description = description
+        r_data.host = xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -258,7 +295,8 @@ class xMsg(xMsgRegDiscDriver):
                       domain,
                       subject,
                       xtype,
-                      host="localhost",
+                      host,
+                      description=xMsgConstants.UNDEFINED,
                       port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all publishers, publishing  to a specified topic
@@ -271,7 +309,9 @@ class xMsg(xMsgRegDiscDriver):
         :return: List of xMsgRegistrationData objects
         """
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.name = name
+        r_data.description = description
+        r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -284,7 +324,8 @@ class xMsg(xMsgRegDiscDriver):
                        domain,
                        subject,
                        xtype,
-                       host="localhost",
+                       host,
+                       description=xMsgConstants.UNDEFINED,
                        port=xMsgConstants.DEFAULT_PORT):
         """
         Finds all subscribers, subscribing  to a specified topic
@@ -297,7 +338,9 @@ class xMsg(xMsgRegDiscDriver):
         :return: List of xMsgRegistrationData objects
         """
         r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-        r_data.host = host
+        r_data.description = description
+        r_data.name = name
+        r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
@@ -322,7 +365,7 @@ class xMsg(xMsgRegDiscDriver):
         :param connection: xMsgConnection object
         :param domain: domain of the subscription
         :param subject: subject of the subscription
-        :param tip: type of the subscription (type is a python keyword, i.e. we use tip)
+        :param tip: type of the subscription (type is a python keyword, so we use tip)
         :param publisherName: sender/publisher name
         :param data: xMsgData transient data object
         """
@@ -330,28 +373,41 @@ class xMsg(xMsgRegDiscDriver):
         con = connection.getPubSock()
 
          # build a topic
-        if domain is None or domain == "*":
+        if domain is None or domain == xMsgConstants.ANY:
             raise Exception("domain is not defined")
         else:
             topic = domain
-            if subject is not None and subject != "*":
+            if subject is not None and subject != xMsgConstants.ANY:
                 topic = topic + ":" + subject
-                if tip is not None and tip != "*":
+                if tip is not None and tip != xMsgConstants.ANY:
                     topic = topic + ":" + tip
 
-        # print data.author
-        # print data.id
-        # print data.dataDescription
-        # print data.xtype
-        # print len(data.FLSINT32A)
+        if data is None:
+            con.send_multipart([str(topic), str(publisherName)])
+        else:
+            # data serialization
+            s_data = data.SerializeToString()
 
-        # data serialization
-        s_data = data.SerializeToString()
+            # send topic, sender, followed by the data
+            con.send_multipart([str(topic), str(publisherName), str(s_data)])
 
-        # send topic, sender, followed by the data
-        con.send_multipart([str(topic), str(publisherName), str(s_data)])
+    def subscribe(self, connection,
+                  domain,
+                  subject,
+                  tip,
+                  cb,
+                  isSync):
 
-    def subscribe(self, connection, domain, subject, tip, cb, isSync):
+        t1 = threading.Thread(target=self.__sub_module, args=(connection, domain, subject, tip, cb, isSync))
+        t1.setDaemon(True)
+        t1.start()
+
+    def __sub_module(self, connection,
+                     domain,
+                     subject,
+                     tip,
+                     cb,
+                     isSync):
         """
         Subscribes to a specified xMsg topic. 3 elements are defining xMsg topic:
         domain:subject:tip
@@ -364,7 +420,7 @@ class xMsg(xMsgRegDiscDriver):
             domain:subject:tip
         Supplied user callback object must implement xMsgCallBack interface.
         This method will de-serialize received xMsgData object and pass it
-        to the user implemented callback method of thee interface.
+        to the user implemented callback method of the interface.
         In the case isSync input parameter is set to be false the method will
         utilize private thread pool to run user callback method in a separate thread.
 
@@ -373,22 +429,34 @@ class xMsg(xMsgRegDiscDriver):
         :param subject: subject of the subscription
         :param tip: type of the subscription (type is a python keyword, i.e. we use tip)
         :param cb: user supplied callback function
-        :param isSync: if set to true method will block until subscription method is
-                       received and user callback method is returned
+        :param isSync: if set to true method will block until user callback
+                       method is returned. In case you need to run in a multi-threaded mode,
+                       i.e. running parallel user call backs, set isSync = False
         """
 
         # get subscribers socket connection
         con = connection.getSubSock()
 
          # build a topic
-        if domain is None or domain == "*":
+        if domain is None or domain == xMsgConstants.ANY:
             raise Exception("domain is not defined")
         else:
             topic = domain
-            if subject is not None and subject != "*":
+            if subject is not None and subject != xMsgConstants.ANY:
                 topic = topic + ":" + subject
-                if tip is not None and tip != "*":
-                    topic = topic + ":" + tip
+                if tip is not None and tip != xMsgConstants.ANY:
+
+                    # Note that type can also have *
+                    # for e.g. topic for error/warning/info broadcasting
+                    # the type is the name of the service broadcasting the message.
+                    # Service name can contain * indicating any domain/container/engine
+                    # here we handle that type of cases.
+                    tl = tip.split(":")
+                    for ts in tl:
+                        if "*" is not ts:
+                            topic = topic + ":" + ts
+                        else:
+                            break
 
         # subscribe to the topic
         con.setsockopt(zmq.SUBSCRIBE, topic)
@@ -399,20 +467,28 @@ class xMsg(xMsgRegDiscDriver):
             try:
                 # res = connection.recv_multipart()
                 res = con.recv_multipart()
-                r_topic = res[0]
-                r_sender = res[1]
-                r_data = res[2]
+                if len(res) == 3:
+                    r_topic = res[0]
+                    r_sender = res[1]
+                    r_data = res[2]
 
-                # de-serialize r_data
-                ds_data = xMsgData_pb2.Data()
-                ds_data.ParseFromString(r_data)
-                result = ds_data
+                    # de-serialize r_data
+                    ds_data = xMsgData_pb2.Data()
+                    ds_data.ParseFromString(r_data)
+                    result = ds_data
 
-                # usr callback
-                if isSync:
-                    cb(result)
-                else:
-                    self.threadPool.apply_async(cb, result)
+                    # usr callback
+                    if isSync:
+                        cb(result)
+                    else:
+                        # using thread pool
+                        # self.threadPool.apply_async(cb, result)
+                        # using a new created thread
+                        l = [result]
+                        t = threading.Thread(target=cb, args=l)
+                        t.daemon = True
+                        t.start()
+
             except KeyboardInterrupt:
                     return
 

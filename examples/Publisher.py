@@ -2,6 +2,7 @@ import random
 import sys
 
 from core.xMsg import xMsg
+from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from data import xMsgData_pb2
 from net.xMsgAddress import xMsgAddress
@@ -18,7 +19,7 @@ class Publisher(xMsg):
     subject = "test_subject"
     xtype = "test_type"
 
-    def __init__(self, feHost="localhost"):
+    def __init__(self, feHost=xMsgConstants.LOCALHOST):
         xMsg.__init__(self, feHost)
 
 def main():
@@ -41,10 +42,10 @@ def main():
 
     # Create transient data
     t_data = xMsgData_pb2.Data()
-    t_data.author = publisher.myName
+    t_data.dataAuthor = publisher.myName
     t_data.id = 0
     t_data.dataDescription = "python_publisher"
-    t_data.xtype = xMsgData_pb2.Data.T_FLSINT32A
+    t_data.dataType = xMsgData_pb2.Data.T_FLSINT32A
 
     for i in range(0, int(size)):
         t_data.FLSINT32A.append(random.randint(1, 10))

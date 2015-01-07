@@ -48,7 +48,7 @@ class xMsgNode(xMsgRegDiscDriver):
         self.context = zmq.Context()
 
         #local host ip
-        self.host = xMsgUtil.host_to_ip("localhost")
+        self.host = xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST)
 
         # Start local registrar service in a separate thread.
         # If fe host is defined the specific constructor starts a thread

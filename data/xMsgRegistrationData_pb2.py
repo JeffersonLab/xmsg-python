@@ -13,7 +13,7 @@ from google.protobuf import descriptor_pb2
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='xMsgRegistrationData.proto',
   package='',
-  serialized_pb='\n\x1axMsgRegistrationData.proto\"\xd8\x01\n\x14xMsgRegistrationData\x12\x0c\n\x04host\x18\x01 \x02(\t\x12\x0c\n\x04port\x18\x02 \x02(\x0f\x12\x0e\n\x06\x64omain\x18\x03 \x02(\t\x12\x1a\n\x07subject\x18\x04 \x01(\t:\tundefined\x12\x18\n\x05xtype\x18\x05 \x01(\t:\tundefined\x12\x32\n\townerType\x18\x06 \x01(\x0e\x32\x1f.xMsgRegistrationData.OwnerType\"*\n\tOwnerType\x12\r\n\tPUBLISHER\x10\x01\x12\x0e\n\nSUBSCRIBER\x10\x02\x42\x02H\x01')
+  serialized_pb='\n\x1axMsgRegistrationData.proto\"\x86\x02\n\x14xMsgRegistrationData\x12\x0c\n\x04name\x18\x01 \x02(\t\x12\x1e\n\x0b\x64\x65scription\x18\x02 \x01(\t:\tundefined\x12\x0c\n\x04host\x18\x03 \x02(\t\x12\x0c\n\x04port\x18\x04 \x02(\x0f\x12\x0e\n\x06\x64omain\x18\x05 \x02(\t\x12\x1a\n\x07subject\x18\x06 \x01(\t:\tundefined\x12\x18\n\x05xtype\x18\x07 \x01(\t:\tundefined\x12\x32\n\townerType\x18\x08 \x01(\x0e\x32\x1f.xMsgRegistrationData.OwnerType\"*\n\tOwnerType\x12\r\n\tPUBLISHER\x10\x01\x12\x0e\n\nSUBSCRIBER\x10\x02\x42\x02H\x01')
 
 
 
@@ -34,8 +34,8 @@ _XMSGREGISTRATIONDATA_OWNERTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=205,
-  serialized_end=247,
+  serialized_start=251,
+  serialized_end=293,
 )
 
 
@@ -47,43 +47,57 @@ _XMSGREGISTRATIONDATA = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='host', full_name='xMsgRegistrationData.host', index=0,
+      name='name', full_name='xMsgRegistrationData.name', index=0,
       number=1, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='port', full_name='xMsgRegistrationData.port', index=1,
-      number=2, type=15, cpp_type=1, label=2,
-      has_default_value=False, default_value=0,
+      name='description', full_name='xMsgRegistrationData.description', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=True, default_value=unicode("undefined", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='domain', full_name='xMsgRegistrationData.domain', index=2,
+      name='host', full_name='xMsgRegistrationData.host', index=2,
       number=3, type=9, cpp_type=9, label=2,
       has_default_value=False, default_value=unicode("", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='subject', full_name='xMsgRegistrationData.subject', index=3,
-      number=4, type=9, cpp_type=9, label=1,
+      name='port', full_name='xMsgRegistrationData.port', index=3,
+      number=4, type=15, cpp_type=1, label=2,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='domain', full_name='xMsgRegistrationData.domain', index=4,
+      number=5, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=unicode("", "utf-8"),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None),
+    _descriptor.FieldDescriptor(
+      name='subject', full_name='xMsgRegistrationData.subject', index=5,
+      number=6, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=unicode("undefined", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='xtype', full_name='xMsgRegistrationData.xtype', index=4,
-      number=5, type=9, cpp_type=9, label=1,
+      name='xtype', full_name='xMsgRegistrationData.xtype', index=6,
+      number=7, type=9, cpp_type=9, label=1,
       has_default_value=True, default_value=unicode("undefined", "utf-8"),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='ownerType', full_name='xMsgRegistrationData.ownerType', index=5,
-      number=6, type=14, cpp_type=8, label=1,
+      name='ownerType', full_name='xMsgRegistrationData.ownerType', index=7,
+      number=8, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=1,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -99,7 +113,7 @@ _XMSGREGISTRATIONDATA = _descriptor.Descriptor(
   is_extendable=False,
   extension_ranges=[],
   serialized_start=31,
-  serialized_end=247,
+  serialized_end=293,
 )
 
 _XMSGREGISTRATIONDATA.fields_by_name['ownerType'].enum_type = _XMSGREGISTRATIONDATA_OWNERTYPE
