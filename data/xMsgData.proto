@@ -3,6 +3,7 @@
 // date: 01.07.15
 
 option optimize_for = SPEED;
+option java_outer_classname = "xMsgD";
 
 // ... Data class ...
 message Data {
@@ -22,44 +23,41 @@ message Data {
     optional string dataAuthorState = 4;
 
     // Overall status/severity of the data generation process
-    optional DStatus dataGenerationStatus = 5 [default = INFO];
-
-    optional fixed32 dataStatusSeverity = 6;
+    optional Severity dataGenerationStatus = 5 [default = INFO];
 
     // Data itself
-    optional sint32 VLSINT32 = 7; // variable length signed int32
-    optional sint64 VLSINT64 = 8; // variable length signed int64
-    optional sfixed32 FLSINT32 = 9; // fixed length signed int32
-    optional sfixed64 FLSINT64 = 10; // fixed length signed int64
-    optional float FLOAT = 11;
-    optional double DOUBLE = 12;
-    optional string STRING = 13; // contains UTF-8 encoding or 7-bit ASCII text
-    optional bytes BYTES = 14; // contains arbitrary sequence of bytes
+    optional sint32 VLSINT32 = 6; // variable length signed int32
+    optional sint64 VLSINT64 = 7; // variable length signed int64
+    optional sfixed32 FLSINT32 = 8; // fixed length signed int32
+    optional sfixed64 FLSINT64 = 9; // fixed length signed int64
+    optional float FLOAT = 10;
+    optional double DOUBLE = 11;
+    optional string STRING = 12; // contains UTF-8 encoding or 7-bit ASCII text
+    optional bytes BYTES = 13; // contains arbitrary sequence of bytes
 
-    repeated sint32 VLSINT32A = 15; // array of variable length signed int32s
-    repeated sint64 VLSINT64A = 16; // array of variable length signed int64s
-    repeated sfixed32 FLSINT32A = 17; // array of fixed length signed int32s
-    repeated sfixed64 FLSINT64A = 18; // array of fixed length signed int64s
-    repeated float FLOATA = 19; // array of floats
-    repeated double DOUBLEA = 20; // array of doubles
-    repeated string STRINGA = 21; // array of UTF-8 encoded or 7-bit ASCII strings
-    repeated bytes BYTESA = 22; // array of arbitrary sequence of bytes
+    repeated sint32 VLSINT32A = 14; // array of variable length signed int32s
+    repeated sint64 VLSINT64A = 15; // array of variable length signed int64s
+    repeated sfixed32 FLSINT32A = 16; // array of fixed length signed int32s
+    repeated sfixed64 FLSINT64A = 17; // array of fixed length signed int64s
+    repeated float FLOATA = 18; // array of floats
+    repeated double DOUBLEA = 19; // array of doubles
+    repeated string STRINGA = 20; // array of UTF-8 encoded or 7-bit ASCII strings
+    repeated bytes BYTESA = 21; // array of arbitrary sequence of bytes
 
     // Data type. If set to DataTpe.PAYLOAD access data using the "payload"
     // filed, otherwise "data: filed
-    optional DType dataType = 23;
+    optional DType dataType = 22;
 
     // Byte ordering in case data type is BYTES/BYTESA
-    optional string byteOrder = 24;
+    optional string byteOrder = 23;
 
 
-    // ... This section is defined by the message transporter, i.e. service ...
-    // The name of the message transporter,
-    // i.e. service that sends the transient data
-    optional string sender = 25;
+    // ... This section is defined by the message transporter ...
+    // The name of the message transporter
+    optional string sender = 24;
 
     // Communication id, used to genetically relate messages
-    optional fixed32 id = 26;
+    optional fixed32 id = 25;
 
     // ... Fields that are used to control message receiver ...
     // If set to true, for example Clara service container will
@@ -68,25 +66,28 @@ message Data {
     //             requestId,
     //             exceptionType <Severity>,
     //             exceptionString <String> ]
-    optional bool exceptionMonitor = 27;
+    optional bool exceptionMonitor = 26;
 
     // If set to true, for example Clara service container will
     // broadcast "done" string
     // [ done_<service_name>,
     //             requestId]
-    optional bool doneMonitor = 28;
+    optional bool doneMonitor = 27;
 
     // If set to true, for example Clara service container will
     // broadcast resulting data to
     // [ data_<service_name>,
     //             requestId,
     //             transient_data ]
-    optional bool dataMonitor = 29;
+    optional bool dataMonitor = 28;
 
     // Reserved and used for Clara service based application
     // composition i.e. link schema (list of linked service names)
     // e.g. s1+s2;s1+s3,s4,s5+&s6
-    optional string composition = 30;
+    optional string composition = 29;
+
+    // Service engine execution time
+    optional sfixed64 executionTime = 30;
 
     // Reserved and used to define which of the CLARA interface
     // methods must be called on a service engine.
@@ -94,7 +95,6 @@ message Data {
 
     // Reserved control field
     optional SubControlAction controlR = 32;
-
 
     // ... Enumerations ...
     // Data type enumeration
@@ -142,10 +142,14 @@ message Data {
     }
 
     // Message severity
-    enum DStatus {
-        ERROR = 1;
-        WARNING = 2;
-        INFO = 3;
+    enum Severity {
+        ERROR1 = 1;
+        ERROR2 = 2;
+        ERROR3 = 3;
+        WARNING1 = 4;
+        WARNING2 = 5;
+        WARNING3 = 6;
+        INFO = 7;
     }
 }
 
@@ -158,6 +162,4 @@ message Payload {
     }
 
     repeated Item item = 1;
- }
-
-
+}
