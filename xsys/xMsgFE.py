@@ -2,7 +2,7 @@ import signal
 
 import zmq
 
-from core import xMsgConstants
+from core.xMsgConstants import xMsgConstants
 from xsys.regdis.xMsgRegistrar import xMsgRegistrar
 
 
