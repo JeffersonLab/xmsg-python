@@ -54,9 +54,9 @@ class xMsgNode(xMsgRegDiscDriver):
         # If fe host is defined the specific constructor starts a thread
         # that periodically updates front-end registrar database with
         # the data from the local databases
-        t = xMsgRegistrar(self.context, feHost)
-        t.daemon = True
-        t.start()
+        self.t = xMsgRegistrar(self.context, feHost)
+        self.t.daemon = True
+        self.t.start()
 
         print (" Info: xMsg local registration and discovery server is started")
 
@@ -80,6 +80,9 @@ class xMsgNode(xMsgRegDiscDriver):
             print "bringing down xMsgNode..."
         finally:
             pass
+
+    def join(self):
+        self.t.join()
 
     def exit_gracefully(self, signum, frame):
         self.removeAllRegistration_fe(self.host, xMsgConstants.UNDEFINED)

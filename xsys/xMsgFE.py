@@ -23,12 +23,17 @@ class xMsgFE():
         # Start local registrar service. Constructor starts a thread
         # that periodically updates front-end registrar database with
         # the data from the local databases
-        t = xMsgRegistrar(self.context)
-        t.daemon = True
-        t.start()
+        self.t = xMsgRegistrar(self.context)
+        self.t.daemon = True
+        self.t.start()
 
     def exit_gracefully(self, signum, frame):
+        print "xMsgFE death"
         self.context.close()
+
+    def join(self):
+        self.t.join()
+
 
 def main():
     xn = xMsgFE()
