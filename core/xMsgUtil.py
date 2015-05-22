@@ -1,8 +1,15 @@
 import socket
+import fcntl
+import struct
 import time
-from core.xMsgConstants import xMsgConstants
+import re
 
 __author__ = 'gurjyan'
+
+TOPIC_PATTERN = "^([^: ]+)(:(\\w+)(:(\\w+))?)?$"
+TOPIC_VALIDATOR = re.compile(TOPIC_PATTERN)
+TOPIC_SEP = ":"
+
 
 class xMsgUtil:
 
@@ -17,12 +24,11 @@ class xMsgUtil:
         :param topic: xMsg topic constructed as domain:subject:xtype
         :return: domain of the topic
         """
-        if ":" not in topic:
-            raise Exception("error: malformed canonical name.")
+        match = TOPIC_VALIDATOR.match(topic)
+        if match:
+            return match.group(1)
         else:
-            st = topic.split(":")
-            domain = st[0]
-            return str(domain)
+            raise Exception("ERROR: Malformed canonical name")
 
     @staticmethod
     def get_subject(topic):
@@ -32,15 +38,11 @@ class xMsgUtil:
         :param topic: xMsg topic constructed as domain:subject:xtype
         :return: subject of the topic
         """
-        if ":" not in topic:
-            raise Exception("error: malformed canonical name.")
+        match = TOPIC_VALIDATOR.match(topic)
+        if match and match.group(3):
+            return match.group(3)
         else:
-            st = topic.split(":")
-            if len(st) < 2:
-                raise Exception("error: malformed canonical name.")
-            else:
-                subject = st[1]
-                return str(subject)
+            raise Exception("ERROR: Malformed canonical name")
 
     @staticmethod
     def get_type(topic):
@@ -50,26 +52,21 @@ class xMsgUtil:
         :param topic: xMsg topic constructed as domain:subject:xtype
         :return: type of the topic
         """
-        if ":" not in topic:
-            raise Exception("error: malformed canonical name.")
+        match = TOPIC_VALIDATOR.match(topic)
+        if match and match.group(5):
+            return match.group(5)
         else:
-            st = topic.split(":")
-            if len(st) < 3:
-                raise Exception("error: malformed canonical name.")
-            else:
-                xtype = st[2]
-                return str(xtype)
+            raise Exception("ERROR: Malformed canonical name")
 
     @staticmethod
     def host_to_ip(hostname):
-
         """
         Converts host name to IP address representation
 
         :param hostname:
         :return: IP address of the required host
         """
-        if hostname == xMsgConstants.LOCALHOST:
+        if hostname == "localhost":
             return xMsgUtil.get_local_ip()
         else:
             if any(c.isalpha() for c in hostname):
@@ -79,8 +76,18 @@ class xMsgUtil:
 
     @staticmethod
     def get_local_ip():
-        local_host = socket.gethostbyname(socket.gethostname())
-        return local_host
+        # Fix made by Aron to make xmsg-python get the right
+        # local ip address.
+        # We need to make some adjustment to get the right network
+        # interface from the machine
+        # TODO: Stablish how to define the current interface 
+        ifname = "eth0"
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        return socket.inet_ntoa(fcntl.ioctl(
+            s.fileno(),
+            0x8915,  # SIOCGIFADDR
+            struct.pack('256s', ifname[:15])
+        )[20:24])
 
     @staticmethod
     def list_to_string(in_l):
