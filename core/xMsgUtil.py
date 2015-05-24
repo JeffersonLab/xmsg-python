@@ -4,17 +4,31 @@ import struct
 import time
 import re
 
+from core.xMsgExceptions import MalformedCanonicalName
+
 __author__ = 'gurjyan'
 
 TOPIC_PATTERN = "^([^: ]+)(:(\\w+)(:(\\w+))?)?$"
 TOPIC_VALIDATOR = re.compile(TOPIC_PATTERN)
 TOPIC_SEP = ":"
+# Topic groups generated in the regular expression TOPIC_PATTERN
+TOPIC_DOMAIN_GROUP = 1
+TOPIC_SUBJECT_GROUP = 3
+TOPIC_XTYPE_GROUP = 5
 
 
 class xMsgUtil:
 
     def __init__(self):
         pass
+
+    @staticmethod
+    def _get_topic_group(topic, group):
+        match = TOPIC_VALIDATOR.match(topic)
+        if match and match.group(group):           
+            return match.group(group)
+        else:
+            raise MalformedCanonicalName("Malformed Canonical name", topic)
 
     @staticmethod
     def get_domain(topic):
@@ -24,11 +38,12 @@ class xMsgUtil:
         :param topic: xMsg topic constructed as domain:subject:xtype
         :return: domain of the topic
         """
-        match = TOPIC_VALIDATOR.match(topic)
-        if match:
-            return match.group(1)
+        try:
+            domain = xMsgUtil._get_topic_group(topic, TOPIC_DOMAIN_GROUP)
+        except MalformedCanonicalName:
+            raise
         else:
-            raise Exception("ERROR: Malformed canonical name")
+            return domain
 
     @staticmethod
     def get_subject(topic):
@@ -38,11 +53,12 @@ class xMsgUtil:
         :param topic: xMsg topic constructed as domain:subject:xtype
         :return: subject of the topic
         """
-        match = TOPIC_VALIDATOR.match(topic)
-        if match and match.group(3):
-            return match.group(3)
+        try:
+            subject = xMsgUtil._get_topic_group(topic, TOPIC_SUBJECT_GROUP)
+        except MalformedCanonicalName:
+            raise
         else:
-            raise Exception("ERROR: Malformed canonical name")
+            return subject
 
     @staticmethod
     def get_type(topic):
@@ -52,11 +68,12 @@ class xMsgUtil:
         :param topic: xMsg topic constructed as domain:subject:xtype
         :return: type of the topic
         """
-        match = TOPIC_VALIDATOR.match(topic)
-        if match and match.group(5):
-            return match.group(5)
+        try:
+            xtype = xMsgUtil._get_topic_group(topic, TOPIC_XTYPE_GROUP)
+        except MalformedCanonicalName:
+            raise
         else:
-            raise Exception("ERROR: Malformed canonical name")
+            return xtype
 
     @staticmethod
     def host_to_ip(hostname):
@@ -80,7 +97,7 @@ class xMsgUtil:
         # local ip address.
         # We need to make some adjustment to get the right network
         # interface from the machine
-        # TODO: Stablish how to define the current interface 
+        # TODO: Stablish how to define the current interface
         ifname = "eth0"
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
