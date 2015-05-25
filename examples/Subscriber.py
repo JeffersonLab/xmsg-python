@@ -1,5 +1,4 @@
 from core.xMsg import xMsg
-from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from data import xMsgData_pb2
 from net.xMsgAddress import xMsgAddress
@@ -18,7 +17,7 @@ class Subscriber(xMsg):
     # subject = "abc"
     # xtype = "Engine1"
 
-    def __init__(self, feHost=xMsgConstants.LOCALHOST):
+    def __init__(self, feHost="localhost"):
         xMsg.__init__(self, feHost)
 
     def callback(self, data):
@@ -30,6 +29,7 @@ class Subscriber(xMsg):
             for i in range(0, len(data.FLSINT32A)):
                 print data.FLSINT32A[i]
 
+
 def main():
     subscriber = Subscriber()
 
@@ -40,17 +40,17 @@ def main():
     # subscriber.myName = subscriber.domain + ":" + subscriber.subject + ":" + subscriber.xtype
 
     # Register this publisher
-    subscriber.registerSubscriber(subscriber.myName,
-                                  subscriber.domain,
-                                  subscriber.subject,
-                                  subscriber.xtype)
+    subscriber.register_subscriber(subscriber.myName,
+                                   subscriber.domain,
+                                   subscriber.subject,
+                                   subscriber.xtype)
 
     # Find a publisher that publishes to requested topic
     # defined as a static variables above
-    if len(subscriber.findLocalPublisher(subscriber.myName,
-                                         subscriber.domain,
-                                         subscriber.subject,
-                                         subscriber.xtype)) > 0:
+    if len(subscriber.find_local_publisher(subscriber.myName,
+                                           subscriber.domain,
+                                           subscriber.subject,
+                                           subscriber.xtype)) > 0:
 
         # Subscribe by passing a callback to the subscription
         subscriber.subscribe(con,

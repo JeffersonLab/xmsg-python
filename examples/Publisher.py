@@ -19,8 +19,9 @@ class Publisher(xMsg):
     subject = "test_subject"
     xtype = "test_type"
 
-    def __init__(self, feHost=xMsgConstants.LOCALHOST):
+    def __init__(self, feHost="localhost"):
         xMsg.__init__(self, feHost)
+
 
 def main():
     publisher = Publisher()
@@ -31,10 +32,10 @@ def main():
     con = publisher.connect(address)
 
     # Register this publisher
-    publisher.registerPublisher(publisher.myName,
-                                publisher.domain,
-                                publisher.subject,
-                                publisher.xtype)
+    publisher.register_publisher(publisher.myName,
+                                 publisher.domain,
+                                 publisher.subject,
+                                 publisher.xtype)
 
     # Create array of integers as a message payload.
     # The only argument defines the array size.
@@ -63,4 +64,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
