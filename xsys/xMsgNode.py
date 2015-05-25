@@ -12,6 +12,7 @@ from xsys.regdis.xMsgRegistrar import xMsgRegistrar
 
 __author__ = 'gurjyan'
 
+
 class xMsgNode(xMsgRegDiscDriver):
     """
     xMsgNode.
@@ -39,16 +40,17 @@ class xMsgNode(xMsgRegDiscDriver):
                   use default registrar port:
                  (xMsgConstants#REGISTRAR_PORT)
 
-        :param feHost: xMsg front-end host. Host is passed through command line -h option,
-                       or through the environmental variable: XMSG_FE_HOST
+        :param feHost: xMsg front-end host. Host is passed through command line
+                       -h option, or through the environmental variable:
+                       XMSG_FE_HOST
         """
         xMsgRegDiscDriver.__init__(self, feHost)
 
         # create a zmq context
         self.context = zmq.Context()
 
-        #local host ip
-        self.host = xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST)
+        # local host ip
+        self.host = xMsgUtil.host_to_ip("localhost")
 
         # Start local registrar service in a separate thread.
         # If fe host is defined the specific constructor starts a thread
@@ -63,21 +65,27 @@ class xMsgNode(xMsgRegDiscDriver):
         # setting up the xMsg proxy
         # socket where clients publish their data/messages
         self.d_sub = self.context.socket(zmq.XSUB)
-        self.d_sub.bind("tcp://%s:%s" % (str("*"), str(xMsgConstants.DEFAULT_PORT)))
+        self.d_sub.bind("tcp://%s:%s" % (str("*"),
+                                         str(xMsgConstants.DEFAULT_PORT.get_int_value())))
 
         # socket where clients subscribe data/messages
         self.d_pub = self.context.socket(zmq.XPUB)
-        self.d_pub.bind("tcp://%s:%s" % (str("*"), str(xMsgConstants.DEFAULT_PORT + 1)))
+        self.d_pub.bind("tcp://%s:%s" % (str("*"),
+                                         str(int(xMsgConstants.DEFAULT_PORT) + 1)))
 
         print (" Info: Running xMsg proxy server on the localhost...")
+
+        signal.signal(signal.SIGTERM, self.exit_gracefully)
+        signal.signal(signal.SIGINT, self.exit_gracefully)
 
         try:
             # setup the proxy
             zmq.proxy(self.d_sub, self.d_pub, None)
 
         except Exception, e:
-            print e
-            print "bringing down xMsgNode..."
+            print " "
+            print " "+str(e)
+            print " Bringing down xMsgNode..."
         finally:
             pass
 
@@ -85,22 +93,22 @@ class xMsgNode(xMsgRegDiscDriver):
         self.t.join()
 
     def exit_gracefully(self, signum, frame):
-        self.removeAllRegistration_fe(self.host, xMsgConstants.UNDEFINED)
-        self.context.close()
+        # self.remove_all_registration_fe(self.host,
+        #                                 str(xMsgConstants.UNDEFINED))
+        self.context.destroy()
+
 
 def main():
     if len(sys.argv) == 3:
         if str(sys.argv[0]) == "-h":
             xn = xMsgNode(str(sys.argv[2]))
-            signal.signal(signal.SIGTERM, xn.exit_gracefully)
-            signal.signal(signal.SIGINT, xn.exit_gracefully)
+            xn.join()
         else:
             print "wrong option. Accepts -h option only."
             os.exit(0)
     elif len(sys.argv) == 1:
             xn = xMsgNode()
-            signal.signal(signal.SIGTERM, xn.exit_gracefully)
-            signal.signal(signal.SIGINT, xn.exit_gracefully)
+            xn.join()
 
 
 if __name__ == '__main__':
