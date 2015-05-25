@@ -11,13 +11,13 @@ __author__ = 'gurjyan'
 class xMsgRegDiscDriver:
 
     # Front-end registrar server (req/rep) connection socket
-    _feConnection = xMsgConstants.UNDEFINED
+    _feConnection = str(xMsgConstants.UNDEFINED)
 
     # Local registrar server (req/rep) connection socket
-    _lnConnection = xMsgConstants.UNDEFINED
+    _lnConnection = str(xMsgConstants.UNDEFINED)
 
     # zmq context
-    context = xMsgConstants.UNDEFINED
+    context = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, feHost=None):
         self.context = zmq.Context()
@@ -25,25 +25,25 @@ class xMsgRegDiscDriver:
         if feHost is None:
 
             self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                  xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST),
-                                                  xMsgConstants.REGISTRAR_PORT,
-                                                  xMsgConstants.CONNECT)
+                                                xMsgUtil.host_to_ip("localhost"),
+                                                int(xMsgConstants.REGISTRAR_PORT),
+                                                str(xMsgConstants.CONNECT))
             self._feConnection = self._lnConnection
         else:
             self._feConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                  xMsgUtil.host_to_ip(feHost),
-                                                  xMsgConstants.REGISTRAR_PORT,
-                                                  xMsgConstants.CONNECT)
+                                                xMsgUtil.host_to_ip(feHost),
+                                                int(xMsgConstants.REGISTRAR_PORT),
+                                                str(xMsgConstants.CONNECT))
 
             self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                  xMsgUtil.host_to_ip(xMsgConstants.LOCALHOST),
-                                                  xMsgConstants.REGISTRAR_PORT,
-                                                  xMsgConstants.CONNECT)
+                                                xMsgUtil.host_to_ip("localhost"),
+                                                int(xMsgConstants.REGISTRAR_PORT),
+                                                str(xMsgConstants.CONNECT))
 
     def getContext(self):
         """
-          Returns the main zmq socket context
-            :return zmq context
+        Returns the main zmq socket context
+        :return zmq context
         """
         return self.context
 
@@ -57,8 +57,8 @@ class xMsgRegDiscDriver:
         :param name the name of the sender
         :param data xMsgRegistrationData object
         :param isPublisher if set to be true then this is a request to register
-                          a publisher, otherwise this is a subscriber registration
-                          request
+                          a publisher, otherwise this is a subscriber 
+                          registration request
         """
 
         # Data serialization
@@ -68,9 +68,9 @@ class xMsgRegDiscDriver:
             # Send topic, sender, followed by the data
             # Topic of the message is a string = "registerPublisher" or "registerSubscriber"
             if isPublisher:
-                topic = xMsgConstants.REGISTER_PUBLISHER
+                topic = str(xMsgConstants.REGISTER_PUBLISHER)
             else:
-                topic = xMsgConstants.REGISTER_SUBSCRIBER
+                topic = str(xMsgConstants.REGISTER_SUBSCRIBER)
 
             # Sender
             sender = name
@@ -81,14 +81,14 @@ class xMsgRegDiscDriver:
             #  Poll socket for a reply, with timeout, make sure server is up and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(xMsgConstants.REGISTER_REQUEST_TIMEOUT * 1000):  # timeout in milliseconds
+            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):  # timeout in milliseconds
                 msg = connectionSocket.recv_multipart()
                 r_topic = msg[0]
                 r_sender = msg[1]
                 r_data = msg[2]
                 # data sent back from the registration server should a string = "success"
-                if r_data != xMsgConstants.SUCCESS:
-                    raise Exception("failed")
+                if r_data != str(xMsgConstants.SUCCESS):
+                    raise Exception("ERROR: Registration failed")
             else:
                 raise Exception("Timeout processing registration request")
 
@@ -102,8 +102,8 @@ class xMsgRegDiscDriver:
         :param name the name of the sender
         :param data xMsgRegistrationData object
         :param isPublisher if set to be true then this is a request to register
-                          a publisher, otherwise this is a subscriber registration
-                          request
+                          a publisher, otherwise this is a subscriber
+                          registration request
         """
 
         # Data serialization
@@ -111,11 +111,12 @@ class xMsgRegDiscDriver:
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
-            # Topic of the message is a string = "registerPublisher" or "registerSubscriber"
+            # Topic of the message is a string = "registerPublisher"
+            # or "registerSubscriber"
             if isPublisher:
-                topic = xMsgConstants.REMOVE_PUBLISHER
+                topic = str(xMsgConstants.REMOVE_PUBLISHER)
             else:
-                topic = xMsgConstants.REMOVE_SUBSCRIBER
+                topic = str(xMsgConstants.REMOVE_SUBSCRIBER)
 
             # Sender
             sender = name
@@ -123,21 +124,22 @@ class xMsgRegDiscDriver:
             # Sending...
             connectionSocket.send_multipart([str(topic), str(sender), str(dt)])
 
-            #  Poll socket for a reply, with timeout, make sure server is up and running
+            # Poll socket for a reply, with timeout, make sure server is up
+            # and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(xMsgConstants.REGISTER_REQUEST_TIMEOUT * 1000):  # timeout in milliseconds
+            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):
                 msg = connectionSocket.recv_multipart()
                 r_topic = msg[0]
                 r_sender = msg[1]
                 r_data = msg[2]
-                # data sent back from the registration server should a string = "success"
-                if r_data is not xMsgConstants.SUCCESS:
+
+                if r_data != str(xMsgConstants.SUCCESS):
                     raise Exception("failed")
             else:
                 raise Exception("Timeout processing registration request")
 
-    def removeAllRegistration_fe(self, host, name):
+    def remove_all_registration_fe(self, host, name):
         """
         Removes all xMsg actors (publishers and subscribers) registration from
         the front-end global registration and discovery database that were
@@ -149,7 +151,7 @@ class xMsgRegDiscDriver:
         """
 
         # topic
-        topic = xMsgConstants.REMOVE_ALL_REGISTRATION
+        topic = str(xMsgConstants.REMOVE_ALL_REGISTRATION)
 
         # Sender
         sender = name
@@ -160,17 +162,16 @@ class xMsgRegDiscDriver:
         # Sending...
         self._feConnection.send_multipart([str(topic), str(sender), str(dt)])
 
-        #  Poll socket for a reply, with timeout, make sure server is up and running
         poller = zmq.Poller()
         poller.register(self._feConnection, zmq.POLLIN)
-        if poller.poll(xMsgConstants.REGISTER_REQUEST_TIMEOUT * 1000):  # timeout in milliseconds
+        if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):  # timeout in milliseconds
             msg = self._feConnection.recv_multipart()
             r_topic = msg[0]
             r_sender = msg[1]
             r_data = msg[2]
-            # data sent back from the registration server should a string = "success"
-            if r_data is not xMsgConstants.SUCCESS:
-                raise Exception("failed")
+
+            if r_data != str(xMsgConstants.SUCCESS):
+                raise Exception("ERROR: Remove all registration from FrontEnd Failed")
         else:
             raise Exception("Timeout processing registration request")
 
@@ -196,11 +197,12 @@ class xMsgRegDiscDriver:
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
-            # Topic of the message is a string = "findPublisher" or "findSubscriber"
+            # Topic of the message is a string = "findPublisher"
+            # or "findSubscriber"
             if isPublisher:
-                topic = xMsgConstants.FIND_PUBLISHER
+                topic = str(xMsgConstants.FIND_PUBLISHER)
             else:
-                topic = xMsgConstants.FIND_SUBSCRIBER
+                topic = str(xMsgConstants.FIND_SUBSCRIBER)
 
             # Sender
             sender = name
@@ -211,7 +213,7 @@ class xMsgRegDiscDriver:
             #  Poll socket for a reply, with timeout, make sure server is up and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(xMsgConstants.FIND_REQUEST_TIMEOUT * 1000):  # timeout in milliseconds
+            if poller.poll(int(xMsgConstants.FIND_REQUEST_TIMEOUT) * 1000):  # timeout in milliseconds
                 msg = connectionSocket.recv_multipart()
                 r_topic = msg[0]
                 r_sender = msg[1]
@@ -225,12 +227,13 @@ class xMsgRegDiscDriver:
 
     def register_fe(self, name, data, isPublisher):
         """
-        Registers xMsg actor with the front-end registration and discovery server
+        Registers xMsg actor with the front-end registration and discovery
+        server
         :param name: the name of the requester/sender
         :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to register
-                            a publisher, otherwise this is a subscriber registration
-                            request
+        :param isPublisher: if set to be true then this is a request to
+                            register a publisher, otherwise this is a
+                            subscriber registration request
         """
         self._register(self._feConnection, name, data, isPublisher)
 
@@ -239,9 +242,9 @@ class xMsgRegDiscDriver:
         Registers xMsg actor with the local registration and discovery server
         :param name: the name of the requester/sender
         :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to register
-                            a publisher, otherwise this is a subscriber registration
-                            request
+        :param isPublisher: if set to be true then this is a request to
+                            register a publisher, otherwise this is a
+                            subscriber registration request
         """
         self._register(self._lnConnection, name, data, isPublisher)
 
@@ -250,9 +253,9 @@ class xMsgRegDiscDriver:
         Removes xMsg actor from the front-end registration and discovery server
         :param name: the name of the requester/sender
         :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to register
-                            a publisher, otherwise this is a subscriber registration
-                            request
+        :param isPublisher: if set to be true then this is a request to
+                            register a publisher, otherwise this is a
+                            subscriber registration request
         """
         self._remove_registration(self._feConnection, name, data, isPublisher)
 
@@ -261,9 +264,9 @@ class xMsgRegDiscDriver:
         Removes xMsg actor from the local registration and discovery server
         :param name: the name of the requester/sender
         :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to register
-                            a publisher, otherwise this is a subscriber registration
-                            request
+        :param isPublisher: if set to be true then this is a request to
+                            register a publisher, otherwise this is a
+                            subscriber registration request
         """
         self._remove_registration(self._lnConnection, name, data, isPublisher)
 
@@ -271,12 +274,13 @@ class xMsgRegDiscDriver:
         """
         Searches the local registration and discovery databases for an actor
         that publishes or subscribes the topic of the interest.
-        The search criteria i.e. topic is defined within the xMsgRegistrationData object.
+        The search criteria i.e. topic is defined within the
+        xMsgRegistrationData object.
         :param name: the name of the requester/sender
         :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to register
-                            a publisher, otherwise this is a subscriber registration
-                            request
+        :param isPublisher: if set to be true then this is a request to
+                            register a publisher, otherwise this is a
+                            subscriber registration request
         :return List of xMsgRegistrationData objects
         """
         return self._find(self._lnConnection, name, data, isPublisher)
@@ -285,12 +289,13 @@ class xMsgRegDiscDriver:
         """
         Searches the FE registration and discovery databases for an actor
         that publishes or subscribes the topic of the interest.
-        The search criteria i.e. topic is defined within the xMsgRegistrationData object.
+        The search criteria i.e. topic is defined within the
+        xMsgRegistrationData object.
         :param name: the name of the requester/sender
         :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to register
-                            a publisher, otherwise this is a subscriber registration
-                            request
+        :param isPublisher: if set to be true then this is a request to
+                            register a publisher, otherwise this is a
+                            subscriber registration request
         :return List of xMsgRegistrationData objects
         """
         return self._find(self._feConnection, name, data, isPublisher)
@@ -313,10 +318,10 @@ class xMsgRegDiscDriver:
         if socket_type == zmq.REQ:
             sb.setsockopt(zmq.LINGER, 0)
 
-        if boc == xMsgConstants.BIND:
+        if boc == str(xMsgConstants.BIND):
             # Bind socket to the host and port
             sb.bind("tcp://%s:%s" % (str(h), str(port)))
-        elif boc == xMsgConstants.CONNECT:
+        elif boc == str(xMsgConstants.CONNECT):
 
             # Connect to the host and port
             sb.connect("tcp://%s:%s" % (str(h), str(port)))

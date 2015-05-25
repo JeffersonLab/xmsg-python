@@ -6,6 +6,7 @@ from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
 
 __author__ = 'gurjyan'
 
+
 class xMsgFeRegT(xMsgRegDiscDriver, threading.Thread):
     """
     This is a thread that periodically updates xMsg front-end
@@ -59,4 +60,4 @@ class xMsgFeRegT(xMsgRegDiscDriver, threading.Thread):
 
                 xMsgUtil.sleep(5)
             except KeyboardInterrupt:
-                    return
+                return

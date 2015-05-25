@@ -15,7 +15,7 @@ class xMsgAddress:
     port = xMsgConstants.DEFAULT_PORT
     key = xMsgConstants.UNDEFINED
 
-    def __init__(self, host=xMsgConstants.LOCALHOST, port=xMsgConstants.DEFAULT_PORT):
+    def __init__(self, host="localhost", port=int(xMsgConstants.DEFAULT_PORT)):
         """
           Constructor that converts host name into a
           dotted notation of the IP address.
