@@ -98,7 +98,7 @@ class xMsgUtil:
         # We need to make some adjustment to get the right network
         # interface from the machine
         # TODO: Stablish how to define the current interface
-        ifname = "eth0"
+        ifname = "wlan0"
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),

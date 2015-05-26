@@ -8,12 +8,13 @@ from xsys.regdis.xMsgRegistrar import xMsgRegistrar
 
 __author__ = 'gurjyan'
 
+
 class xMsgFE():
     """
     xMsg Front-End
     """
 
-    context = xMsgConstants.UNDEFINED
+    context = str(xMsgConstants.UNDEFINED)
 
     def __init__(self):
 

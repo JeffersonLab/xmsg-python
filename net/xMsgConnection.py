@@ -2,6 +2,7 @@ from core.xMsgConstants import xMsgConstants
 
 __author__ = 'gurjyan'
 
+
 class xMsgConnection:
     """
       xMsg connection class. Contains xMSgAddress object and
@@ -9,27 +10,27 @@ class xMsgConnection:
       xMsg messages respectfully.
     """
 
-    address = xMsgConstants.UNDEFINED
-    pubSock = xMsgConstants.UNDEFINED
-    subSock = xMsgConstants.UNDEFINED
+    address = str(xMsgConstants.UNDEFINED)
+    pubSock = str(xMsgConstants.UNDEFINED)
+    subSock = str(xMsgConstants.UNDEFINED)
 
     def __init__(self):
         pass
 
-    def setAddress(self, ad):
+    def set_address(self, ad):
         self.address = ad
 
-    def getAddress(self):
+    def get_address(self):
         return self.address
 
-    def setPubSock(self, soc):
+    def set_pub_sock(self, soc):
         self.pubSock = soc
 
-    def getPubSock(self):
+    def get_pub_sock(self):
         return self.pubSock
 
-    def setSubSock(self, soc):
+    def set_sub_sock(self, soc):
         self.subSock = soc
 
-    def getSubSock(self):
+    def get_sub_sock(self):
         return self.subSock

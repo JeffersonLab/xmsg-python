@@ -72,30 +72,30 @@ class xMsg(xMsgRegDiscDriver):
 
         # First check to see if we have already
         # established connection to this address
-        if address.getKey in self._connections.keys():
-            return self._connections.get(address.getKey())
+        if address.get_key in self._connections.keys():
+            return self._connections.get(address.get_key())
         else:
             # Otherwise create sockets to the
             # requested address, and store the created
             # connection object for the future use.
             # Return the reference to the connection object
             feCon = xMsgConnection()
-            feCon.setAddress(address)
+            feCon.set_address(address)
             soc_p = self.zmqSocket(self.context,
                                    zmq.PUB,
-                                   address.getHost(),
-                                   address.getPort(),
+                                   address.get_host(),
+                                   address.get_port(),
                                    str(xMsgConstants.CONNECT))
-            feCon.setPubSock(soc_p)
+            feCon.set_pub_sock(soc_p)
 
             soc_s = self.zmqSocket(self.context,
                                    zmq.SUB,
-                                   address.getHost(),
-                                   address.getPort() + 1,
+                                   address.get_host(),
+                                   address.get_port() + 1,
                                    str(xMsgConstants.CONNECT))
-            feCon.setSubSock(soc_s)
+            feCon.set_sub_sock(soc_s)
 
-            self._connections[address.getKey()] = feCon
+            self._connections[address.get_key()] = feCon
             return feCon
 
     def get_new_connection(self, address):
@@ -107,20 +107,20 @@ class xMsg(xMsgRegDiscDriver):
         """
         new_context = zmq.Context()
         feCon = xMsgConnection()
-        feCon.setAddress(address)
+        feCon.set_address(address)
         soc_p = self.zmqSocket(new_context,
                                zmq.PUB,
-                               address.getHost(),
-                               address.getPort(),
+                               address.get_host(),
+                               address.get_port(),
                                str(xMsgConstants.CONNECT))
-        feCon.setPubSock(soc_p)
+        feCon.set_pub_sock(soc_p)
 
         soc_s = self.zmqSocket(new_context,
                                zmq.SUB,
-                               address.getHost(),
-                               address.getPort() + 1,
+                               address.get_host(),
+                               address.get_port() + 1,
                                str(xMsgConstants.CONNECT))
-        feCon.setSubSock(soc_s)
+        feCon.set_sub_sock(soc_s)
         return feCon
 
     def register_publisher(self, name,
@@ -381,7 +381,7 @@ class xMsg(xMsgRegDiscDriver):
         :param data: xMsgData transient data object
         """
         # get publishing socket
-        con = connection.getPubSock()
+        con = connection.get_pub_sock()
 
         # build a topic
         if domain is None or domain == str(xMsgConstants.ANY):
@@ -455,7 +455,7 @@ class xMsg(xMsgRegDiscDriver):
         """
 
         # get subscribers socket connection
-        con = connection.getSubSock()
+        con = connection.get_sub_sock()
 
         # build a topic
         if domain is None or domain == str(xMsgConstants.ANY):
