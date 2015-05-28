@@ -3,6 +3,7 @@ import zmq
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistrationData_pb2
+from core.xMsgExceptions import TimeoutReached, BadResponse
 
 
 __author__ = 'gurjyan'
@@ -24,23 +25,23 @@ class xMsgRegDiscDriver:
 
         if feHost is None:
 
-            self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                xMsgUtil.host_to_ip("localhost"),
-                                                int(xMsgConstants.REGISTRAR_PORT),
-                                                str(xMsgConstants.CONNECT))
+            self._lnConnection = self.zmq_socket(self.context, zmq.REQ,
+                                                 xMsgUtil.host_to_ip("localhost"),
+                                                 int(xMsgConstants.REGISTRAR_PORT),
+                                                 str(xMsgConstants.CONNECT))
             self._feConnection = self._lnConnection
         else:
-            self._feConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                xMsgUtil.host_to_ip(feHost),
-                                                int(xMsgConstants.REGISTRAR_PORT),
-                                                str(xMsgConstants.CONNECT))
+            self._feConnection = self.zmq_socket(self.context, zmq.REQ,
+                                                 xMsgUtil.host_to_ip(feHost),
+                                                 int(xMsgConstants.REGISTRAR_PORT),
+                                                 str(xMsgConstants.CONNECT))
 
-            self._lnConnection = self.zmqSocket(self.context, zmq.REQ,
-                                                xMsgUtil.host_to_ip("localhost"),
-                                                int(xMsgConstants.REGISTRAR_PORT),
-                                                str(xMsgConstants.CONNECT))
+            self._lnConnection = self.zmq_socket(self.context, zmq.REQ,
+                                                 xMsgUtil.host_to_ip("localhost"),
+                                                 int(xMsgConstants.REGISTRAR_PORT),
+                                                 str(xMsgConstants.CONNECT))
 
-    def getContext(self):
+    def get_context(self):
         """
         Returns the main zmq socket context
         :return zmq context
@@ -57,8 +58,8 @@ class xMsgRegDiscDriver:
         :param name the name of the sender
         :param data xMsgRegistrationData object
         :param isPublisher if set to be true then this is a request to register
-                          a publisher, otherwise this is a subscriber 
-                          registration request
+                           a publisher, otherwise this is a subscriber
+                           registration request
         """
 
         # Data serialization
@@ -66,7 +67,8 @@ class xMsgRegDiscDriver:
             dt = data.SerializeToString()
 
             # Send topic, sender, followed by the data
-            # Topic of the message is a string = "registerPublisher" or "registerSubscriber"
+            # Topic of the message is a string = "registerPublisher"
+            # or "registerSubscriber"
             if isPublisher:
                 topic = str(xMsgConstants.REGISTER_PUBLISHER)
             else:
@@ -78,19 +80,23 @@ class xMsgRegDiscDriver:
             # Sending...
             connectionSocket.send_multipart([str(topic), str(sender), str(dt)])
 
-            #  Poll socket for a reply, with timeout, make sure server is up and running
+            # Poll socket for a reply, with timeout, make sure server is up 
+            # and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):  # timeout in milliseconds
+            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):
+                # timeout in milliseconds
                 msg = connectionSocket.recv_multipart()
                 r_topic = msg[0]
                 r_sender = msg[1]
                 r_data = msg[2]
-                # data sent back from the registration server should a string = "success"
+                # data sent back from the registration server should be a string 
+                # containing "success"
                 if r_data != str(xMsgConstants.SUCCESS):
-                    raise Exception("ERROR: Registration failed")
+                    raise BadResponse("Registration failed")
+
             else:
-                raise Exception("Timeout processing registration request")
+                raise TimeoutReached("Timeout processing registration request")
 
     def _remove_registration(self, connectionSocket, name, data, isPublisher):
         """
@@ -135,9 +141,9 @@ class xMsgRegDiscDriver:
                 r_data = msg[2]
 
                 if r_data != str(xMsgConstants.SUCCESS):
-                    raise Exception("failed")
+                    raise BadResponse("Could not remove registation")
             else:
-                raise Exception("Timeout processing registration request")
+                raise TimeoutReached("Timeout reached processing registration request")
 
     def remove_all_registration_fe(self, host, name):
         """
@@ -164,16 +170,16 @@ class xMsgRegDiscDriver:
 
         poller = zmq.Poller()
         poller.register(self._feConnection, zmq.POLLIN)
-        if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):  # timeout in milliseconds
+        if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):# timeout in milliseconds
             msg = self._feConnection.recv_multipart()
             r_topic = msg[0]
             r_sender = msg[1]
             r_data = msg[2]
 
             if r_data != str(xMsgConstants.SUCCESS):
-                raise Exception("ERROR: Remove all registration from FrontEnd Failed")
+                raise BadResponse("Remove all registration from FrontEnd Failed")
         else:
-            raise Exception("Timeout processing registration request")
+            raise TimeoutReached("Timeout processing registration request")
 
     def _find(self, connectionSocket, name, data, isPublisher):
         """
@@ -248,7 +254,7 @@ class xMsgRegDiscDriver:
         """
         self._register(self._lnConnection, name, data, isPublisher)
 
-    def removeRegistration_fe(self, name, data, isPublisher):
+    def remove_registration_fe(self, name, data, isPublisher):
         """
         Removes xMsg actor from the front-end registration and discovery server
         :param name: the name of the requester/sender
@@ -259,7 +265,7 @@ class xMsgRegDiscDriver:
         """
         self._remove_registration(self._feConnection, name, data, isPublisher)
 
-    def removeRegistration_local(self, name, data, isPublisher):
+    def remove_registration_local(self, name, data, isPublisher):
         """
         Removes xMsg actor from the local registration and discovery server
         :param name: the name of the requester/sender
@@ -270,7 +276,7 @@ class xMsgRegDiscDriver:
         """
         self._remove_registration(self._lnConnection, name, data, isPublisher)
 
-    def findLocal(self, name, data, isPublisher):
+    def find_local(self, name, data, isPublisher):
         """
         Searches the local registration and discovery databases for an actor
         that publishes or subscribes the topic of the interest.
@@ -285,7 +291,7 @@ class xMsgRegDiscDriver:
         """
         return self._find(self._lnConnection, name, data, isPublisher)
 
-    def findGlobal(self, name, data, isPublisher):
+    def find_global(self, name, data, isPublisher):
         """
         Searches the FE registration and discovery databases for an actor
         that publishes or subscribes the topic of the interest.
@@ -300,7 +306,7 @@ class xMsgRegDiscDriver:
         """
         return self._find(self._feConnection, name, data, isPublisher)
 
-    def zmqSocket(self, context, socket_type, h, port, boc):
+    def zmq_socket(self, context, socket_type, h, port, boc):
         """
             Creates and returns zmq socket object
 
@@ -309,7 +315,7 @@ class xMsgRegDiscDriver:
         :param h host name
         :param port port number
         :param boc if set 0 socket will be bind, otherwise it will connect.
-                     Note that for xMsg proxies we always connect (boc = 1)
+                    Note that for xMsg proxies we always connect (boc = 1)
                      (proxies are XPUB/XSUB sockets).
         :return zmq socket object
         """

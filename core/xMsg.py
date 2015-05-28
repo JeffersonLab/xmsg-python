@@ -8,6 +8,7 @@ from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistrationData_pb2, xMsgData_pb2
 from net.xMsgConnection import xMsgConnection
 from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
+from core.xMsgExceptions import UndefinedTopicDomain
 
 
 __author__ = 'gurjyan'
@@ -81,14 +82,14 @@ class xMsg(xMsgRegDiscDriver):
             # Return the reference to the connection object
             feCon = xMsgConnection()
             feCon.set_address(address)
-            soc_p = self.zmqSocket(self.context,
+            soc_p = self.zmq_socket(self.context,
                                    zmq.PUB,
                                    address.get_host(),
                                    address.get_port(),
                                    str(xMsgConstants.CONNECT))
             feCon.set_pub_sock(soc_p)
 
-            soc_s = self.zmqSocket(self.context,
+            soc_s = self.zmq_socket(self.context,
                                    zmq.SUB,
                                    address.get_host(),
                                    address.get_port() + 1,
@@ -108,14 +109,14 @@ class xMsg(xMsgRegDiscDriver):
         new_context = zmq.Context()
         feCon = xMsgConnection()
         feCon.set_address(address)
-        soc_p = self.zmqSocket(new_context,
+        soc_p = self.zmq_socket(new_context,
                                zmq.PUB,
                                address.get_host(),
                                address.get_port(),
                                str(xMsgConstants.CONNECT))
         feCon.set_pub_sock(soc_p)
 
-        soc_s = self.zmqSocket(new_context,
+        soc_s = self.zmq_socket(new_context,
                                zmq.SUB,
                                address.get_host(),
                                address.get_port() + 1,
@@ -211,8 +212,8 @@ class xMsg(xMsgRegDiscDriver):
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
 
-        self.removeRegistration_local(name, r_data, True)
-        self.removeRegistration_fe(name, r_data, True)
+        self.remove_registration_local(name, r_data, True)
+        self.remove_registration_fe(name, r_data, True)
 
     def remove_subscriber_registration(self, name,
                                        domain,
@@ -239,8 +240,8 @@ class xMsg(xMsgRegDiscDriver):
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
 
-        self.removeRegistration_local(name, r_data, False)
-        self.removeRegistration_fe(name, r_data, False)
+        self.remove_registration_local(name, r_data, False)
+        self.remove_registration_fe(name, r_data, False)
 
     def find_local_publisher(self, name,
                              domain,
@@ -268,7 +269,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
 
-        return self.findLocal(name, r_data, True)
+        return self.find_local(name, r_data, True)
 
     def find_local_subscriber(self, name,
                               domain,
@@ -296,7 +297,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
 
-        return self.findLocal(name, r_data, False)
+        return self.find_local(name, r_data, False)
 
     def find_publisher(self, name,
                        domain,
@@ -326,7 +327,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
 
-        return self.findGlobal(name, r_data, True)
+        return self.find_global(name, r_data, True)
 
     def find_subscriber(self, name,
                         domain,
@@ -356,7 +357,7 @@ class xMsg(xMsgRegDiscDriver):
         r_data.xtype = xtype
         r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
 
-        return self.findGlobal(name, r_data, False)
+        return self.find_global(name, r_data, False)
 
     def publish(self, connection, domain, subject, tip, publisherName, data):
         """
@@ -384,13 +385,13 @@ class xMsg(xMsgRegDiscDriver):
         con = connection.get_pub_sock()
 
         # build a topic
-        if domain is None or domain == str(xMsgConstants.ANY):
-            raise Exception("domain is not defined")
+        if domain == str(xMsgConstants.ANY) or domain is None:
+            raise UndefinedTopicDomain("domain is not defined")
         else:
             topic = domain
-            if subject is not None and subject != str(xMsgConstants.ANY):
+            if subject != str(xMsgConstants.ANY) and subject is not None:
                 topic = topic + ":" + subject
-                if tip is not None and tip != str(xMsgConstants.ANY):
+                if tip != str(xMsgConstants.ANY) and tip is not None:
                     topic = topic + ":" + tip
 
         if data is None:
@@ -458,8 +459,8 @@ class xMsg(xMsgRegDiscDriver):
         con = connection.get_sub_sock()
 
         # build a topic
-        if domain is None or domain == str(xMsgConstants.ANY):
-            raise Exception("domain is not defined")
+        if domain == str(xMsgConstants.ANY) or domain is None:
+            raise UndefinedTopicDomain("domain is not defined")
         else:
             topic = domain
             if subject is not None and subject != str(xMsgConstants.ANY):

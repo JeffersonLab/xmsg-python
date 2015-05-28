@@ -25,10 +25,10 @@ class xMsgUtil:
     @staticmethod
     def _get_topic_group(topic, group):
         match = TOPIC_VALIDATOR.match(topic)
-        if match and match.group(group):           
+        if match and match.group(group):
             return match.group(group)
         else:
-            raise MalformedCanonicalName("Malformed Canonical name", topic)
+            raise MalformedCanonicalName
 
     @staticmethod
     def get_domain(topic):
@@ -98,7 +98,7 @@ class xMsgUtil:
         # We need to make some adjustment to get the right network
         # interface from the machine
         # TODO: Stablish how to define the current interface
-        ifname = "wlan0"
+        ifname = "eth0"
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         return socket.inet_ntoa(fcntl.ioctl(
             s.fileno(),
