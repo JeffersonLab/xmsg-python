@@ -81,7 +81,7 @@ class xMsgRegistrar(threading.Thread):
         while True and not self.stop_request.isSet():
             try:
                 r_topic, r_sender, r_data = request.recv_multipart()
-                print " Received a request from " + sender + " to " + topic
+                print " Received a request from " + r_sender + " to " + r_topic
 
                 # de-serialize r_data
                 ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
@@ -100,23 +100,23 @@ class xMsgRegistrar(threading.Thread):
                     self.publishers_db[key] = ds_data
 
                     # send a reply message
-                    request.send_multipart(self._reply_success_message(r_topic))
+                    request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
 
                     self.subscribers_db[key] = ds_data
                     # send a reply message
-                    request.send_multipart(self._reply_success_message(r_topic))
+                    request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_PUBLISHER):
                     del self.publishers_db[key]
                     # send a reply message
-                    request.send_multipart(self._reply_success_message(r_topic))
+                    request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_SUBSCRIBER):
                     del self.subscribers_db[key]
                     # send a reply message
-                    request.send_multipart(self._reply_success_message(r_topic))
+                    request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
                     # Remove publishers registration data from a specified host
@@ -125,7 +125,7 @@ class xMsgRegistrar(threading.Thread):
                     # Remove subscribers registration data from a specified host
                     self._cleanDbByHost(s_host, self.subscribers_db)
                     # send a reply message
-                    request.send_multipart(self._reply_success_message(r_topic))
+                    request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.FIND_PUBLISHER):
 
