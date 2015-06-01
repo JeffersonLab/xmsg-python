@@ -29,7 +29,6 @@ class xMsgRegistrar(threading.Thread):
 
     """
 
-    # zmq context.
     # Note. this class does not own the context.
     context = str(xMsgConstants.UNDEFINED)
 
@@ -81,12 +80,8 @@ class xMsgRegistrar(threading.Thread):
 
         while True and not self.stop_request.isSet():
             try:
-                res = request.recv_multipart()
-                r_topic = res[0]
-                r_sender = res[1]
-                r_data = res[2]
-
-                print " Received a request from " + r_sender + " to " + r_topic
+                r_topic, r_sender, r_data = request.recv_multipart()
+                print " Received a request from " + sender + " to " + topic
 
                 # de-serialize r_data
                 ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
@@ -99,45 +94,29 @@ class xMsgRegistrar(threading.Thread):
                 if r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
                     s_host = ds_data.domain
                 else:
-                    key = ds_data.domain
-                    if ds_data.subject != str(xMsgConstants.UNDEFINED):
-                        key = key + ":" + ds_data.subject
-                    if ds_data.xtype != str(xMsgConstants.UNDEFINED):
-                        key = key + ":" + ds_data.xtype
+                    key = self._get_key(ds_data)
 
                 if r_topic == str(xMsgConstants.REGISTER_PUBLISHER):
                     self.publishers_db[key] = ds_data
 
                     # send a reply message
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" +
-                                            str(xMsgConstants.REGISTRAR),
-                                            str(xMsgConstants.SUCCESS)])
+                    request.send_multipart(self._reply_success_message(r_topic))
 
                 elif r_topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
 
                     self.subscribers_db[key] = ds_data
                     # send a reply message
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" +
-                                            str(xMsgConstants.REGISTRAR),
-                                            str(xMsgConstants.SUCCESS)])
+                    request.send_multipart(self._reply_success_message(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_PUBLISHER):
                     del self.publishers_db[key]
                     # send a reply message
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" +
-                                            str(xMsgConstants.REGISTRAR),
-                                            str(xMsgConstants.SUCCESS)])
+                    request.send_multipart(self._reply_success_message(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_SUBSCRIBER):
                     del self.subscribers_db[key]
                     # send a reply message
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" +
-                                            str(xMsgConstants.REGISTRAR),
-                                            str(xMsgConstants.SUCCESS)])
+                    request.send_multipart(self._reply_success_message(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
                     # Remove publishers registration data from a specified host
@@ -146,10 +125,7 @@ class xMsgRegistrar(threading.Thread):
                     # Remove subscribers registration data from a specified host
                     self._cleanDbByHost(s_host, self.subscribers_db)
                     # send a reply message
-                    request.send_multipart([r_topic,
-                                            xMsgUtil.get_local_ip() + ":" +
-                                            str(xMsgConstants.REGISTRAR),
-                                            str(xMsgConstants.SUCCESS)])
+                    request.send_multipart(self._reply_success_message(r_topic))
 
                 elif r_topic == str(xMsgConstants.FIND_PUBLISHER):
 
@@ -157,13 +133,7 @@ class xMsgRegistrar(threading.Thread):
                                                 ds_data.subject,
                                                 ds_data.xtype,
                                                 True)
-                    d = [r_topic, xMsgUtil.get_local_ip() + ":" +
-                         str(xMsgConstants.REGISTRAR)]
-                    for rd in res:
-                        # Serialize and add to the reply message
-                        s_rd = rd.SerializeToString()
-                        d.append(s_rd)
-                    request.send_multipart(d)
+                    request.send_multipart(self._reply_message(r_topic, res))
 
                 elif r_topic == str(xMsgConstants.FIND_SUBSCRIBER):
 
@@ -171,17 +141,12 @@ class xMsgRegistrar(threading.Thread):
                                                 ds_data.subject,
                                                 ds_data.xtype,
                                                 False)
-                    d = [r_topic, xMsgUtil.get_local_ip() + ":" +
-                         str(xMsgConstants.REGISTRAR)]
-                    for rd in res:
-                        # Serialize and add to the reply message
-                        s_rd = rd.SerializeToString()
-                        d.append(s_rd)
-                    request.send_multipart(d)
+                    request.send_multipart(self._reply_message(r_topic, res))
                 else:
                     print " Warning: unknown registration request type..."
 
             except zmq.error.ContextTerminated:
+                print " Context terminated at xMsgRegistrar"
                 return
 
     def _getRegistration(self, domain, subject, tip, isPublisher):
@@ -208,7 +173,7 @@ class xMsgRegistrar(threading.Thread):
                 if ((xMsgUtil.get_domain(k) == domain) and
                         (xMsgUtil.get_subject(k) == subject or
                          subject == str(xMsgConstants.UNDEFINED) or
-                         subject == str(xMsgConstants.ANY))and
+                         subject == str(xMsgConstants.ANY)) and
                         (xMsgUtil.get_type(k) == tip or
                          tip == str(xMsgConstants.UNDEFINED) or
                          tip == str(xMsgConstants.ANY))):
@@ -226,6 +191,30 @@ class xMsgRegistrar(threading.Thread):
                     x = self.subscribers_db[k]
                     result.append(x)
         return result
+
+    def _get_key(self, ds_data):
+        # Define the xMsg key
+        key = ds_data.domain
+        if ds_data.subject != str(xMsgConstants.UNDEFINED):
+            key = key + ":" + ds_data.subject
+        if ds_data.xtype != str(xMsgConstants.UNDEFINED):
+            key = key + ":" + ds_data.xtype
+        return key
+
+    def _reply_success(self, topic):
+        return [topic,
+                xMsgUtil.get_local_ip() + ":" +
+                str(xMsgConstants.REGISTRAR),
+                str(xMsgConstants.SUCCESS)]
+
+    def _reply_message(self, topic, res):
+        d = [topic, xMsgUtil.get_local_ip() + ":" +
+             str(xMsgConstants.REGISTRAR)]
+        for rd in res:
+            # Serialize and add to the reply message
+            s_rd = rd.SerializeToString()
+            d.append(s_rd)
+        return d
 
     def _cleanDbByHost(self, host, db):
         """
