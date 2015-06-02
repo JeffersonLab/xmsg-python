@@ -1,10 +1,33 @@
+'''
+ Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for educational, research, and not-for-profit purposes,
+ without fee and without a signed licensing agreement.
+
+ Author Vardan Gyurjyan
+ Department of Experimental Nuclear Physics, Jefferson Lab.
+
+ IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+ INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+ THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+ OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+ HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+'''
+
+from datetime import datetime
 import socket
 import fcntl
 import struct
 import time
 import re
 
-from core.xMsgExceptions import MalformedCanonicalName
+from core.xMsgExceptions import MalformedCanonicalName, UndefinedTopicDomain
+from core.xMsgConstants import xMsgConstants
 
 __author__ = 'gurjyan'
 
@@ -21,6 +44,21 @@ class xMsgUtil:
 
     def __init__(self):
         pass
+
+    @staticmethod
+    def build_topic(domain, subject=None, xtype=None):
+        if (not domain or domain == str(xMsgConstants.UNDEFINED) or
+                domain == str(xMsgConstants.ANY)):
+            raise UndefinedTopicDomain
+        else:
+            topic = domain
+            if subject and subject != str(xMsgConstants.ANY):
+                topic += TOPIC_SEP + subject
+                if xtype and xtype != str(xMsgConstants.ANY):
+                    t_arr = TOPIC_SEP.join([t for t in xtype.split(TOPIC_SEP)
+                                            if t != str(xMsgConstants.ANY)])
+                    return topic + TOPIC_SEP + t_arr
+            return topic
 
     @staticmethod
     def _get_topic_group(topic, group):
@@ -122,3 +160,7 @@ class xMsgUtil:
     def keep_alive():
         while True:
             time.sleep(3)
+
+    @staticmethod
+    def current_time():
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
