@@ -5,6 +5,13 @@ Created on 22-05-2015
 '''
 
 
+class ConnectionException(Exception):
+    pass
+
+
+class NullConnection(ConnectionException):
+    pass
+
 class RegistrationException(Exception):
     '''Exceptions related to registration issues'''
     pass
@@ -14,6 +21,9 @@ class MessageException(ValueError):
     '''Exceptions related to messaging'''
     pass
 
+
+class NullMessage(MessageException):
+    pass
 
 class TopicException(MessageException):
     '''Bad topic related exceptions'''
