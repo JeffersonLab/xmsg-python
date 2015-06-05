@@ -7,7 +7,7 @@ import zmq
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
-from xsys.regdis.xMsgRegistrar import xMsgRegistrar
+from xsys.regdis.xMsgRegistrationService import xMsgRegistrationService
 
 
 __author__ = 'gurjyan'
@@ -24,8 +24,8 @@ class xMsgNode(xMsgRegDiscDriver):
     to add more subscribers or publishers.
 
     """
-    context = xMsgConstants.UNDEFINED
-    host = xMsgConstants.UNDEFINED
+    context = str(xMsgConstants.UNDEFINED)
+    host = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, feHost=None):
         """
@@ -56,7 +56,7 @@ class xMsgNode(xMsgRegDiscDriver):
         # If fe host is defined the specific constructor starts a thread
         # that periodically updates front-end registrar database with
         # the data from the local databases
-        self.t = xMsgRegistrar(self.context, feHost)
+        self.t = xMsgRegistrationService(self.context)#, feHost)
         self.t.daemon = True
         self.t.start()
 
