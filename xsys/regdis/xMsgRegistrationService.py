@@ -81,12 +81,12 @@ class xMsgRegistrationService(threading.Thread):
                     key = self._get_key(ds_data)
 
                 if r_topic == str(xMsgConstants.REGISTER_PUBLISHER):
-                    self._register(key, ds_data, True)
+                    self._register(key, r_data, True)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
-                    self._register(key, ds_data, False)
+                    self._register(key, r_data, False)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
@@ -115,18 +115,18 @@ class xMsgRegistrationService(threading.Thread):
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.FIND_PUBLISHER):
-                    res = self._get_registration(ds_data.domain,
-                                                 ds_data.subject,
-                                                 ds_data.type,
-                                                 True)
+                    res = self._get_registration_new(ds_data.domain,
+                                                     ds_data.subject,
+                                                     ds_data.type,
+                                                     True)
                     request.send_multipart(self._reply_message(r_topic, res))
 
                 elif r_topic == str(xMsgConstants.FIND_SUBSCRIBER):
 
-                    res = self._get_registration(ds_data.domain,
-                                                 ds_data.subject,
-                                                 ds_data.type,
-                                                 False)
+                    res = self._get_registration_new(ds_data.domain,
+                                                     ds_data.subject,
+                                                     ds_data.type,
+                                                     False)
                     request.send_multipart(self._reply_message(r_topic, res))
                 else:
                     print " Warning: unknown registration request type..."
@@ -191,7 +191,9 @@ class xMsgRegistrationService(threading.Thread):
         d = [topic, xMsgUtil.get_local_ip() + ":" +
              str(xMsgConstants.REGISTRAR)]
         # Serialize and add to the reply message
-        return d + [rd.SerializeToString() for rd in res]
+        if len(res) != 0:
+            res = [rd.SerializeToString() for rd in res]
+        return d + res
 
     def _get_registration_new(self, domain, subject, tip, is_publisher):
         if subject == "*" or subject == "undefined":
@@ -201,17 +203,19 @@ class xMsgRegistrationService(threading.Thread):
         else:
             if tip == "*" or tip == "undefined":
                 tip = "\\w+"
-        t_pattern = "^%s:%s:%s" % (domain, subject, tip)
+        t_pattern = "^%s:%s:%s$" % (domain, subject, tip)
         t_validator = re.compile(t_pattern)
-
+        result = Set()
         if is_publisher:
-            return [self.publishers_db[k]
-                    for k in self.publishers_db.keys()
-                    if t_validator.match(k)]
+            for k in self.publishers_db.keys():
+                if t_validator.match(k):
+                    result.union_update(self.publishers_db[k])
+            return result
         else:
-            return [self.subscribers_db[k]
-                    for k in self.subscribers_db.keys()
-                    if t_validator.match(k)]
+            for k in self.subscribers_db.keys():
+                if t_validator.match(k):
+                    result.union_update(self.subscribers_db[k])
+            return result
 
     def _get_registration(self, domain, subject, tip, isPublisher):
         result = list()
