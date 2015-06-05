@@ -13,21 +13,14 @@ class Subscriber(xMsg):
     domain = "test_domain"
     subject = "test_subject"
     xtype = "test_type"
-    # domain = xMsgUtil.get_local_ip()
-    # subject = "abc"
-    # xtype = "Engine1"
 
     def __init__(self, feHost="localhost"):
         xMsg.__init__(self, feHost)
 
     def callback(self, data):
-        print data.dataAuthor
-        print data.id
-        print data.dataDescription
 
-        if data.dataType == xMsgData_pb2.Data.T_FLSINT32A:
-            for i in range(0, len(data.FLSINT32A)):
-                print data.FLSINT32A[i]
+        if data.type == xMsgData_pb2.xMsgData.T_FLSINT32:
+            print data.FLSINT32
 
 
 def main():
@@ -36,8 +29,6 @@ def main():
     # Create a socket connections to the xMsg node
     address = xMsgAddress()
     con = subscriber.connect(address)
-
-    # subscriber.myName = subscriber.domain + ":" + subscriber.subject + ":" + subscriber.xtype
 
     # Register this publisher
     subscriber.register_subscriber(subscriber.myName,
@@ -59,16 +50,13 @@ def main():
                              subscriber.xtype,
                              subscriber.callback,
                              True)
-        xMsgUtil.keep_alive()
-    # subscriber.subscribe(con,
-    #                      subscriber.domain,
-    #                      subscriber.subject,
-    #                      subscriber.xtype,
-    #                      subscriber.callback,
-    #                      True)
-    # xMsgUtil.keep_alive()
+        try:
+            xMsgUtil.keep_alive()
+        except KeyboardInterrupt:
+            print "saliendo..."
+        finally:
+            pass
+
 
 if __name__ == '__main__':
     main()
-
-
