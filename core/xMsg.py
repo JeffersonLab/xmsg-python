@@ -5,10 +5,11 @@ import zmq
 
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
-from data import xMsgRegistrationData_pb2, xMsgData_pb2
+from data import xMsgRegistration_pb2, xMsgData_pb2
 from net.xMsgConnection import xMsgConnection
 from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
-from core.xMsgExceptions import UndefinedTopicDomain
+from core.xMsgExceptions import UndefinedTopicDomain, NullConnection,\
+    NullMessage
 
 
 __author__ = 'gurjyan'
@@ -140,18 +141,18 @@ class xMsg(xMsgRegDiscDriver):
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
+        :param r_data: xMsgRegistration object
         """
 
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.description = description
         r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
 
         self.register_local(name, r_data, True)
 
@@ -173,18 +174,18 @@ class xMsg(xMsgRegDiscDriver):
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
+        :param r_data: xMsgRegistration object
         """
 
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.description = description
         r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
 
         self.register_local(name, r_data, False)
 
@@ -201,16 +202,16 @@ class xMsg(xMsgRegDiscDriver):
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
+        :param r_data: xMsgRegistration object
         """
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
 
         self.remove_registration_local(name, r_data, True)
         self.remove_registration_fe(name, r_data, True)
@@ -229,16 +230,16 @@ class xMsg(xMsgRegDiscDriver):
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
+        :param r_data: xMsgRegistration object
         """
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
 
         self.remove_registration_local(name, r_data, False)
         self.remove_registration_fe(name, r_data, False)
@@ -251,23 +252,23 @@ class xMsg(xMsgRegDiscDriver):
                              port=int(xMsgConstants.DEFAULT_PORT)):
         """
         Finds all local publishers, publishing  to a specified topic
-        defined within the input registration data object: xMsgRegistrationData
+        defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :return: List of xMsgRegistrationData objects
+        :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.description = description
         r_data.host = xMsgUtil.host_to_ip("localhost")
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
 
         return self.find_local(name, r_data, True)
 
@@ -279,23 +280,23 @@ class xMsg(xMsgRegDiscDriver):
                               port=int(xMsgConstants.DEFAULT_PORT)):
         """
         Finds all local subscribers, subscribing  to a specified topic
-        defined within the input registration data object: xMsgRegistrationData
+        defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :return: List of xMsgRegistrationData objects
+        :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.description = description
         r_data.host = xMsgUtil.host_to_ip("localhost")
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
 
         return self.find_local(name, r_data, False)
 
@@ -308,24 +309,24 @@ class xMsg(xMsgRegDiscDriver):
                        port=int(xMsgConstants.DEFAULT_PORT)):
         """
         Finds all publishers, publishing  to a specified topic
-        defined within the input registration data object: xMsgRegistrationData
+        defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
-        :return: List of xMsgRegistrationData objects
+        :param r_data: xMsgRegistration object
+        :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         r_data.description = description
         r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.PUBLISHER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
 
         return self.find_global(name, r_data, True)
 
@@ -338,26 +339,37 @@ class xMsg(xMsgRegDiscDriver):
                         port=int(xMsgConstants.DEFAULT_PORT)):
         """
         Finds all subscribers, subscribing  to a specified topic
-        defined within the input registration data object: xMsgRegistrationData
+        defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
         :param name: the name of the requester/sender. Required according to
                      the xMsg zmq message structure definition.
                      (topic, sender, data)
-        :param r_data: xMsgRegistrationData object
-        :return: List of xMsgRegistrationData objects
+        :param r_data: xMsgRegistration object
+        :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.description = description
         r_data.name = name
         r_data.host = xMsgUtil.host_to_ip(host)
         r_data.port = port
         r_data.domain = domain
         r_data.subject = subject
-        r_data.xtype = xtype
-        r_data.ownerType = xMsgRegistrationData_pb2.xMsgRegistrationData.SUBSCRIBER
+        r_data.type = xtype
+        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
 
         return self.find_global(name, r_data, False)
+
+    def publish_new(self, connection, x_msg):
+        con = connection.get_pub_sock()
+        if not con:
+            raise NullConnection("xMsg: Null connection object")
+        if not x_msg:
+            raise NullMessage("xMsg: Null message object")
+
+        con.send_multipart([x_msg.get_topic(),
+                            x_msg.get_metadata_bytes(),
+                            x_msg.get_data_bytes()])
 
     def publish(self, connection, domain, subject, tip, publisherName, data):
         """
@@ -496,7 +508,7 @@ class xMsg(xMsgRegDiscDriver):
                     r_data = res[2]
 
                     # de-serialize r_data
-                    ds_data = xMsgData_pb2.Data()
+                    ds_data = xMsgData_pb2.xMsgData()
                     ds_data.ParseFromString(r_data)
                     result = ds_data
 
