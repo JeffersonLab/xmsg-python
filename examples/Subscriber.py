@@ -19,8 +19,8 @@ class Subscriber(xMsg):
 
     def callback(self, data):
 
-        if data.type == xMsgData_pb2.xMsgData.T_FLSINT32:
-            print data.FLSINT32
+        if data.type == xMsgData_pb2.xMsgData.T_FLSINT32A:
+            print data.FLSINT32A
 
 
 def main():

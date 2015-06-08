@@ -27,14 +27,15 @@ def main():
 
     # Create a socket connections to the xMsg node
     address = xMsgAddress()
-
     con = publisher.connect(address)
 
     # Register this publisher
+    print "Info: Publisher says \"I wish i was a publisher :)\""
     publisher.register_publisher(publisher.myName,
                                  publisher.domain,
                                  publisher.subject,
                                  publisher.xtype)
+    print "Info: Publisher says \"Now i am a publisher :)\""
 
     # Create array of integers as a message payload.
     # The only argument defines the array size.
@@ -46,10 +47,11 @@ def main():
     t_msg = xMsgMessage(topic)
     t_msg.sender = publisher.myName
 
-
+    array = []
     for i in range(0, int(size)):
-        #t_data.FLSINT32A.append(random.randint(1, 10))
-        t_msg.set_data(random.randint(1, 10))
+        array.append(random.randint(1, 10))
+
+    t_msg.set_data(array)
 
     # Publish data for ever...
     while True:
@@ -62,10 +64,7 @@ def main():
                                                     publisher.domain,
                                                     publisher.subject,
                                                     publisher.xtype)
-            print "Me sali de publisher..."
-            break
-    return
+            return
 
 if __name__ == '__main__':
     main()
-    
