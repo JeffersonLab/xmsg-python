@@ -81,28 +81,22 @@ class xMsgRegistrationService(threading.Thread):
                     key = self._get_key(ds_data)
 
                 if r_topic == str(xMsgConstants.REGISTER_PUBLISHER):
-                    self._register(key, r_data, True)
+                    self._register(key, ds_data, True)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
-                    self._register(key, r_data, False)
+                    self._register(key, ds_data, False)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_PUBLISHER):
-                    if self.publishers_db.has_key(key):
-                        self.publishers_db[key].remove(ds_data)
-                        if self.publishers_db[key].is_empty():
-                            self.publishers_db.remove(key)
+                    self._remove_register(key, ds_data, True)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_SUBSCRIBER):
-                    if self.subscribers_db.has_key(key):
-                        self.subscribers_db[key].remove(ds_data)
-                        if self.subscribers_db[key].is_empty():
-                            self.subscribers_db.remove(key)
+                    self._remove_register(key, ds_data, False)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
@@ -168,18 +162,43 @@ class xMsgRegistrationService(threading.Thread):
     def _register(self, key, data, is_publisher):
         if is_publisher:
             if data is not None:
-                if self.publishers_db.has_key(key):
-                    self.publishers_db[key].add(data)
+                if self.publishers_db.get(key):
+                    self.publishers_db[key].add(data.SerializeToString())
                 else:
                     self.publishers_db[key] = Set()
-                    self.publishers_db[key].add(data)
+                    self.publishers_db[key].add(data.SerializeToString())
         else:
             if data is not None:
-                if self.subscribers_db.has_key(key):
-                    self.subscribers_db[key].add(data)
+                if self.subscribers_db.get(key):
+                    self.subscribers_db[key].add(data.SerializeToString())
                 else:
                     self.subscribers_db[key] = Set()
-                    self.subscribers_db[key].add(data)
+                    self.subscribers_db[key].add(data.SerializeToString())
+
+    def _remove_register(self, key, s_data, is_publisher):
+        if is_publisher:
+            if self.publishers_db.get(key):
+                ds_data = xMsgRegistration_pb2.xMsgRegistration()
+                ds_data.ParseFromString(s_data.SerializeToString())
+                for db_data in self.publishers_db[key].copy():
+                    data_obj = xMsgRegistration_pb2.xMsgRegistration()
+                    data_obj.ParseFromString(db_data)
+                    if data_obj.name == ds_data.name:
+                        self.publishers_db[key].remove(db_data)
+                        if len(self.publishers_db[key]) is 0:
+                            del self.publishers_db[key]
+        else:
+            if self.subscribers_db.get(key):
+                ds_data = xMsgRegistration_pb2.xMsgRegistration()
+                ds_data.ParseFromString(s_data.SerializeToString())
+                for db_data in self.subscribers_db[key].copy():
+                    data_obj = xMsgRegistration_pb2.xMsgRegistration()
+                    data_obj.ParseFromString(db_data)
+                    if (data_obj.name == ds_data.name and
+                        data_obj.host == ds_data.host):
+                        self.subscribers_db[key].remove(db_data)
+                        if len(self.subscribers_db[key]) is 0:
+                            del self.subscribers_db[key]
 
     def _reply_success(self, topic):
         return [topic,
@@ -192,7 +211,7 @@ class xMsgRegistrationService(threading.Thread):
              str(xMsgConstants.REGISTRAR)]
         # Serialize and add to the reply message
         if len(res) != 0:
-            res = [rd.SerializeToString() for rd in res]
+            res = [rd for rd in res]
         return d + res
 
     def _get_registration_new(self, domain, subject, tip, is_publisher):
