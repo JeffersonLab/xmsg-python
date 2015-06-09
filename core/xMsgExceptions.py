@@ -12,6 +12,7 @@ class ConnectionException(Exception):
 class NullConnection(ConnectionException):
     pass
 
+
 class RegistrationException(Exception):
     '''Exceptions related to registration issues'''
     pass
@@ -24,6 +25,7 @@ class MessageException(ValueError):
 
 class NullMessage(MessageException):
     pass
+
 
 class TopicException(MessageException):
     '''Bad topic related exceptions'''

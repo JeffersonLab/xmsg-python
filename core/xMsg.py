@@ -84,17 +84,17 @@ class xMsg(xMsgRegDiscDriver):
             feCon = xMsgConnection()
             feCon.set_address(address)
             soc_p = self.zmq_socket(self.context,
-                                   zmq.PUB,
-                                   address.get_host(),
-                                   address.get_port(),
-                                   str(xMsgConstants.CONNECT))
+                                    zmq.PUB,
+                                    address.get_host(),
+                                    address.get_port(),
+                                    str(xMsgConstants.CONNECT))
             feCon.set_pub_sock(soc_p)
 
             soc_s = self.zmq_socket(self.context,
-                                   zmq.SUB,
-                                   address.get_host(),
-                                   address.get_port() + 1,
-                                   str(xMsgConstants.CONNECT))
+                                    zmq.SUB,
+                                    address.get_host(),
+                                    address.get_port() + 1,
+                                    str(xMsgConstants.CONNECT))
             feCon.set_sub_sock(soc_s)
 
             self._connections[address.get_key()] = feCon
@@ -111,17 +111,17 @@ class xMsg(xMsgRegDiscDriver):
         feCon = xMsgConnection()
         feCon.set_address(address)
         soc_p = self.zmq_socket(new_context,
-                               zmq.PUB,
-                               address.get_host(),
-                               address.get_port(),
-                               str(xMsgConstants.CONNECT))
+                                zmq.PUB,
+                                address.get_host(),
+                                address.get_port(),
+                                str(xMsgConstants.CONNECT))
         feCon.set_pub_sock(soc_p)
 
         soc_s = self.zmq_socket(new_context,
-                               zmq.SUB,
-                               address.get_host(),
-                               address.get_port() + 1,
-                               str(xMsgConstants.CONNECT))
+                                zmq.SUB,
+                                address.get_host(),
+                                address.get_port() + 1,
+                                str(xMsgConstants.CONNECT))
         feCon.set_sub_sock(soc_s)
         return feCon
 
@@ -500,7 +500,6 @@ class xMsg(xMsgRegDiscDriver):
         # wait for messages published to a required topic
         while True:
             try:
-                # res = connection.recv_multipart()
                 res = con.recv_multipart()
                 if len(res) == 3:
                     # r_topic = res[0]
@@ -525,7 +524,7 @@ class xMsg(xMsgRegDiscDriver):
                         t.start()
 
             except KeyboardInterrupt:
-                    return
+                return
 
     def get_pool_size(self):
         """
