@@ -30,12 +30,12 @@ def main():
     con = publisher.connect(address)
 
     # Register this publisher
-    print "Info: Publisher says \"I wish i was a publisher :)\""
+    print xMsgUtil.current_time() + " Info: Publisher says \"I wish i was a publisher :)\""
     publisher.register_publisher(publisher.myName,
                                  publisher.domain,
                                  publisher.subject,
                                  publisher.xtype)
-    print "Info: Publisher says \"Now i am a publisher :)\""
+    print xMsgUtil.current_time() + " Info: Publisher says \"Now i am a publisher :)\""
 
     # Create array of integers as a message payload.
     # The only argument defines the array size.
@@ -57,13 +57,15 @@ def main():
     while True:
         try:
             publisher.publish_new(con, t_msg)
-            xMsgUtil.sleep(1)
             print "publishing..."
+            xMsgUtil.sleep(1)
+
         except KeyboardInterrupt:
             publisher.remove_publisher_registration(publisher.myName,
                                                     publisher.domain,
                                                     publisher.subject,
                                                     publisher.xtype)
+            publisher.terminate_threadpool()
             return
 
 if __name__ == '__main__':

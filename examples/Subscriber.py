@@ -53,10 +53,7 @@ def main():
         try:
             xMsgUtil.keep_alive()
         except KeyboardInterrupt:
-            print "saliendo..."
-        finally:
-            pass
-
+            return
 
 if __name__ == '__main__':
     main()

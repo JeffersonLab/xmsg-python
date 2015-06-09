@@ -84,7 +84,7 @@ class xMsgRegDiscDriver:
             # and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):
+            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):               
                 # timeout in milliseconds
                 msg = connectionSocket.recv_multipart()
                 r_topic = msg[0]
@@ -94,7 +94,7 @@ class xMsgRegDiscDriver:
                 # containing "success"
                 if r_data != str(xMsgConstants.SUCCESS):
                     raise BadResponse("Registration failed")
-
+                print xMsgUtil.current_time() + " Info: Publisher has been registered in xMsg node"
             else:
                 raise TimeoutReached("Timeout processing registration request")
 

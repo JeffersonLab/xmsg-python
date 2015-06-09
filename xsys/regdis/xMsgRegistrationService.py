@@ -126,7 +126,7 @@ class xMsgRegistrationService(threading.Thread):
                     print " Warning: unknown registration request type..."
 
             except zmq.error.ContextTerminated:
-                print " Context terminated at xMsgRegistrar"
+                print " Context terminated at xMsgRegistrationService"
                 return
 
     def _cleanDbByHost(self, host, db):

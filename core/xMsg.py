@@ -1,5 +1,6 @@
 from multiprocessing import Pool
 import threading
+import signal
 
 import zmq
 
@@ -53,13 +54,7 @@ class xMsg(xMsgRegDiscDriver):
 
         # create fixed size thread pool
         self.pool_size = pool_size
-        self.threadPool = Pool(self.pool_size)
-
-    # pool = Pool(4)              # start 4 worker processes
-    # result = pool.apply_async(f, [10])    # evaluate "f(10)" asynchronously
-    # print result.get(1)
-    # prints "100" unless your computer is *very* slow
-    # print pool.map(f, range(10))          # prints "[0, 1, 4,..., 81]"
+        self.threadPool = Pool(self.pool_size, self.init_worker)
 
     def connect(self, address):
         """
@@ -532,3 +527,11 @@ class xMsg(xMsgRegDiscDriver):
         :return size of the thread pool
         """
         return self.pool_size
+
+    def init_worker(self):
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+    def terminate_threadpool(self):
+        self.context.destroy()
+        self.threadPool.terminate()
+        self.threadPool.join()
