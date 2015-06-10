@@ -1,3 +1,23 @@
+'''
+ Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for educational, research, and not-for-profit purposes,
+ without fee and without a signed licensing agreement.
+
+ Author Vardan Gyurjyan
+ Department of Experimental Nuclear Physics, Jefferson Lab.
+
+ IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+ INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+ THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+ OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+ HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+'''
 import zmq
 
 from core.xMsgConstants import xMsgConstants
@@ -84,17 +104,14 @@ class xMsgRegDiscDriver:
             # and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):               
+            if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):
                 # timeout in milliseconds
-                msg = connectionSocket.recv_multipart()
-                r_topic = msg[0]
-                r_sender = msg[1]
-                r_data = msg[2]
-                # data sent back from the registration server should be a string 
+                r_data = connectionSocket.recv_multipart()[2]
+                # data sent back from the registration server should be a string
                 # containing "success"
                 if r_data != str(xMsgConstants.SUCCESS):
                     raise BadResponse("Registration failed")
-                print xMsgUtil.current_time() + " Info: Publisher has been registered in xMsg node"
+                print xMsgUtil.current_time() + " Info: xMsg actor has been registered in node"
             else:
                 raise TimeoutReached("Timeout processing registration request")
 
@@ -135,15 +152,16 @@ class xMsgRegDiscDriver:
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
             if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):
-                msg = connectionSocket.recv_multipart()
-                r_topic = msg[0]
-                r_sender = msg[1]
-                r_data = msg[2]
+                r_data = connectionSocket.recv_multipart()[2]
 
                 if r_data != str(xMsgConstants.SUCCESS):
-                    raise BadResponse("Could not remove registation")
+                    raise BadResponse("Could not remove registration")
+                print xMsgUtil.current_time() + (" Info: xMsg actor" +
+                                                 " registration" +
+                                                 " has been removed")
             else:
-                raise TimeoutReached("Timeout reached processing registration request")
+                raise TimeoutReached("Timeout reached processing" +
+                                     " registration request")
 
     def remove_all_registration_fe(self, host, name):
         """
@@ -170,11 +188,8 @@ class xMsgRegDiscDriver:
 
         poller = zmq.Poller()
         poller.register(self._feConnection, zmq.POLLIN)
-        if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):# timeout in milliseconds
-            msg = self._feConnection.recv_multipart()
-            r_topic = msg[0]
-            r_sender = msg[1]
-            r_data = msg[2]
+        if poller.poll(int(xMsgConstants.REGISTER_REQUEST_TIMEOUT) * 1000):
+            r_data = self._feConnection.recv_multipart()[2]
 
             if r_data != str(xMsgConstants.SUCCESS):
                 raise BadResponse("Remove all registration from FrontEnd Failed")
@@ -216,15 +231,14 @@ class xMsgRegDiscDriver:
             # Sending...
             connectionSocket.send_multipart([str(topic), str(sender), str(dt)])
 
-            #  Poll socket for a reply, with timeout, make sure server is up and running
+            # Poll socket for a reply, with timeout, make sure server is up
+            # and running
             poller = zmq.Poller()
             poller.register(connectionSocket, zmq.POLLIN)
-            if poller.poll(int(xMsgConstants.FIND_REQUEST_TIMEOUT) * 1000):  # timeout in milliseconds
-                msg = connectionSocket.recv_multipart()
-                r_topic = msg[0]
-                r_sender = msg[1]
+            if poller.poll(int(xMsgConstants.FIND_REQUEST_TIMEOUT) * 1000):
+                r_data = connectionSocket.recv_multipart()[2:]
                 result = []
-                r_data = msg[2:]
+
                 for r_d in r_data:
                     ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
                     ds_data.ParseFromString(r_d)
