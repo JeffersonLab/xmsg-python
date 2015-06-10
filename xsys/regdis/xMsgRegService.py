@@ -27,7 +27,7 @@ from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistration_pb2
 
 
-class xMsgRegistrationService(threading.Thread):
+class xMsgRegService(threading.Thread):
     '''
     The main registrar service, that always runs in a
     separate thread. Contains two separate databases
@@ -51,7 +51,7 @@ class xMsgRegistrationService(threading.Thread):
     publishers_db = xMsgRegDatabase()
 
     def __init__(self, context):
-        super(xMsgRegistrationService, self).__init__()
+        super(xMsgRegService, self).__init__()
         self.context = context
         self.localhost_ip = xMsgUtil.get_local_ip()
         self.stop_request = threading.Event()

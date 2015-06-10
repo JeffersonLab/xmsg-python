@@ -26,7 +26,7 @@ import zmq
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
-from xsys.regdis.xMsgRegistrationService import xMsgRegistrationService
+from xsys.regdis.xMsgRegService import xMsgRegService
 
 
 __author__ = 'gurjyan'
@@ -75,7 +75,7 @@ class xMsgNode(xMsgRegDiscDriver):
         # If fe host is defined the specific constructor starts a thread
         # that periodically updates front-end registrar database with
         # the data from the local databases
-        self.t = xMsgRegistrationService(self.context)
+        self.t = xMsgRegService(self.context)
         self.t.daemon = True
         self.t.start()
 

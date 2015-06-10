@@ -18,13 +18,12 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-from sets import Set
 import unittest
 from data import xMsgRegistration_pb2
 from xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
 
 
-class TestXMsgRegistrationService(unittest.TestCase):
+class TestXMsgRegService(unittest.TestCase):
 
     def setUp(self):
         self.db = xMsgRegDatabase()

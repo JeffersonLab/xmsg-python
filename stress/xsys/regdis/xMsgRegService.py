@@ -18,7 +18,7 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-from xsys.regdis.xMsgRegistrationService import xMsgRegistrationService
+from xsys.regdis.xMsgRegService import xMsgRegService
 import zmq
 import time
 
@@ -47,7 +47,7 @@ class StressGetRegistration:
             self._clean()
 
     def _setup(self, n):
-        self.r_service = xMsgRegistrationService(zmq.Context)
+        self.r_service = xMsgRegService(zmq.Context)
         for i in range(n):
             topic = "domain%s:subject%s:type%s" % (i, i, i)
             self.r_service._register(topic, "data_p", True)
