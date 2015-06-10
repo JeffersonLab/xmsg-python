@@ -1,3 +1,23 @@
+'''
+ Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for educational, research, and not-for-profit purposes,
+ without fee and without a signed licensing agreement.
+
+ Author Vardan Gyurjyan
+ Department of Experimental Nuclear Physics, Jefferson Lab.
+
+ IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+ INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+ THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+ OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+ HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+'''
 from multiprocessing import Pool
 import threading
 import signal
@@ -139,15 +159,10 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistration object
         """
 
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.description = description
-        r_data.host = xMsgUtil.host_to_ip(host)
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
+        r_data = self._registration_builder(name, description,
+                                            xMsgUtil.host_to_ip(host),
+                                            port, domain, subject,
+                                            xtype, True)
 
         self.register_local(name, r_data, True)
 
@@ -171,16 +186,10 @@ class xMsg(xMsgRegDiscDriver):
                      (topic, sender, data)
         :param r_data: xMsgRegistration object
         """
-
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.description = description
-        r_data.host = xMsgUtil.host_to_ip(host)
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
+        r_data = self._registration_builder(name, description,
+                                            xMsgUtil.host_to_ip(host),
+                                            port, domain, subject,
+                                            xtype, False)
 
         self.register_local(name, r_data, False)
 
@@ -199,14 +208,10 @@ class xMsg(xMsgRegDiscDriver):
                      (topic, sender, data)
         :param r_data: xMsgRegistration object
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.host = xMsgUtil.host_to_ip(host)
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
+        r_data = self._registration_builder(name, None,
+                                            xMsgUtil.host_to_ip(host),
+                                            port, domain, subject,
+                                            xtype, True)
 
         self.remove_registration_local(name, r_data, True)
         self.remove_registration_fe(name, r_data, True)
@@ -227,14 +232,10 @@ class xMsg(xMsgRegDiscDriver):
                      (topic, sender, data)
         :param r_data: xMsgRegistration object
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.host = xMsgUtil.host_to_ip(host)
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
+        r_data = self._registration_builder(name, None,
+                                            xMsgUtil.host_to_ip(host),
+                                            port, domain, subject,
+                                            xtype, False)
 
         self.remove_registration_local(name, r_data, False)
         self.remove_registration_fe(name, r_data, False)
@@ -255,15 +256,10 @@ class xMsg(xMsgRegDiscDriver):
                      (topic, sender, data)
         :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.description = description
-        r_data.host = xMsgUtil.host_to_ip("localhost")
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
+        r_data = self._registration_builder(name, description,
+                                            xMsgUtil.host_to_ip("localhost"),
+                                            port, domain, subject,
+                                            xtype, True)
 
         return self.find_local(name, r_data, True)
 
@@ -283,15 +279,10 @@ class xMsg(xMsgRegDiscDriver):
                      (topic, sender, data)
         :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.description = description
-        r_data.host = xMsgUtil.host_to_ip("localhost")
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
+        r_data = self._registration_builder(name, description,
+                                            xMsgUtil.host_to_ip("localhost"),
+                                            port, domain, subject,
+                                            xtype, False)
 
         return self.find_local(name, r_data, False)
 
@@ -313,15 +304,10 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistration object
         :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.name = name
-        r_data.description = description
-        r_data.host = xMsgUtil.host_to_ip(host)
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
+        r_data = self._registration_builder(name, description,
+                                            xMsgUtil.host_to_ip(host),
+                                            port, domain, subject,
+                                            xtype, True)
 
         return self.find_global(name, r_data, True)
 
@@ -343,15 +329,10 @@ class xMsg(xMsgRegDiscDriver):
         :param r_data: xMsgRegistration object
         :return: List of xMsgRegistration objects
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
-        r_data.description = description
-        r_data.name = name
-        r_data.host = xMsgUtil.host_to_ip(host)
-        r_data.port = port
-        r_data.domain = domain
-        r_data.subject = subject
-        r_data.type = xtype
-        r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
+        r_data = self._registration_builder(name, description,
+                                            xMsgUtil.host_to_ip(host),
+                                            port, domain, subject,
+                                            xtype, False)
 
         return self.find_global(name, r_data, False)
 
@@ -520,6 +501,25 @@ class xMsg(xMsgRegDiscDriver):
 
             except KeyboardInterrupt:
                 return
+
+    def _registration_builder(self, name, description, host, port,
+                              domain, subject, xtype, publisher):
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
+        r_data.name = name
+        if description:
+            r_data.description = description
+        r_data.host = xMsgUtil.host_to_ip(host)
+        r_data.port = port
+        r_data.domain = domain
+        r_data.subject = subject
+        r_data.type = xtype
+
+        if publisher:
+            r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
+        else:
+            r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
+
+        return r_data
 
     def get_pool_size(self):
         """
