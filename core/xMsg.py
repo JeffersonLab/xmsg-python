@@ -336,7 +336,22 @@ class xMsg(xMsgRegDiscDriver):
 
         return self.find_global(name, r_data, False)
 
-    def publish_new(self, connection, x_msg):
+    def publish(self, connection, x_msg):
+        """
+        Publishes data to a specified xMsg topic.3 elements are defining
+        xMsg topic: domain:subject:tip
+        Topic is obtained in xMsgMessage.get_topic() method.
+        If subject is set "*" type will be ignored. Here are examples of
+        accepted topic definitions:<br>
+            domain:*:*
+            domain:subject:*
+            domain:subject:type
+        This method will perform input data, i.e. xMsgMessage object
+        serialization.
+
+        :param connection: xMsgConnection object
+        :param x_msg: xMsgMessage transient data object
+        """
         con = connection.get_pub_sock()
         if not con:
             raise NullConnection("xMsg: Null connection object")
@@ -346,50 +361,6 @@ class xMsg(xMsgRegDiscDriver):
         con.send_multipart([x_msg.get_topic(),
                             x_msg.get_metadata_bytes(),
                             x_msg.get_data_bytes()])
-
-    def publish(self, connection, domain, subject, tip, publisherName, data):
-        """
-        Publishes data to a specified xMsg topic.3 elements are defining
-        xMsg topic: domain:subject:tip
-        Topic is constructed from these elements separated by ":"
-        Domain is required , however subject and topic can be set to "*".
-        If subject is set "*" type will be ignored. Here are examples of
-        accepted topic definitions:<br>
-            domain:*:*
-            domain:subject:*
-            domain:subject:tip
-        This method will perform input data, i.e. xMsgData object
-        serialization.
-
-        :param connection: xMsgConnection object
-        :param domain: domain of the subscription
-        :param subject: subject of the subscription
-        :param tip: type of the subscription (type is a python keyword,
-                    so we use tip)
-        :param publisherName: sender/publisher name
-        :param data: xMsgData transient data object
-        """
-        # get publishing socket
-        con = connection.get_pub_sock()
-
-        # build a topic
-        if domain == str(xMsgConstants.ANY) or domain is None:
-            raise UndefinedTopicDomain("domain is not defined")
-        else:
-            topic = domain
-            if subject != str(xMsgConstants.ANY) and subject is not None:
-                topic = topic + ":" + subject
-                if tip != str(xMsgConstants.ANY) and tip is not None:
-                    topic = topic + ":" + tip
-
-        if data is None:
-            con.send_multipart([str(topic), str(publisherName)])
-        else:
-            # data serialization
-            s_data = data.SerializeToString()
-
-            # send topic, sender, followed by the data
-            con.send_multipart([str(topic), str(publisherName), str(s_data)])
 
     def subscribe(self, connection,
                   domain,

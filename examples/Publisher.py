@@ -56,7 +56,7 @@ def main():
     # Publish data for ever...
     while True:
         try:
-            publisher.publish_new(con, t_msg)
+            publisher.publish(con, t_msg)
             print "publishing..."
             xMsgUtil.sleep(1)
 
