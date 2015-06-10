@@ -18,11 +18,10 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-from sets import Set
 import threading
 import zmq
-import re
 
+from xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistration_pb2
@@ -48,8 +47,8 @@ class xMsgRegistrationService(threading.Thread):
     host = str(xMsgConstants.ANY)
     port = int(xMsgConstants.REGISTRAR_PORT)
     localhost_ip = str(xMsgConstants.UNDEFINED)
-    subscribers_db = dict()
-    publishers_db = dict()
+    subscribers_db = xMsgRegDatabase()
+    publishers_db = xMsgRegDatabase()
 
     def __init__(self, context):
         super(xMsgRegistrationService, self).__init__()
@@ -72,55 +71,51 @@ class xMsgRegistrationService(threading.Thread):
                 ds_data.ParseFromString(r_data)
 
                 s_host = str(xMsgConstants.UNDEFINED)
-                key = str(xMsgConstants.UNDEFINED)
 
                 # Define the xMsg key
                 if r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
                     s_host = ds_data.domain
-                else:
-                    key = self._get_key(ds_data)
 
                 if r_topic == str(xMsgConstants.REGISTER_PUBLISHER):
-                    self._register(key, ds_data, True)
+                    self.publishers_db.register(ds_data)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
-                    self._register(key, ds_data, False)
+                    self.subscribers_db.register(ds_data)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_PUBLISHER):
-                    self._remove_register(key, ds_data, True)
+                    self.publishers_db.remove(ds_data)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_SUBSCRIBER):
-                    self._remove_register(key, ds_data, False)
+                    self.subscribers_db.remove(ds_data)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
-                    # Remove publishers registration data from a specified host
+                    # Remove publishers registration data from specified host
                     self._cleanDbByHost(s_host, self.publishers_db)
-                    # Remove subscribers registration data from a specified host
+                    # Remove subscribers registration data from specified host
                     self._cleanDbByHost(s_host, self.subscribers_db)
                     # send a reply message
                     request.send_multipart(self._reply_success(r_topic))
 
                 elif r_topic == str(xMsgConstants.FIND_PUBLISHER):
-                    res = self._get_registration_new(ds_data.domain,
-                                                     ds_data.subject,
-                                                     ds_data.type,
-                                                     True)
+                    res = self.publishers_db.find(ds_data.domain,
+                                                  ds_data.subject,
+                                                  ds_data.type)
                     request.send_multipart(self._reply_message(r_topic, res))
 
                 elif r_topic == str(xMsgConstants.FIND_SUBSCRIBER):
 
-                    res = self._get_registration_new(ds_data.domain,
-                                                     ds_data.subject,
-                                                     ds_data.type,
-                                                     False)
+                    res = self.subscribers_db.find(ds_data.domain,
+                                                   ds_data.subject,
+                                                   ds_data.type)
+
                     request.send_multipart(self._reply_message(r_topic, res))
                 else:
                     print " Warning: unknown registration request type..."
@@ -150,56 +145,6 @@ class xMsgRegistrationService(threading.Thread):
             db.get(key).remove_all_children(rk)
             rk = []
 
-    def _get_key(self, ds_data):
-        # Define the xMsg key
-        key = ds_data.domain
-        if ds_data.subject != str(xMsgConstants.UNDEFINED):
-            key = key + ":" + ds_data.subject
-        if ds_data.type != str(xMsgConstants.UNDEFINED):
-            key = key + ":" + ds_data.type
-        return key
-
-    def _register(self, key, data, is_publisher):
-        if is_publisher:
-            if data is not None:
-                if self.publishers_db.get(key):
-                    self.publishers_db[key].add(data.SerializeToString())
-                else:
-                    self.publishers_db[key] = Set()
-                    self.publishers_db[key].add(data.SerializeToString())
-        else:
-            if data is not None:
-                if self.subscribers_db.get(key):
-                    self.subscribers_db[key].add(data.SerializeToString())
-                else:
-                    self.subscribers_db[key] = Set()
-                    self.subscribers_db[key].add(data.SerializeToString())
-
-    def _remove_register(self, key, s_data, is_publisher):
-        if is_publisher:
-            if self.publishers_db.get(key):
-                ds_data = xMsgRegistration_pb2.xMsgRegistration()
-                ds_data.ParseFromString(s_data.SerializeToString())
-                for db_data in self.publishers_db[key].copy():
-                    data_obj = xMsgRegistration_pb2.xMsgRegistration()
-                    data_obj.ParseFromString(db_data)
-                    if data_obj.name == ds_data.name:
-                        self.publishers_db[key].remove(db_data)
-                        if len(self.publishers_db[key]) is 0:
-                            del self.publishers_db[key]
-        else:
-            if self.subscribers_db.get(key):
-                ds_data = xMsgRegistration_pb2.xMsgRegistration()
-                ds_data.ParseFromString(s_data.SerializeToString())
-                for db_data in self.subscribers_db[key].copy():
-                    data_obj = xMsgRegistration_pb2.xMsgRegistration()
-                    data_obj.ParseFromString(db_data)
-                    if (data_obj.name == ds_data.name and
-                        data_obj.host == ds_data.host):
-                        self.subscribers_db[key].remove(db_data)
-                        if len(self.subscribers_db[key]) is 0:
-                            del self.subscribers_db[key]
-
     def _reply_success(self, topic):
         return [topic,
                 xMsgUtil.get_local_ip() + ":" +
@@ -213,52 +158,3 @@ class xMsgRegistrationService(threading.Thread):
         if len(res) != 0:
             res = [rd for rd in res]
         return d + res
-
-    def _get_registration_new(self, domain, subject, tip, is_publisher):
-        if subject == "*" or subject == "undefined":
-            subject = "\\w+"
-            if tip == "*" or tip == "undefined":
-                tip = "\\w+"
-        else:
-            if tip == "*" or tip == "undefined":
-                tip = "\\w+"
-        t_pattern = "^%s:%s:%s$" % (domain, subject, tip)
-        t_validator = re.compile(t_pattern)
-        result = Set()
-        if is_publisher:
-            for k in self.publishers_db.keys():
-                if t_validator.match(k):
-                    result.union_update(self.publishers_db[k])
-            return result
-        else:
-            for k in self.subscribers_db.keys():
-                if t_validator.match(k):
-                    result.union_update(self.subscribers_db[k])
-            return result
-
-    def _get_registration(self, domain, subject, tip, isPublisher):
-        result = list()
-
-        if isPublisher:
-            for k in self.publishers_db.keys():
-                if ((xMsgUtil.get_domain(k) == domain) and
-                        (xMsgUtil.get_subject(k) == subject or
-                         subject == str(xMsgConstants.UNDEFINED) or
-                         subject == str(xMsgConstants.ANY)) and
-                        (xMsgUtil.get_type(k) == tip or
-                         tip == str(xMsgConstants.UNDEFINED) or
-                         tip == str(xMsgConstants.ANY))):
-                    x = self.publishers_db[k]
-                    result.append(x)
-        else:
-            for k in self.subscribers_db.keys():
-                if ((xMsgUtil.get_domain(k) == domain) and
-                        (xMsgUtil.get_subject(k) == subject or
-                         subject == str(xMsgConstants.UNDEFINED) or
-                         subject == str(xMsgConstants.ANY)) and
-                        (xMsgUtil.get_type(k) == tip or
-                         tip == str(xMsgConstants.UNDEFINED) or
-                         tip == str(xMsgConstants.ANY))):
-                    x = self.subscribers_db[k]
-                    result.append(x)
-        return result

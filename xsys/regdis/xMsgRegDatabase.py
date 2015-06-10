@@ -1,0 +1,92 @@
+'''
+ Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for educational, research, and not-for-profit purposes,
+ without fee and without a signed licensing agreement.
+
+ Author Vardan Gyurjyan
+ Department of Experimental Nuclear Physics, Jefferson Lab.
+
+ IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+ INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+ THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+ OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+ HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+ SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+'''
+from core.xMsgConstants import xMsgConstants
+from data import xMsgRegistration_pb2
+from sets import Set
+import re
+
+
+class xMsgRegDatabase():
+
+    db = dict()
+
+    def register(self, registration_data):
+        key = self._generate_key(registration_data)
+
+        if registration_data is not None:
+            if self.db.get(key):
+                self.db[key].add(registration_data.SerializeToString())
+            else:
+                self.db[key] = Set()
+                self.db[key].add(registration_data.SerializeToString())
+
+    def remove(self, registration_data):
+        key = self._generate_key(registration_data)
+        if self.db.get(key):
+            ds_data = xMsgRegistration_pb2.xMsgRegistration()
+            ds_data.CopyFrom(registration_data)
+
+            for db_data in self.db[key].copy():
+                data_obj = xMsgRegistration_pb2.xMsgRegistration()
+                data_obj.ParseFromString(db_data)
+                if(data_obj.name == ds_data.name and
+                   data_obj.host == ds_data.host):
+                    self.db[key].remove(db_data)
+                    if len(self.db[key]) == 0:
+                        del self.db[key]
+
+    def find(self, domain, subject, xtype):
+        if subject == "*" or subject == "undefined":
+            subject = "\\w+"
+            if xtype == "*" or xtype == "undefined":
+                xtype = "\\w+"
+        else:
+            if xtype == "*" or xtype == "undefined":
+                xtype = "\\w+"
+
+        t_pattern = "^%s:%s:%s$" % (domain, subject, xtype)
+        t_validator = re.compile(t_pattern)
+        result = Set()
+
+        for k in self.topics():
+            if t_validator.match(k):
+                result.union_update(self.db[k])
+
+        if len(result) is 0:
+            return None
+        else:
+            return result
+
+    def _generate_key(self, registration_data):
+        key = registration_data.domain
+        if(registration_data.subject != str(xMsgConstants.UNDEFINED) and
+           registration_data.subject != str(xMsgConstants.ANY)):
+            key = key + ":" + registration_data.subject
+        if(registration_data.type != str(xMsgConstants.UNDEFINED) and
+           registration_data.type != str(xMsgConstants.ANY)):
+            key = key + ":" + registration_data.type
+        return key
+
+    def topics(self):
+        return self.db.keys()
+
+    def get(self, topic):
+        return self.db.get(topic)
