@@ -19,16 +19,19 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 import unittest
+import zmq
+from core.xMsgConstants import xMsgConstants
 from data import xMsgRegistration_pb2
-from xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
+from xsys.regdis.xMsgRegService import xMsgRegService
 
 
 class TestXMsgRegService(unittest.TestCase):
 
     def setUp(self):
-        self.db = xMsgRegDatabase()
+        self.reg_serv = xMsgRegService(zmq.Context())
 
         self.topic = "domain:test_subject:type_p"
+        self.sender = "some_sender"
 
         self.reg_info = xMsgRegistration_pb2.xMsgRegistration()
         self.reg_info.host = "localhost"
@@ -37,6 +40,47 @@ class TestXMsgRegService(unittest.TestCase):
         self.reg_info.domain = "domain"
         self.reg_info.type = "type_p"
         self.reg_info.port = 8888
+
+    def test_register_publisher(self):
+        request = [str(xMsgConstants.REGISTER_PUBLISHER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertEqual(test_case[2], "success")
+
+    def test_register_subscriber(self):
+        request = [str(xMsgConstants.REGISTER_SUBSCRIBER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertEqual(test_case[2], "success")
+
+    def test_remove_publisher(self):
+        request = [str(xMsgConstants.REMOVE_PUBLISHER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertEqual(test_case[2], "success")
+
+    def test_remove_subscriber(self):
+        request = [str(xMsgConstants.REMOVE_SUBSCRIBER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertEqual(test_case[2], "success")
+
+    def test_remove_all_regs(self):
+        request = [str(xMsgConstants.REMOVE_ALL_REGISTRATION),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertEqual(test_case[2], "success")
+
+    def test_find_publisher(self):
+        pass
+
+    def test_find_subscriber(self):
+        pass
 
 if __name__ == "__main__":
     unittest.main()

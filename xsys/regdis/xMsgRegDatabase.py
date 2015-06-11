@@ -41,14 +41,11 @@ class xMsgRegDatabase():
     def remove(self, registration_data):
         key = self._generate_key(registration_data)
         if self.db.get(key):
-            ds_data = xMsgRegistration_pb2.xMsgRegistration()
-            ds_data.CopyFrom(registration_data)
-
             for db_data in self.db[key].copy():
                 data_obj = xMsgRegistration_pb2.xMsgRegistration()
                 data_obj.ParseFromString(db_data)
-                if(data_obj.name == ds_data.name and
-                   data_obj.host == ds_data.host):
+                if(data_obj.name == registration_data.name and
+                   data_obj.host == registration_data.host):
                     self.db[key].remove(db_data)
                     if len(self.db[key]) == 0:
                         del self.db[key]

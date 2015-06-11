@@ -24,7 +24,7 @@ import zmq
 from xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
-from data import xMsgRegistration_pb2
+from xsys.regdis.xMsgRegRequest import xMsgRegRequest
 
 
 class xMsgRegService(threading.Thread):
@@ -57,72 +57,71 @@ class xMsgRegService(threading.Thread):
         self.stop_request = threading.Event()
 
     def run(self):
-        request = self.context.socket(zmq.REP)
-        request.bind("tcp://%s:%s" % (str(self.host), str(self.port)))
+        reg_socket = self.context.socket(zmq.REP)
+        reg_socket.bind("tcp://%s:%s" % (str(self.host), str(self.port)))
 
-        while True and not self.stop_request.isSet():
+        while True and threading.currentThread().is_alive():
             try:
-                r_topic, r_sender, r_data = request.recv_multipart()
-                print xMsgUtil.current_time() + " Received a request from " +\
-                    r_sender + " to " + r_topic
-
-                # de-serialize r_data
-                ds_data = xMsgRegistration_pb2.xMsgRegistration()
-                ds_data.ParseFromString(r_data)
-
-                s_host = str(xMsgConstants.UNDEFINED)
-
-                # Define the xMsg key
-                if r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
-                    s_host = ds_data.domain
-
-                if r_topic == str(xMsgConstants.REGISTER_PUBLISHER):
-                    self.publishers_db.register(ds_data)
-                    # send a reply message
-                    request.send_multipart(self._reply_success(r_topic))
-
-                elif r_topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
-                    self.subscribers_db.register(ds_data)
-                    # send a reply message
-                    request.send_multipart(self._reply_success(r_topic))
-
-                elif r_topic == str(xMsgConstants.REMOVE_PUBLISHER):
-                    self.publishers_db.remove(ds_data)
-                    # send a reply message
-                    request.send_multipart(self._reply_success(r_topic))
-
-                elif r_topic == str(xMsgConstants.REMOVE_SUBSCRIBER):
-                    self.subscribers_db.remove(ds_data)
-                    # send a reply message
-                    request.send_multipart(self._reply_success(r_topic))
-
-                elif r_topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
-                    # Remove publishers registration data from specified host
-                    self._cleanDbByHost(s_host, self.publishers_db)
-                    # Remove subscribers registration data from specified host
-                    self._cleanDbByHost(s_host, self.subscribers_db)
-                    # send a reply message
-                    request.send_multipart(self._reply_success(r_topic))
-
-                elif r_topic == str(xMsgConstants.FIND_PUBLISHER):
-                    res = self.publishers_db.find(ds_data.domain,
-                                                  ds_data.subject,
-                                                  ds_data.type)
-                    request.send_multipart(self._reply_message(r_topic, res))
-
-                elif r_topic == str(xMsgConstants.FIND_SUBSCRIBER):
-
-                    res = self.subscribers_db.find(ds_data.domain,
-                                                   ds_data.subject,
-                                                   ds_data.type)
-
-                    request.send_multipart(self._reply_message(r_topic, res))
-                else:
-                    print " Warning: unknown registration request type..."
+                request = reg_socket.recv_multipart()
+                if not request:
+                    continue
+                reply = self.process_request(request)
+                reg_socket.send_multipart(reply)
 
             except zmq.error.ContextTerminated:
-                print " Context terminated at xMsgRegistrationService"
+                self.log(" Context terminated at xMsgRegistrationService")
                 return
+
+    def process_request(self, recv_req):
+        try:
+            request = xMsgRegRequest(recv_req)
+            msg = ("Received a request from " + request.get_sender() + " to " +
+                   request.get_topic())
+            self.log(msg)
+            s_host = str(xMsgConstants.UNDEFINED)
+
+            if request.get_topic() == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
+                s_host = request.get_data().domain
+
+            if request.get_topic() == str(xMsgConstants.REGISTER_PUBLISHER):
+                self.publishers_db.register(request.get_data())
+
+            elif request.get_topic() == str(xMsgConstants.REGISTER_SUBSCRIBER):
+                self.subscribers_db.register(request.get_data())
+
+            elif request.get_topic() == str(xMsgConstants.REMOVE_PUBLISHER):
+                self.publishers_db.remove(request.get_data())
+
+            elif request.get_topic() == str(xMsgConstants.REMOVE_SUBSCRIBER):
+                self.subscribers_db.remove(request.get_data())
+
+            elif request.get_topic() == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
+                self._cleanDbByHost(s_host, self.publishers_db)
+                self._cleanDbByHost(s_host, self.subscribers_db)
+
+            elif request.get_topic == str(xMsgConstants.FIND_PUBLISHER):
+                res = self.publishers_db.find(request.get_data().domain,
+                                              request.get_data().subject,
+                                              request.get_data().type)
+                request.send_multipart(self._reply_message(request.topic(),
+                                                           res))
+
+            elif request.get_topic() == str(xMsgConstants.FIND_SUBSCRIBER):
+                res = self.subscribers_db.find(request.get_data().domain,
+                                               request.get_data().subject,
+                                               request.get_data().type)
+
+                request.send_multipart(self._reply_message(request.topic(),
+                                                           res))
+
+            else:
+                self.log(" Warning: unknown registration request type...")
+            # send a reply message
+            return self._reply_success(request.get_topic())
+
+        except zmq.error.ContextTerminated:
+            self.log(" Context terminated at xMsgRegistrationService")
+            return
 
     def _cleanDbByHost(self, host, db):
         """
@@ -158,3 +157,6 @@ class xMsgRegService(threading.Thread):
         if len(res) != 0:
             res = [rd for rd in res]
         return d + res
+
+    def log(self, msg):
+        print xMsgUtil.current_time() + " " + msg
