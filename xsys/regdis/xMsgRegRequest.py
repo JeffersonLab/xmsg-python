@@ -39,8 +39,11 @@ class xMsgRegRequest:
         """
         Serialize the content of the request
         """
-        return [str(self.topic), str(self.sender),
-                self.data.SerializeToString()]
+        if isinstance(self.data, basestring):
+            return [str(self.topic), str(self.sender), self.data]
+        else:
+            return [str(self.topic), str(self.sender),
+                    self.data.SerializeToString()]
 
     def get_topic(self):
         return str(self.topic)
@@ -52,4 +55,3 @@ class xMsgRegRequest:
         r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.ParseFromString(self.data)
         return r_data
-
