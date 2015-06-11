@@ -18,9 +18,11 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-from xsys.regdis.xMsgRegService import xMsgRegService
-import zmq
 import time
+from xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
+from core.xMsgUtil import xMsgUtil
+from random import randint
+from data import xMsgRegistration_pb2
 
 
 class StressGetRegistration:
@@ -32,73 +34,155 @@ class StressGetRegistration:
         self.params = params
 
     def runner(self):
-        print "Cases;RegEx;Nested Ifs"
+        print "====================================="
+        print " Avg response time for find register"
+        print "====================================="
+        print ""
+        print "FIND: Exact Topic"
         for param in self.params:
             self._setup(int(param))
-            old_get = self.get_registration_publisher(int(param))
-            old_get += self.get_registration_subscriber(int(param))
-            new_get = self.get_registration_new_publisher(int(param))
-            new_get += self.get_registration_new_subscriber(int(param))
-            avg_new = new_get/2
-            avg_old = old_get/2
-            out = str(avg_new).replace(".", ",")
-            out += ";" + str(avg_old).replace(".", ",")
-            print str(param) + ";" + out
+            regs_new = self.find_by_domain(self.publishers)[0]
+            regs_new += self.find_by_domain(self.subscribers)[0]
+
+            regs_old = self.find_by_domain(self.publishers)[1]
+            regs_old += self.find_by_domain(self.subscribers)[1]
+
+            avg_new = regs_new/2
+            avg_old = regs_old/2
+            out_new = str(avg_new).replace(".", ",")
+            out_old = str(avg_old).replace(".", ",")
+
+            print str(param) + ";" + out_new + ";" + out_old
+            self._clean()
+        print "FIND: By subject"
+        for param in self.params:
+            self._setup(int(param))
+            regs_new = self.find_registration(self.publishers)[0]
+            regs_new += self.find_registration(self.subscribers)[0]
+
+            regs_old = self.find_by_subject(self.publishers)[1]
+            regs_old += self.find_by_subject(self.subscribers)[1]
+
+            avg_new = regs_new/2
+            avg_old = regs_old/2
+            out_new = str(avg_new).replace(".", ",")
+            out_old = str(avg_old).replace(".", ",")
+
+            print str(param) + ";" + out_new + ";" + out_old
+            self._clean()
+        print "FIND: By domain"
+        for param in self.params:
+            self._setup(int(param))
+            regs_new = self.find_by_domain(self.publishers)[0]
+            regs_new += self.find_by_domain(self.subscribers)[0]
+
+            regs_old = self.find_by_domain(self.publishers)[1]
+            regs_old += self.find_by_domain(self.subscribers)[1]
+
+            avg_new = regs_new/2
+            avg_old = regs_old/2
+            out_new = str(avg_new).replace(".", ",")
+            out_old = str(avg_old).replace(".", ",")
+
+            print str(param) + ";" + out_new + ";" + out_old
             self._clean()
 
     def _setup(self, n):
-        self.r_service = xMsgRegService(zmq.Context)
-        for i in range(n):
-            topic = "domain%s:subject%s:type%s" % (i, i, i)
-            self.r_service._register(topic, "data_p", True)
-            self.r_service._register(topic, "data_s", False)
+        self.publishers = xMsgRegDatabase()
+        self.subscribers = xMsgRegDatabase()
+        self.randlist = [randint(0, n) for i in range(n)]
+        self.db_old = dict()
+        for i in self.randlist:
+            self.publishers.register(self.register_data(i))
+            self.subscribers.register(self.register_data(i))
+            topic = "domain%s:subject%s:xtype%s" % (i, i, i)
+            self.register_old(topic, "data")
 
     def _clean(self):
-        del self.r_service
+        del self.publishers
+        del self.subscribers
+        del self.db_old
 
-    def get_registration_publisher(self, n):
-        start = time.time()
-        for i in range(n):
+    def find_registration(self, db):
+        avg_new = 0
+        avg_old = 0
+        for i in self.randlist:
             d = "domain%s" % i
             s = "subject%s" % i
-            t = "type%s" % i
-            self.r_service._get_registration(d, s, t, True)
-        end = time.time()
-        elapsed = end - start
-        return elapsed
+            t = "xtype%s" % i
+            start = time.time()
+            db.find(d, s, t)
+            end = time.time()
+            avg_new += (end - start)/len(self.randlist)
 
-    def get_registration_subscriber(self, n):
-        start = time.time()
-        for i in range(n):
+            start = time.time()
+            self.find_old(d, s, t)
+            end = time.time()
+            avg_old += (end - start)/len(self.randlist)
+        return [avg_new, avg_old]
+
+    def find_by_subject(self, db):
+        avg_new = 0
+        avg_old = 0
+        for i in self.randlist:
             d = "domain%s" % i
             s = "subject%s" % i
-            t = "type%s" % i
-            self.r_service._get_registration(d, s, t, False)
-        end = time.time()
-        elapsed = end - start
-        return elapsed
+            t = "*"
+            start = time.time()
+            db.find(d, s, t)
+            end = time.time()
+            avg_new += (end - start)/len(self.randlist)
 
-    def get_registration_new_publisher(self, n):
-        start = time.time()
-        for i in range(n):
-            d = "domain%s" % i
-            s = "subject%s" % i
-            t = "type%s" % i
-            self.r_service._get_registration_new(d, s, t, True)
-        end = time.time()
-        elapsed = end - start
-        return elapsed
+            start = time.time()
+            self.find_old(d, s, t)
+            end = time.time()
+            avg_old += (end - start)/len(self.randlist)
+        return [avg_new, avg_old]
 
-    def get_registration_new_subscriber(self, n):
-        start = time.time()
-        for i in range(n):
+    def find_by_domain(self, db):
+        avg_new = 0
+        avg_old = 0
+        for i in self.randlist:
             d = "domain%s" % i
-            s = "subject%s" % i
-            t = "type%s" % i
-            self.r_service._get_registration_new(d, s, t, False)
-        end = time.time()
-        elapsed = end - start
-        return elapsed
+            s = "*"
+            t = "*"
+
+            start = time.time()
+            db.find(d, s, t)
+            end = time.time()
+            avg_new += (end - start)/len(self.randlist)
+
+            start = time.time()
+            self.find_old(d, s, t)
+            end = time.time()
+            avg_old += (end - start)/len(self.randlist)
+        return [avg_new, avg_old]
+
+    def register_data(self, n):
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
+        r_data.name = "name%s" % n
+        r_data.description = "description"
+        r_data.host = xMsgUtil.host_to_ip("localhost")
+        r_data.port = 8888
+        r_data.domain = "domain%s" % n
+        r_data.subject = "subject%s" % n
+        r_data.type = "xtype%s" % n
+        return r_data
+
+    def register_old(self, key, data):
+        self.db_old[key] = data
+
+    def find_old(self, domain, subject, tip):
+        result = list()
+
+        for k in self.db_old:
+            if ((xMsgUtil.get_domain(k) == domain) and
+                (xMsgUtil.get_subject(k) == subject or
+                 subject == "undefined" or subject == "*") and
+                (xMsgUtil.get_type(k) == tip or
+                 tip == "undefined" or tip == "*")):
+                result.append(self.db_old[k])
+        return result
 
 if __name__ == "__main__":
     args = [5, 10, 50, 100, 500, 1000, 5000, 10000]

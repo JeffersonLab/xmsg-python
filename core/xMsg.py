@@ -474,7 +474,7 @@ class xMsg(xMsgRegDiscDriver):
                 return
 
     def _registration_builder(self, name, description, host, port,
-                              domain, subject, xtype, publisher):
+                              domain, subject, xtype, publisher=True):
         r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = name
         if description:

@@ -55,14 +55,16 @@ class xMsgRegDatabase():
 
     def find(self, domain, subject, xtype):
         if subject == "*" or subject == "undefined":
-            subject = "\\w+"
-            if xtype == "*" or xtype == "undefined":
-                xtype = "\\w+"
+            subject = ":(.+)"
+            xtype = ""
         else:
+            subject = ":" + str(subject)
             if xtype == "*" or xtype == "undefined":
-                xtype = "\\w+"
+                xtype = ":(.)+"
+            else:
+                xtype = ":" + str(xtype)
 
-        t_pattern = "^%s:%s:%s$" % (domain, subject, xtype)
+        t_pattern = "^%s%s%s$" % (domain, subject, xtype)
         t_validator = re.compile(t_pattern)
         result = Set()
 
