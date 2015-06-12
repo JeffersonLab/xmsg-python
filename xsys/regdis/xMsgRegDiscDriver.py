@@ -22,9 +22,8 @@ import zmq
 
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
-from data import xMsgRegistrationData_pb2
 from core.xMsgExceptions import TimeoutReached, BadResponse
-
+from data import xMsgRegistration_pb2
 
 __author__ = 'gurjyan'
 
@@ -240,9 +239,10 @@ class xMsgRegDiscDriver:
                 result = []
 
                 for r_d in r_data:
-                    ds_data = xMsgRegistrationData_pb2.xMsgRegistrationData()
-                    ds_data.ParseFromString(r_d)
-                    result.append(ds_data)
+                    #ds_data = xMsgRegistration_pb2.xMsgRegistration()
+                    #ds_data.ParseFromString(r_d)
+                    #result.append(ds_data)
+                    result.append(r_d)
                 return result
 
     def register_fe(self, name, data, isPublisher):
