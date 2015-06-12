@@ -50,6 +50,23 @@ class xMsgRegDatabase():
                     if len(self.db[key]) == 0:
                         del self.db[key]
 
+    def remove_by_host(self, host):
+        """
+        Method that removes all values of the registration database that
+        have a specified host set, i.e.  removes registration information
+        of all xMsg actors that are running on a specified host.
+
+        :param host: host name of the xMsgNode
+        """
+        for key in self.topics():
+            for r_data in self.db[key].copy():
+                registration = xMsgRegistration_pb2.xMsgRegistration()
+                registration.ParseFromString(r_data)
+                if registration.host == host:
+                    self.db.get(key).remove(r_data)
+                    if len(self.db[key]) == 0:
+                        del self.db[key]
+
     def find(self, domain, subject, xtype):
         if subject == "*" or subject == "undefined":
             subject = ":(.+)"

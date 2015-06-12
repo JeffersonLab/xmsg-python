@@ -58,6 +58,11 @@ class TestXMsgRegDatabase(unittest.TestCase):
         self.db.remove(self.reg_info)
         self.assertIsNone(self.db.get(self.topic))
 
+    def test_remove_by_host(self):
+        self.db.register(self.reg_info)
+        self.db.remove_by_host("localhost")
+        self.assertIsNone(self.db.get(self.topic))
+
     def test_get_all_publishers_in_domain(self):
         set_all = Set([self.reg_info.SerializeToString()])
         self.db.register(self.reg_info)

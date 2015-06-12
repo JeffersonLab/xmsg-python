@@ -46,14 +46,13 @@ class xMsgRegService(threading.Thread):
     context = str(xMsgConstants.UNDEFINED)
     host = str(xMsgConstants.ANY)
     port = int(xMsgConstants.REGISTRAR_PORT)
-    localhost_ip = str(xMsgConstants.UNDEFINED)
+
     subscribers_db = xMsgRegDatabase()
     publishers_db = xMsgRegDatabase()
 
     def __init__(self, context):
         super(xMsgRegService, self).__init__()
         self.context = context
-        self.localhost_ip = xMsgUtil.get_local_ip()
         self.stop_request = threading.Event()
 
     def run(self):
@@ -96,8 +95,8 @@ class xMsgRegService(threading.Thread):
                 self.subscribers_db.remove(request.get_data())
 
             elif request.get_topic() == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
-                self._cleanDbByHost(s_host, self.publishers_db)
-                self._cleanDbByHost(s_host, self.subscribers_db)
+                self.subscribers_db.remove_by_host(s_host)
+                self.publishers_db.remove_by_host(s_host)
 
             elif request.get_topic == str(xMsgConstants.FIND_PUBLISHER):
                 res = self.publishers_db.find(request.get_data().domain,
@@ -122,27 +121,6 @@ class xMsgRegService(threading.Thread):
         except zmq.error.ContextTerminated:
             self.log(" Context terminated at xMsgRegistrationService")
             return
-
-    def _cleanDbByHost(self, host, db):
-        """
-        Method that removes all values of the registration database that
-        have a specified host set, i.e.  removes registration information
-        of all xMsg actors that are running on a specified host.
-
-        :param host: host name of the xMsgNode
-        :param db: reference to the registration database
-        """
-
-        # First create a list of keys that match the criteria, to
-        # be used for removing the registration data for those keys
-        rk = []
-        db = dict()
-        for key in db.iterkeys():
-            for registration in db.get(key):
-                if registration.get_host() == host:
-                    rk.append(registration)
-            db.get(key).remove_all_children(rk)
-            rk = []
 
     def _reply_success(self, topic):
         return [topic,
