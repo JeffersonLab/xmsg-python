@@ -82,6 +82,10 @@ class TestXMsgUtil(unittest.TestCase):
         for case in INVALID_TYPE_CASES:
             self.assertRaises(MalformedCanonicalName,
                               xMsgUtil.get_type, case)
+            
+    def test_get_local_ip(self):
+        test_case = xMsgUtil.get_local_ip()
+        self.assertIsInstance(test_case, basestring)
 
 if __name__ == "__main__":
     unittest.main()

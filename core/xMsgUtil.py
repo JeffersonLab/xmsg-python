@@ -18,11 +18,10 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-
+from netifaces import AF_INET
+import netifaces as ni
 from datetime import datetime
 import socket
-import fcntl
-import struct
 import time
 import re
 
@@ -130,23 +129,21 @@ class xMsgUtil:
                 return hostname
 
     @staticmethod
-    def get_local_ip():
-        # Fix made by Aron to make xmsg-python get the right
-        # local ip address.
-        # We need to make some adjustment to get the right network
-        # interface from the machine
-        # TODO: Stablish how to define the current interface
-        ifname = "eth0"
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        return socket.inet_ntoa(fcntl.ioctl(
-            s.fileno(),
-            0x8915,  # SIOCGIFADDR
-            struct.pack('256s', ifname[:15])
-        )[20:24])
+    def get_local_ip(n_iface='eth0'):
+        try:
+            return str(ni.ifaddresses(n_iface)[AF_INET][0]['addr'])
+        except ValueError:
+            xMsgUtil.log("xMsg received : " + str(n_iface))
+            xMsgUtil.log("A valid network interface should be provided...")
+            return
 
     @staticmethod
     def list_to_string(in_l):
         return ', '.join(map(str, in_l))
+
+    @staticmethod
+    def log(msg):
+        print xMsgUtil.current_time() + str(msg)
 
     @staticmethod
     def string_to_list(in_d):
