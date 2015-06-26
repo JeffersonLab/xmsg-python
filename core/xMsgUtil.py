@@ -129,7 +129,7 @@ class xMsgUtil:
                 return hostname
 
     @staticmethod
-    def get_local_ip(n_iface='eth0'):
+    def get_local_ip(n_iface='en1'):
         try:
             return str(ni.ifaddresses(n_iface)[AF_INET][0]['addr'])
         except ValueError:
@@ -143,7 +143,7 @@ class xMsgUtil:
 
     @staticmethod
     def log(msg):
-        print xMsgUtil.current_time() + str(msg)
+        print xMsgUtil.current_time() + " " + str(msg)
 
     @staticmethod
     def string_to_list(in_d):

@@ -25,14 +25,14 @@ import zmq
 
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
-from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
+from xsys.regdis.xMsgRegDriver import xMsgRegDriver
 from xsys.regdis.xMsgRegService import xMsgRegService
 
 
 __author__ = 'gurjyan'
 
 
-class xMsgNode(xMsgRegDiscDriver):
+class xMsgNode(xMsgRegDriver):
     """
     xMsgNode.
     Runs xMsg pub-sub proxy.
@@ -63,7 +63,7 @@ class xMsgNode(xMsgRegDiscDriver):
                        -h option, or through the environmental variable:
                        XMSG_FE_HOST
         """
-        xMsgRegDiscDriver.__init__(self, feHost)
+        xMsgRegDriver.__init__(self, feHost)
 
         # create a zmq context
         self.context = zmq.Context()
@@ -79,8 +79,7 @@ class xMsgNode(xMsgRegDiscDriver):
         self.t.daemon = True
         self.t.start()
 
-        print xMsgUtil.current_time() + (" Info: xMsg local registration " +
-                                         "and discovery server is started")
+        xMsgUtil.log("Info: xMsg local registration and discovery server is started")
 
         # setting up the xMsg proxy
         # socket where clients publish their data/messages
@@ -93,8 +92,7 @@ class xMsgNode(xMsgRegDiscDriver):
         self.d_pub.bind("tcp://%s:%s" % (str("*"),
                                          str(int(xMsgConstants.DEFAULT_PORT) + 1)))
 
-        print xMsgUtil.current_time() + (" Info: Running xMsg proxy server " +
-                                         "on the localhost...")
+        xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
         signal.signal(signal.SIGTERM, self.exit_gracefully)
         signal.signal(signal.SIGINT, self.exit_gracefully)
@@ -106,7 +104,7 @@ class xMsgNode(xMsgRegDiscDriver):
         except Exception, e:
             print " "
             print " "+str(e)
-            print " Bringing down xMsgNode..."
+            xMsgUtil.log("Bringing down xMsgNode...")
         finally:
             pass
 

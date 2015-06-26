@@ -23,27 +23,31 @@ from data import xMsgRegistration_pb2
 
 
 class xMsgRegRequest:
+
     topic = str(xMsgConstants.UNDEFINED)
     sender = str(xMsgConstants.UNDEFINED)
     data = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, request):
+    def __init__(self, topic = None, sender = None, data = None):
         '''
         :param topic: Request topic
         :param sender: sender of the xMsg request
         :param data: data included in the message (text or registration)
         '''
-        self.topic, self.sender, self.data = request
+        self.topic = topic
+        self.sender = sender
+        self.data = data
+
+    def init_from_request(self, request):
+        self.topic = request[0]
+        self.sender = request[1]
+        self.data = request[2]
 
     def get_msg(self):
         """
         Serialize the content of the request
         """
-        if isinstance(self.data, basestring):
-            return [str(self.topic), str(self.sender), self.data]
-        else:
-            return [str(self.topic), str(self.sender),
-                    self.data.SerializeToString()]
+        return [str(self.topic), str(self.sender), str(self.data)]
 
     def get_topic(self):
         return str(self.topic)
@@ -52,6 +56,9 @@ class xMsgRegRequest:
         return str(self.sender)
 
     def get_data(self):
+        """
+        Get registration data object
+        """
         r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.ParseFromString(self.data)
         return r_data

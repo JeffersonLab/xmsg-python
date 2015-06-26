@@ -28,7 +28,7 @@ from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistration_pb2, xMsgData_pb2
 from net.xMsgConnection import xMsgConnection
-from xsys.regdis.xMsgRegDiscDriver import xMsgRegDiscDriver
+from xsys.regdis.xMsgRegDriver import xMsgRegDriver
 from core.xMsgExceptions import UndefinedTopicDomain, NullConnection,\
     NullMessage
 
@@ -36,7 +36,7 @@ from core.xMsgExceptions import UndefinedTopicDomain, NullConnection,\
 __author__ = 'gurjyan'
 
 
-class xMsg(xMsgRegDiscDriver):
+class xMsg:
     """
     xMsg base class that provides methods for
     organizing pub/sub communications. This class
@@ -51,7 +51,7 @@ class xMsg(xMsgRegDiscDriver):
     """
 
     # zmq context object
-    # _context = xMsgConstants.UNDEFINED
+    driver = str(xMsgConstants.UNDEFINED)
 
     # Private db of stored connections
     _connections = dict()
@@ -69,8 +69,8 @@ class xMsg(xMsgRegDiscDriver):
         :param feHost: host name of FE
         :param pool_size: thread pool size
         """
-        xMsgRegDiscDriver.__init__(self, feHost)
-        # self._context = self.getContext()
+        # Initialize registration driver
+        self.driver = xMsgRegDriver(feHost)
 
         # create fixed size thread pool
         self.pool_size = pool_size
@@ -98,18 +98,18 @@ class xMsg(xMsgRegDiscDriver):
             # Return the reference to the connection object
             feCon = xMsgConnection()
             feCon.set_address(address)
-            soc_p = self.zmq_socket(self.context,
-                                    zmq.PUB,
-                                    address.get_host(),
-                                    address.get_port(),
-                                    str(xMsgConstants.CONNECT))
+            soc_p = self.driver.zmq_socket(self.driver.context,
+                                           zmq.PUB,
+                                           address.get_host(),
+                                           address.get_port(),
+                                           str(xMsgConstants.CONNECT))
             feCon.set_pub_sock(soc_p)
 
-            soc_s = self.zmq_socket(self.context,
-                                    zmq.SUB,
-                                    address.get_host(),
-                                    address.get_port() + 1,
-                                    str(xMsgConstants.CONNECT))
+            soc_s = self.driver.zmq_socket(self.driver.context,
+                                           zmq.SUB,
+                                           address.get_host(),
+                                           address.get_port() + 1,
+                                           str(xMsgConstants.CONNECT))
             feCon.set_sub_sock(soc_s)
 
             self._connections[address.get_key()] = feCon
@@ -125,18 +125,18 @@ class xMsg(xMsgRegDiscDriver):
         new_context = zmq.Context()
         feCon = xMsgConnection()
         feCon.set_address(address)
-        soc_p = self.zmq_socket(new_context,
-                                zmq.PUB,
-                                address.get_host(),
-                                address.get_port(),
-                                str(xMsgConstants.CONNECT))
+        soc_p = self.driver.zmq_socket(new_context,
+                                       zmq.PUB,
+                                       address.get_host(),
+                                       address.get_port(),
+                                       str(xMsgConstants.CONNECT))
         feCon.set_pub_sock(soc_p)
 
-        soc_s = self.zmq_socket(new_context,
-                                zmq.SUB,
-                                address.get_host(),
-                                address.get_port() + 1,
-                                str(xMsgConstants.CONNECT))
+        soc_s = self.driver.zmq_socket(new_context,
+                                       zmq.SUB,
+                                       address.get_host(),
+                                       address.get_port() + 1,
+                                       str(xMsgConstants.CONNECT))
         feCon.set_sub_sock(soc_s)
         return feCon
 
@@ -164,7 +164,7 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, True)
 
-        self.register_local(name, r_data, True)
+        self.driver.register_local(name, r_data, True)
 
     def register_subscriber(self, name,
                             domain,
@@ -191,7 +191,7 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, False)
 
-        self.register_local(name, r_data, False)
+        self.driver.register_local(name, r_data, False)
 
     def remove_publisher_registration(self, name,
                                       domain,
@@ -213,8 +213,8 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, True)
 
-        self.remove_registration_local(name, r_data, True)
-        self.remove_registration_fe(name, r_data, True)
+        self.driver.remove_registration_local(name, r_data, True)
+        self.driver.remove_registration_fe(name, r_data, True)
 
     def remove_subscriber_registration(self, name,
                                        domain,
@@ -237,8 +237,8 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, False)
 
-        self.remove_registration_local(name, r_data, False)
-        self.remove_registration_fe(name, r_data, False)
+        self.driver.remove_registration_local(name, r_data, False)
+        self.driver.remove_registration_fe(name, r_data, False)
 
     def find_local_publisher(self, name,
                              domain,
@@ -261,7 +261,7 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, True)
 
-        return self.find_local(name, r_data, True)
+        return self.driver.find_local(name, r_data, True)
 
     def find_local_subscriber(self, name,
                               domain,
@@ -284,7 +284,7 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, False)
 
-        return self.find_local(name, r_data, False)
+        return self.driver.find_local(name, r_data, False)
 
     def find_publisher(self, name,
                        domain,
@@ -309,7 +309,7 @@ class xMsg(xMsgRegDiscDriver):
                                             port, domain, subject,
                                             xtype, True)
 
-        return self.find_global(name, r_data, True)
+        return self.driver.find_global(name, r_data, True)
 
     def find_subscriber(self, name,
                         domain,
@@ -442,15 +442,12 @@ class xMsg(xMsgRegDiscDriver):
 
         # subscribe to the topic
         con.setsockopt(zmq.SUBSCRIBE, topic)
-        # con.subscribe(topic)
 
         # wait for messages published to a required topic
         while True:
             try:
                 res = con.recv_multipart()
                 if len(res) == 3:
-                    # r_topic = res[0]
-                    # r_sender = res[1]
                     r_data = res[2]
 
                     # de-serialize r_data
@@ -463,7 +460,6 @@ class xMsg(xMsgRegDiscDriver):
                         cb(result)
                     else:
                         # using thread pool
-                        # self.threadPool.apply_async(cb, result)
                         # using a new created thread
                         l = [result]
                         t = threading.Thread(target=cb, args=l)
@@ -503,6 +499,6 @@ class xMsg(xMsgRegDiscDriver):
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     def terminate_threadpool(self):
-        self.context.destroy()
+        self.driver.get_context().destroy()
         self.threadPool.terminate()
         self.threadPool.join()
