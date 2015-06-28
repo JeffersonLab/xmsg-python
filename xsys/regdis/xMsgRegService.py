@@ -81,9 +81,11 @@ class xMsgRegService(threading.Thread):
             request.init_from_request(recv_req)
             registration = Set([])
             sender = xMsgUtil.get_local_ip() + ":" + str(xMsgConstants.REGISTRAR)
+            
             msg = ("Received a request from " + request.get_sender() + " to " +
                    request.get_topic())
             self.log(msg)
+            
             s_host = str(xMsgConstants.UNDEFINED)
 
             if request.get_topic() == str(xMsgConstants.REMOVE_ALL_REGISTRATION):

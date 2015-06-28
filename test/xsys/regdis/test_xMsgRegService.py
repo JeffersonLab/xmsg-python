@@ -20,6 +20,7 @@
 '''
 import unittest
 import zmq
+
 from core.xMsgConstants import xMsgConstants
 from data import xMsgRegistration_pb2
 from xsys.regdis.xMsgRegService import xMsgRegService
@@ -46,41 +47,57 @@ class TestXMsgRegService(unittest.TestCase):
                    self.sender,
                    self.reg_info.SerializeToString()]
         test_case = self.reg_serv.process_request(request)
-        self.assertEqual(test_case[2], "success")
+        self.assertEqual(test_case.get_status(), "success")
 
     def test_register_subscriber(self):
         request = [str(xMsgConstants.REGISTER_SUBSCRIBER),
                    self.sender,
                    self.reg_info.SerializeToString()]
         test_case = self.reg_serv.process_request(request)
-        self.assertEqual(test_case[2], "success")
+        self.assertEqual(test_case.get_status(), "success")
 
     def test_remove_publisher(self):
         request = [str(xMsgConstants.REMOVE_PUBLISHER),
                    self.sender,
                    self.reg_info.SerializeToString()]
         test_case = self.reg_serv.process_request(request)
-        self.assertEqual(test_case[2], "success")
+        self.assertEqual(test_case.get_status(), "success")
 
     def test_remove_subscriber(self):
         request = [str(xMsgConstants.REMOVE_SUBSCRIBER),
                    self.sender,
                    self.reg_info.SerializeToString()]
         test_case = self.reg_serv.process_request(request)
-        self.assertEqual(test_case[2], "success")
+        self.assertEqual(test_case.get_status(), "success")
 
     def test_remove_all_regs(self):
         request = [str(xMsgConstants.REMOVE_ALL_REGISTRATION),
                    self.sender,
                    self.reg_info.SerializeToString()]
         test_case = self.reg_serv.process_request(request)
-        self.assertEqual(test_case[2], "success")
+        self.assertEqual(test_case.get_status(), "success")
 
     def test_find_publisher(self):
-        pass
+        request = [str(xMsgConstants.REGISTER_PUBLISHER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        self.reg_serv.process_request(request)
+        request = [str(xMsgConstants.FIND_PUBLISHER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertIsNotNone(test_case.get_data())
 
     def test_find_subscriber(self):
-        pass
+        request = [str(xMsgConstants.REGISTER_SUBSCRIBER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        self.reg_serv.process_request(request)
+        request = [str(xMsgConstants.FIND_SUBSCRIBER),
+                   self.sender,
+                   self.reg_info.SerializeToString()]
+        test_case = self.reg_serv.process_request(request)
+        self.assertIsNotNone(test_case.get_data())
 
 if __name__ == "__main__":
     unittest.main()
