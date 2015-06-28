@@ -47,3 +47,6 @@ class TimeoutReached(RegistrationException):
 
 class BadResponse(MessageException):
     pass
+
+class BadRequest(MessageException):
+    pass

@@ -19,14 +19,25 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 import unittest
+
 from xsys.regdis.xMsgRegRequest import xMsgRegRequest
+from core.xMsgExceptions import BadRequest
+from data import xMsgRegistration_pb2
 
 
 class TestXMsgRegRequest(unittest.TestCase):
 
     def setUp(self):
-        self.msg = ["topic", "sender", "data"]
-        self.req = xMsgRegRequest(self.msg)
+        self.reg_info = xMsgRegistration_pb2.xMsgRegistration()
+        self.reg_info.host = "localhost"
+        self.reg_info.name = "xMsgR"
+        self.reg_info.subject = "test_subject"
+        self.reg_info.domain = "domain"
+        self.reg_info.type = "type_p"
+        self.reg_info.port = 8888
+        self.msg = ["topic", "sender", self.reg_info.SerializeToString()]
+        self.req = xMsgRegRequest()
+        self.req.init_from_request(self.msg)
 
     def test_constructor(self):
         self.assertIsInstance(self.req, xMsgRegRequest)
@@ -39,6 +50,16 @@ class TestXMsgRegRequest(unittest.TestCase):
 
     def test_msg(self):
         self.assertEqual(self.req.get_msg(), self.msg)
+
+    def test_get_data(self):
+        self.assertIsInstance(self.req.get_data(),
+                              xMsgRegistration_pb2.xMsgRegistration)
+
+    def test_raises_exception(self):
+        bad_request_msg = ["topic", "sender"]
+        test_case = xMsgRegRequest()
+        with self.assertRaises(BadRequest):
+            test_case.init_from_request(bad_request_msg)
 
 if __name__ == "__main__":
     unittest.main()

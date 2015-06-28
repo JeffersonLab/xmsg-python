@@ -19,6 +19,7 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 from core.xMsgConstants import xMsgConstants
+from core.xMsgExceptions import BadRequest
 from data import xMsgRegistration_pb2
 
 
@@ -39,9 +40,15 @@ class xMsgRegRequest:
         self.data = data
 
     def init_from_request(self, request):
-        self.topic = request[0]
-        self.sender = request[1]
-        self.data = request[2]
+        """
+        Initialize RegRequest serialized message
+        """
+        try:
+            self.topic = request[0]
+            self.sender = request[1]
+            self.data = request[2]
+        except:
+            raise BadRequest("Malformed request message")
 
     def get_msg(self):
         """
@@ -50,9 +57,15 @@ class xMsgRegRequest:
         return [str(self.topic), str(self.sender), str(self.data)]
 
     def get_topic(self):
+        """
+        Gets the topic of the request
+        """
         return str(self.topic)
 
     def get_sender(self):
+        """
+        Gets the sender of the request
+        """
         return str(self.sender)
 
     def get_data(self):
