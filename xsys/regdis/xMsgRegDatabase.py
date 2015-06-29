@@ -58,7 +58,7 @@ class xMsgRegDatabase():
 
         :param host: host name of the xMsgNode
         """
-        for key in self.topics():
+        for key in self.all():
             for r_data in self.db[key].copy():
                 registration = xMsgRegistration_pb2.xMsgRegistration()
                 registration.ParseFromString(r_data)
@@ -82,7 +82,7 @@ class xMsgRegDatabase():
         t_validator = re.compile(t_pattern)
         result = Set()
 
-        for k in self.topics():
+        for k in self.all():
             if t_validator.match(k):
                 result.union_update(self.db[k])
 
@@ -101,7 +101,7 @@ class xMsgRegDatabase():
             key = key + ":" + registration_data.type
         return key
 
-    def topics(self):
+    def all(self):
         return self.db.keys()
 
     def get(self, topic):
