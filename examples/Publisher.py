@@ -19,7 +19,6 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 import random
-import struct
 import sys
 
 from core.xMsg import xMsg
@@ -93,6 +92,7 @@ def main():
 
             elif data_type_n == 5:
                 t_msg.set_data([float(random.randint(1, 10)) for _ in range(0, int(size))])
+
             elif data_type_n == 6:
                 t_msg.set_data(bytearray([0x00, 0x00, 0x00, 0x08, 0x00]))
 

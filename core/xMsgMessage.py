@@ -79,32 +79,36 @@ class xMsgMessage():
         if isinstance(data_object, basestring):
             data.type = xMsgData_pb2.xMsgData.T_STRING
             data.STRING = data_object
+
         elif isinstance(data_object, int):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT32
             data.FLSINT32 = data_object
+
         elif isinstance(data_object, long):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT64
             data.FLSINT64 = data_object
+
         elif isinstance(data_object, float):
             data.type = xMsgData_pb2.xMsgData.T_FLOAT
             data.FLOAT = data_object
+
         # Detecting arrays
         elif all(isinstance(item, int) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT32A
-            for i in data_object:
-                data.FLSINT32A.append(int(i))
+            data.FLSINT32A.append([dt for dt in data_object])
+
         elif all(isinstance(item, long) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT64A
-            for i in data_object:
-                data.FLSINT64A.append(long(i))
+            data.FLSINT64A.append([dt for dt in data_object])
+
         elif all(isinstance(item, long) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLOATA
-            for i in data_object:
-                data.FLOATA.append(float(i))
+            data.FLOATA.append([dt for dt in data_object])
+
         elif all(isinstance(item, bytes) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_BYTESA
-            for i in data_object:
-                data.BYTESA.append(i)
+            data.BYTESA.append([dt for dt in data_object])
+
         self.data = data
 
     def get_metadata_bytes(self):
