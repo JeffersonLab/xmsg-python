@@ -252,7 +252,7 @@ class xMsgRegDriver:
         return self._find(self._feConnection, name, data, is_publisher)
     
     def request(self, socket, request, timeout):
-        request_msg = request.get_msg()
+        request_msg = request.get_serialized_msg()
         try:
             socket.send_multipart(request_msg)
         except:

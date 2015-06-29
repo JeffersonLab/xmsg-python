@@ -95,19 +95,19 @@ class xMsgMessage():
         # Detecting arrays
         elif all(isinstance(item, int) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT32A
-            data.FLSINT32A.append([dt for dt in data_object])
+            data.FLSINT32A.extend(data_object)
 
         elif all(isinstance(item, long) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT64A
-            data.FLSINT64A.append([dt for dt in data_object])
+            data.FLSINT64A.extend(data_object)
 
-        elif all(isinstance(item, long) for item in data_object):
+        elif all(isinstance(item, float) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLOATA
-            data.FLOATA.append([dt for dt in data_object])
+            data.FLOATA.extend(data_object)
 
         elif all(isinstance(item, bytes) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_BYTESA
-            data.BYTESA.append([dt for dt in data_object])
+            data.BYTESA.extend([bytes(dt) for dt in data_object])
 
         self.data = data
 
@@ -116,3 +116,6 @@ class xMsgMessage():
 
     def get_data_bytes(self):
         return self.data.SerializeToString()
+
+    def get_serialized_msg(self):
+        return [self.get_topic(), self.get_metadata_bytes(), self.get_data_bytes()]

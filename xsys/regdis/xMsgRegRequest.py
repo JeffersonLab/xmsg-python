@@ -50,12 +50,6 @@ class xMsgRegRequest:
         except:
             raise BadRequest("Malformed request message")
 
-    def get_msg(self):
-        """
-        Serialize the content of the request
-        """
-        return [str(self.topic), str(self.sender), str(self.data)]
-
     def get_topic(self):
         """
         Gets the topic of the request
@@ -75,3 +69,9 @@ class xMsgRegRequest:
         r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.ParseFromString(self.data)
         return r_data
+
+    def get_serialized_msg(self):
+        """
+        Serialize the content of the request
+        """
+        return [str(self.topic), str(self.sender), str(self.data)]

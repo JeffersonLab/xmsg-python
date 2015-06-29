@@ -67,7 +67,7 @@ class xMsgRegService(threading.Thread):
                 if not request:
                     continue
                 response = self.process_request(request)
-                reg_socket.send_multipart(response.msg())
+                reg_socket.send_multipart(response.get_serialized_msg())
                 del request
                 del response
 

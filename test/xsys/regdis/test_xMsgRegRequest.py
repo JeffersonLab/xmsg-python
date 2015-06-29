@@ -49,7 +49,7 @@ class TestXMsgRegRequest(unittest.TestCase):
         self.assertEqual(self.req.get_sender(), "sender")
 
     def test_msg(self):
-        self.assertEqual(self.req.get_msg(), self.msg)
+        self.assertEqual(self.req.get_serialized_msg(), self.msg)
 
     def test_get_data(self):
         self.assertIsInstance(self.req.get_data(),

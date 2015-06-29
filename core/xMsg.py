@@ -358,9 +358,7 @@ class xMsg:
         if not x_msg:
             raise NullMessage("xMsg: Null message object")
 
-        con.send_multipart([x_msg.get_topic(),
-                            x_msg.get_metadata_bytes(),
-                            x_msg.get_data_bytes()])
+        con.send_multipart(x_msg.get_serialized_msg())
 
     def subscribe(self, connection,
                   domain,
@@ -446,16 +444,16 @@ class xMsg:
         # wait for messages published to a required topic
         while True:
             try:
-                res = con.recv_multipart()
-                if len(res) == 3:
-                    r_data = res[2]
+                response = con.recv_multipart()
+
+                if len(response) == 3:
 
                     # de-serialize r_data
                     ds_data = xMsgData_pb2.xMsgData()
-                    ds_data.ParseFromString(r_data)
+                    ds_data.ParseFromString(response[2])
                     result = ds_data
 
-                    # usr callback
+                    # user callback
                     if isSync:
                         cb(result)
                     else:

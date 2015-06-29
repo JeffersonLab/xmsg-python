@@ -18,8 +18,6 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-from sets import Set
-
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
 
@@ -42,12 +40,14 @@ class xMsgRegResponse:
         self.topic = request[0]
         self.sender = request[1]
         self.status = request[2]
+
         xMsgUtil.log("Request " + str(self.topic) + " had response : " + str(self.status).capitalize())
         xMsgUtil.log("\tDetails  : ")
         xMsgUtil.log("\t-----------")
         xMsgUtil.log("\ttopic  : " + str(self.topic))
         xMsgUtil.log("\tsender : " + str(self.sender))
         xMsgUtil.log("\tstatus : " + str(self.status))
+
         try:
             self.data = request[3]
             xMsgUtil.log("\tdata   : True (with size : " + str(len(self.data)) + ")")
@@ -80,8 +80,8 @@ class xMsgRegResponse:
         else:
             return self.data
 
-    def msg(self):
-        msg = [self.get_topic(), self.get_sender(), self.get_status()]
+    def get_serialized_msg(self):
+        s_msg = [self.get_topic(), self.get_sender(), self.get_status()]
         for d in self.data:
-            msg.append(str(d))
-        return msg
+            s_msg.append(str(d))
+        return s_msg
