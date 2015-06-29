@@ -39,9 +39,8 @@ class Subscriber(xMsg):
 
     def callback(self, data):
 
-        if data.type == xMsgData_pb2.xMsgData.T_FLSINT32A:
-            print "Subscriber received : "
-            print data
+        print "Subscriber received data with type : " + str(data.type)
+        print data
 
 
 def main():

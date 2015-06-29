@@ -19,6 +19,7 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 import random
+import struct
 import sys
 
 from core.xMsg import xMsg
@@ -67,17 +68,37 @@ def main():
     t_msg = xMsgMessage(topic)
     t_msg.sender = publisher.myName
 
-    array = []
-    for i in range(0, int(size)):
-        array.append(random.randint(1, 10))
-
-    t_msg.set_data(array)
+    data_type_array = ["T_STRING", "T_FLSINT32", "T_FLOAT", "T_FLSINT32A", "T_FLSINT64A",
+                       "T_FLOATA", "T_BYTESA"]
 
     # Publish data for ever...
     while True:
         try:
+            data_type_n = random.randint(0, 6)
+
+            if data_type_n == 0:
+                t_msg.set_data("some test string!!!")
+            elif data_type_n == 1:
+                t_msg.set_data(random.randint(1, 100))
+            elif data_type_n == 2:
+                t_msg.set_data(long(random.randint(1,100)))
+            elif data_type_n == 3:
+                array = []
+                for _ in range(0, int(size)):
+                    array.append(random.randint(1, 10))
+                t_msg.set_data(array)
+            elif data_type_n == 4:
+                array = []
+                for _ in range(0, int(size)):
+                    array.append(long(random.randint(1, 10)))
+                t_msg.set_data(array)
+            elif data_type_n == 5:
+                t_msg.set_data(float(random.randint(0, 100)))
+            elif data_type_n == 6:
+                t_msg.set_data(bytearray([0x00, 0x00, 0x00, 0x08, 0x00]))
+
             publisher.publish(con, t_msg)
-            print "publishing..."
+            print "publishing : " + data_type_array[data_type_n]
             xMsgUtil.sleep(1)
 
         except KeyboardInterrupt:

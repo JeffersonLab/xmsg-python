@@ -19,13 +19,32 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 from core.xMsgConstants import xMsgConstants
-from data import xMsgMeta_pb2
-from data import xMsgData_pb2
+from data import xMsgMeta_pb2, xMsgData_pb2
 
 __author__ = 'gurjyan'
 
 
 class xMsgMessage():
+    """
+    Defines a message to be serialized and passed through 0MQ.
+
+    Uses {@link xMsgData} class generated as a result of the proto-buffer
+    description to pass Java primitive types and arrays of primitive types.
+    xMsgData is also used to pass byte[]: the result of a user specific
+    object serialization.
+    <p>
+    This class will also contain complete metadata of the message data,
+    describing details of the data. In case an object is constructed
+    without a metadata, the default metadata will be created and the
+    proper data type will set based on the passed data parameter type.
+    <p>
+    Note that data that is an instance of {@code byte[]} will be considered to be
+    a serialization of a specific user object only in the case when a proper
+
+    @author gurjyan
+    @version 2.x
+    @since 16/6/15
+    """
     topic = str(xMsgConstants.UNDEFINED)
     metadata = str(xMsgConstants.UNDEFINED)
     data = str(xMsgConstants.UNDEFINED)
@@ -56,6 +75,7 @@ class xMsgMessage():
         self.metadata = metadata
         data = xMsgData_pb2.xMsgData()
 
+        # Detecting types
         if isinstance(data_object, basestring):
             data.type = xMsgData_pb2.xMsgData.T_STRING
             data.STRING = data_object
@@ -68,6 +88,7 @@ class xMsgMessage():
         elif isinstance(data_object, float):
             data.type = xMsgData_pb2.xMsgData.T_FLOAT
             data.FLOAT = data_object
+        # Detecting arrays
         elif all(isinstance(item, int) for item in data_object):
             data.type = xMsgData_pb2.xMsgData.T_FLSINT32A
             for i in data_object:
@@ -80,6 +101,10 @@ class xMsgMessage():
             data.type = xMsgData_pb2.xMsgData.T_FLOATA
             for i in data_object:
                 data.FLOATA.append(float(i))
+        elif all(isinstance(item, bytes) for item in data_object):
+            data.type = xMsgData_pb2.xMsgData.T_BYTESA
+            for i in data_object:
+                data.BYTESA.append(i)
         self.data = data
 
     def get_metadata_bytes(self):
