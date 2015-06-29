@@ -78,22 +78,21 @@ def main():
 
             if data_type_n == 0:
                 t_msg.set_data("some test string!!!")
+
             elif data_type_n == 1:
-                t_msg.set_data(random.randint(1, 100))
+                t_msg.set_data(int(random.randint(1, 100)))
+
             elif data_type_n == 2:
                 t_msg.set_data(long(random.randint(1,100)))
+
             elif data_type_n == 3:
-                array = []
-                for _ in range(0, int(size)):
-                    array.append(random.randint(1, 10))
-                t_msg.set_data(array)
+                t_msg.set_data([random.randint(1, 10) for _ in range(0, int(size))])
+
             elif data_type_n == 4:
-                array = []
-                for _ in range(0, int(size)):
-                    array.append(long(random.randint(1, 10)))
-                t_msg.set_data(array)
+                t_msg.set_data([long(random.randint(1, 10)) for _ in range(0, int(size))])
+
             elif data_type_n == 5:
-                t_msg.set_data(float(random.randint(0, 100)))
+                t_msg.set_data([float(random.randint(1, 10)) for _ in range(0, int(size))])
             elif data_type_n == 6:
                 t_msg.set_data(bytearray([0x00, 0x00, 0x00, 0x08, 0x00]))
 

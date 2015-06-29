@@ -20,7 +20,6 @@
 '''
 from core.xMsg import xMsg
 from core.xMsgUtil import xMsgUtil
-from data import xMsgData_pb2
 from net.xMsgAddress import xMsgAddress
 
 __author__ = 'gurjyan'
