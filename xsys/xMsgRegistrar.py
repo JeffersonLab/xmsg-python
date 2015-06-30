@@ -18,47 +18,98 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-import signal
 import zmq
+import sys
 
+from xsys.regdis.xMsgRegService import xMsgRegService
+from xsys.regdis.xMsgRegDriver import xMsgRegDriver
+from xsys.xMsgProxy import xMsgProxy
 from core.xMsgConstants import xMsgConstants
-from xsys.regdis.xMsgRegistrar import xMsgRegistrar
+from core.xMsgUtil import xMsgUtil
 
 
 __author__ = 'gurjyan'
 
 
-class xMsgFE():
+class xMsgRegistrar(xMsgRegDriver):
     """
-    xMsg Front-End
+    xMsgRegistrar
+
+    The main registrar service, that always runs in a
+    separate thread. Contains two separate databases
+    to store publishers and subscribers registration data.
+    The key for the data base is xMsg topic, constructed as:
+    domain:subject:type
+    Creates REP socket server on a default port
+    Following request will be serviced:
+     <ul>
+           <li>Register publisher</li>
+           <li>Register subscriber</li>
+           <li>Find publisher</li>
+           <li>Find subscriber</li>
+     </ul>
+
     """
 
     context = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self):
+    def __init__(self, fe_host="localhost"):
+        """
+        Constructor used by xMsgNode objects.
+        xMsgNode needs periodically report/update xMsgFe registration
+        database with data stored in its local databases. This process
+        makes sure we have proper duplication of the registration data
+        for clients seeking global discovery of publishers/subscribers.
+        It is true that discovery can be done using xMsgNode registrar
+        service only, however by introducing xMsgFE, xMsgNodes can come
+        and go, thus making xMsg message-space elastic.
 
-        # create a zmq context
+        """
+        xMsgRegDriver.__init__(self, fe_host)
         self.context = zmq.Context()
+        self.proxy = xMsgProxy(self.context)
 
-        # Start local registrar service. Constructor starts a thread
-        # that periodically updates front-end registrar database with
-        # the data from the local databases
-        self.t = xMsgRegistrar(self.context)
-        self.t.daemon = True
-        self.t.start()
+        self.reg_service = xMsgRegService(self.context)
+        self.reg_service.daemon = True
+        self.reg_service.start()
 
-    def exit_gracefully(self, signum, frame):
-        print "xMsgFE death"
-        self.context.close()
+        xMsgUtil.log("Info: xMsg local registration and discovery server is started")
+
+        try:
+            self.proxy.start()
+
+        except:
+            self.shutdown()
+
+    def shutdown(self):
+        xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
+        self.context.destroy()
 
     def join(self):
-        self.t.join()
+        self.reg_service.join()
 
 
 def main():
-    xn = xMsgFE()
-    signal.signal(signal.SIGTERM, xn.exit_gracefully)
-    signal.signal(signal.SIGINT, xn.exit_gracefully)
+    if len(sys.argv) == 3:
+        if str(sys.argv[0]) == "-fe_host":
+            try:
+                registrar = xMsgRegistrar(str(sys.argv[2]))
+                registrar.join()
+
+            except:
+                registrar.shutdown()
+
+        else:
+            print " Wrong option. Accepts -fe_host option only."
+            return
+    elif len(sys.argv) == 1:
+        try:
+            registrar = xMsgRegistrar()
+            registrar.join()
+
+        except:
+            registrar.shutdown()
+            return
 
 if __name__ == '__main__':
     main()
