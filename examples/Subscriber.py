@@ -20,6 +20,7 @@
 '''
 from core.xMsg import xMsg
 from core.xMsgUtil import xMsgUtil
+from core.xMsgTopic import xMsgTopic
 from net.xMsgAddress import xMsgAddress
 
 __author__ = 'gurjyan'
@@ -34,7 +35,7 @@ class Subscriber(xMsg):
     xtype = "test_type"
 
     def __init__(self, feHost="localhost"):
-        xMsg.__init__(self, feHost)
+        xMsg.__init__(self, self.myName, feHost)
 
     def callback(self, data):
 
@@ -49,33 +50,23 @@ def main():
     address = xMsgAddress()
     con = subscriber.connect(address)
 
+    # Build Topic
+    topic = xMsgTopic.build(subscriber.domain, subscriber.subject, subscriber.xtype)
+
     # Register this publisher
-    subscriber.register_subscriber(subscriber.myName,
-                                   subscriber.domain,
-                                   subscriber.subject,
-                                   subscriber.xtype)
+    subscriber.register_subscriber(topic)
 
     # Find a publisher that publishes to requested topic
     # defined as a static variables above
-    if len(subscriber.find_local_publisher(subscriber.myName,
-                                           subscriber.domain,
-                                           subscriber.subject,
-                                           subscriber.xtype)) > 0:
+    if len(subscriber.find_local_publisher(topic)) > 0:
 
         # Subscribe by passing a callback to the subscription
-        subscriber.subscribe(con,
-                             subscriber.domain,
-                             subscriber.subject,
-                             subscriber.xtype,
-                             subscriber.callback,
-                             True)
+        subscriber.subscribe(con, topic, subscriber.callback, True)
+
         try:
             xMsgUtil.keep_alive()
         except KeyboardInterrupt:
-            subscriber.remove_subscriber_registration(subscriber.myName,
-                                                      subscriber.domain,
-                                                      subscriber.subject,
-                                                      subscriber.xtype)
+            subscriber.remove_subscriber_registration(topic)
             return
 
 if __name__ == '__main__':

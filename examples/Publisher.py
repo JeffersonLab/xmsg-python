@@ -25,6 +25,7 @@ from core.xMsg import xMsg
 from core.xMsgUtil import xMsgUtil
 from core.xMsgMessage import xMsgMessage
 from net.xMsgAddress import xMsgAddress
+from core.xMsgTopic import xMsgTopic
 
 
 __author__ = 'gurjyan'
@@ -39,7 +40,7 @@ class Publisher(xMsg):
     xtype = "test_type"
 
     def __init__(self, feHost="localhost"):
-        xMsg.__init__(self, feHost)
+        xMsg.__init__(self, self.myName, feHost)
 
 
 def main():
@@ -49,20 +50,18 @@ def main():
     address = xMsgAddress()
     con = publisher.connect(address)
 
+    # Build Topic
+    topic = xMsgTopic.build(publisher.domain, publisher.subject, publisher.xtype)
+
     # Register this publisher
     print xMsgUtil.current_time() + " Info: Publisher says \"I wish i was a publisher :)\""
-    publisher.register_publisher(publisher.myName,
-                                 publisher.domain,
-                                 publisher.subject,
-                                 publisher.xtype)
+    publisher.register_publisher(topic)
     print xMsgUtil.current_time() + " Info: Publisher says \"Now i am a publisher :)\""
 
     # Create array of integers as a message payload.
     # The only argument defines the array size.
     size = sys.argv[1]
-    topic = xMsgUtil.build_topic(publisher.domain,
-                                 publisher.subject,
-                                 publisher.xtype)
+
     # Create transient data
     t_msg = xMsgMessage(topic)
     t_msg.sender = publisher.myName
@@ -101,10 +100,7 @@ def main():
             xMsgUtil.sleep(1)
 
         except KeyboardInterrupt:
-            publisher.remove_publisher_registration(publisher.myName,
-                                                    publisher.domain,
-                                                    publisher.subject,
-                                                    publisher.xtype)
+            publisher.remove_publisher_registration(topic)
             publisher.terminate_threadpool()
             return
 

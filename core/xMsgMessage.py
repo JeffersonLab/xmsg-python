@@ -50,7 +50,7 @@ class xMsgMessage():
     data = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, topic, metadata=None, data=None):
-        self.topic = topic
+        self.topic = str(topic)
         self.metadata = metadata
         self.data = data
 
