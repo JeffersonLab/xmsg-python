@@ -20,6 +20,7 @@
 '''
 from core.xMsgConstants import xMsgConstants
 from data import xMsgMeta_pb2, xMsgData_pb2
+from core.xMsgExceptions import MessageException
 
 __author__ = 'gurjyan'
 
@@ -49,73 +50,68 @@ class xMsgMessage():
     metadata = str(xMsgConstants.UNDEFINED)
     data = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, topic, metadata=None, data=None):
-        self.topic = str(topic)
-        self.metadata = metadata
-        self.data = data
-
-    def get_topic(self):
-        return self.topic
-
-    def set_topic(self, topic):
+    def __init__(self, topic, serialized_data=None):
         self.topic = topic
+        if(isinstance(serialized_data, basestring)
+           or isinstance(serialized_data, bytearray)
+           or isinstance(serialized_data, bytes)):
+            self.data = serialized_data
+        else:
+            raise TypeError("xMsgMessage: Constructor only accepts serialized data")
+
+    @classmethod
+    def create_with_xmsg_data(cls, topic, xmsg_data_object):
+        if isinstance(xmsg_data_object, xMsgData_pb2.xMsgData):
+            return cls(topic, xmsg_data_object.SerializeToString())
+        else:
+            raise TypeError("xMsgMessage: Invalid type of data object")
+
+    @classmethod
+    def create_with_serialized_data(cls, topic, serialized_data):
+        return cls(topic, serialized_data)
+
+    def get_data(self):
+        """
+        Returns data field as python bytes
+        """
+        return self.data
 
     def get_metadata(self):
+        """
+        Returns metadata object (xMsgMeta)
+        """
         return self.metadata
+
+    def get_metadata_bytes(self):
+        """
+        Returns metadata as python bytes
+        """
+        if isinstance(self.get_metadata(), xMsgMeta_pb2.xMsgMeta):
+            try:
+                return self.metadata.SerializeToString()
+            except:
+                return bytes(self.metadata)
+        else:
+            raise MessageException("xMsgMessage: User needs to define metadata")
+            return
+
+    def mimetype(self, mimetype):
+        return self.mimetype
+
+    def msg(self):
+        """
+        Returns the msg
+        """
+        return [bytes(self.get_topic()), self.get_metadata_bytes(), self.get_data()]
+
+    def get_topic(self):
+        """
+        Returns the topic string
+        """
+        return self.topic
 
     def set_metadata(self, metadata):
         self.metadata = metadata
 
-    def get_data(self):
-        return self.data
-
-    def set_data(self, data_object):
-        metadata = xMsgMeta_pb2.xMsgMeta()
-        metadata.dataType = xMsgMeta_pb2.xMsgMeta.X_Object
-        self.metadata = metadata
-        data = xMsgData_pb2.xMsgData()
-
-        # Detecting types
-        if isinstance(data_object, basestring):
-            data.type = xMsgData_pb2.xMsgData.T_STRING
-            data.STRING = data_object
-
-        elif isinstance(data_object, int):
-            data.type = xMsgData_pb2.xMsgData.T_FLSINT32
-            data.FLSINT32 = data_object
-
-        elif isinstance(data_object, long):
-            data.type = xMsgData_pb2.xMsgData.T_FLSINT64
-            data.FLSINT64 = data_object
-
-        elif isinstance(data_object, float):
-            data.type = xMsgData_pb2.xMsgData.T_FLOAT
-            data.FLOAT = data_object
-
-        # Detecting arrays
-        elif all(isinstance(item, int) for item in data_object):
-            data.type = xMsgData_pb2.xMsgData.T_FLSINT32A
-            data.FLSINT32A.extend(data_object)
-
-        elif all(isinstance(item, long) for item in data_object):
-            data.type = xMsgData_pb2.xMsgData.T_FLSINT64A
-            data.FLSINT64A.extend(data_object)
-
-        elif all(isinstance(item, float) for item in data_object):
-            data.type = xMsgData_pb2.xMsgData.T_FLOATA
-            data.FLOATA.extend(data_object)
-
-        elif all(isinstance(item, bytes) for item in data_object):
-            data.type = xMsgData_pb2.xMsgData.T_BYTESA
-            data.BYTESA.extend([bytes(dt) for dt in data_object])
-
-        self.data = data
-
-    def get_metadata_bytes(self):
-        return self.metadata.SerializeToString()
-
-    def get_data_bytes(self):
-        return self.data.SerializeToString()
-
-    def get_serialized_msg(self):
-        return [self.get_topic(), self.get_metadata_bytes(), self.get_data_bytes()]
+    def set_mimetype(self, mimetype):
+        self.mimetype = mimetype

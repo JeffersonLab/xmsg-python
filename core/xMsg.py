@@ -30,6 +30,7 @@ from core.xMsgUtil import xMsgUtil
 from data import xMsgRegistration_pb2, xMsgData_pb2, xMsgMeta_pb2
 from net.xMsgConnection import xMsgConnection
 from xsys.regdis.xMsgRegDriver import xMsgRegDriver
+from core.xMsgExceptions import MessageException
 
 
 
@@ -272,11 +273,11 @@ class xMsg:
 
         return self.find_global(self.myname, r_data, False)
 
-    def publish(self, connection, x_msg):
+    def publish(self, connection, msg):
         """
         Publishes data to a specified xMsg topic.3 elements are defining
         xMsg topic: domain:subject:tip
-        Topic is obtained in xMsgMessage.get_topic() method.
+        Topic is obtained in xMsgMessage.topic() method.
         If subject is set "*" type will be ignored. Here are examples of
         accepted topic definitions:<br>
             domain:*:*
@@ -289,26 +290,28 @@ class xMsg:
         :param x_msg: xMsgMessage transient data object
         """
         con = connection.get_pub_sock()
+
+        # Check connection
         if not con:
             raise NullConnection("xMsg: Null connection object")
-        if not x_msg:
+        # Check msg
+        if not msg:
             raise NullMessage("xMsg: Null message object")
 
-        con.send_multipart(x_msg.get_serialized_msg())
+        data_serial = []
+        data_serial.append(str(msg.get_topic()))
+        data_serial.append("envelope")
+        data_serial.append(msg.get_data())
+
+        con.send_multipart(data_serial)
 
     def subscribe(self, connection, topic, cb, is_sync):
-
-        t1 = threading.Thread(target=self.__sub_module, args=(connection,
-                                                              topic,
-                                                              cb,
-                                                              is_sync))
+        t1 = threading.Thread(target=self.__sub_module,
+                              args=(connection, topic, cb, is_sync))
         t1.setDaemon(True)
         t1.start()
 
-    def __sub_module(self, connection,
-                     topic,
-                     cb,
-                     isSync):
+    def __sub_module(self, connection, topic, cb, is_sync):
         """
         Subscribes to a specified xMsg topic. 3 elements are defining
         xMsg topic: domain:subject:tip
@@ -327,16 +330,12 @@ class xMsg:
         thread.
 
         :param connection: xMsgConnection object
-        :param domain: domain of the subscription
-        :param subject: subject of the subscription
-        :param tip: type of the subscription (type is a python keyword,
-                    i.e. we use tip)
         :param cb: user supplied callback function
         :param isSync: if set to true method will block until user callback
                        method is returned. In case you need to run in a
                        multi-threaded mode,
                        i.e. running parallel user call backs,
-                       set isSync = False
+                       set is_sync = False
         """
 
         # get subscribers socket connection
@@ -352,14 +351,15 @@ class xMsg:
 
                 if len(response) == 3:
 
-                    # de-serialize r_data
-                    ds_data = xMsgData_pb2.xMsgData()
-                    ds_data.ParseFromString(response[2])
-                    result = ds_data
+                    # de-serialize response
+                    serialized_data = response[2]
+                    result = xMsgMessage.create_with_serialized_data(topic,
+                                                                     serialized_data)
 
                     # user callback
-                    if isSync:
+                    if is_sync:
                         cb(result)
+
                     else:
                         # using thread pool
                         # using a new created thread
