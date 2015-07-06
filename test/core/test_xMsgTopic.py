@@ -30,14 +30,8 @@ VALID_CASES = ["aaaa:bbbb:cccc",
 
 BUILD_TOPIC_CASES = [{"args": {"domain": "d", "subject" : "s", "xtype": "t"},
                       "result": "d:s:t"},
-                     {"args": {"domain": "d", "subject" : "s"},
-                      "result": "d:s"},
-                     {"args": {"domain": "d"},
-                      "result": "d"},
-                     {"args": {"domain": "d", "subject" : "*"},
-                      "result": "d"},
-                     {"args": {"domain": "d", "subject" : "s", "xtype" : "*"},
-                      "result": "d:s"},
+                     {"args": {"domain": "_ddd", "subject" : "sss_s", "xtype": "t_ttt"},
+                      "result": "_ddd:sss_s:t_ttt"},
                      ]
 
 
@@ -58,16 +52,23 @@ class TestXMsgTopic(unittest.TestCase):
                           xMsgTopic.build, "*", "s", "t")
 
     def test_get_domain(self):
-        for case in VALID_CASES:
-            test_case = xMsgTopic.wrap(case)
+        for case in BUILD_TOPIC_CASES:
+            test_case = xMsgTopic.build(**case["args"])
             self.assertIsNotNone(test_case.domain())
 
     def test_get_subject(self):
-        for case in VALID_CASES:
-            test_case = xMsgTopic.wrap(case)
+        for case in BUILD_TOPIC_CASES:
+            test_case = xMsgTopic.build(**case["args"])
             self.assertIsNotNone(test_case.subject())
 
     def test_get_type(self):
+        for case in BUILD_TOPIC_CASES:
+            test_case = xMsgTopic.build(**case["args"])
+            self.assertIsNotNone(test_case.type())
+
+    def test_wrap_builder(self):
         for case in VALID_CASES:
             test_case = xMsgTopic.wrap(case)
-            self.assertIsNotNone(test_case.type())
+            self.assertIsInstance(test_case, xMsgTopic)
+            validated = str(test_case) in VALID_CASES
+            self.assertEqual(validated, True)

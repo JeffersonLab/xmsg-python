@@ -39,8 +39,8 @@ class xMsgTopic:
     def __init__(self, topic):
         self.topic = topic
 
-    @staticmethod
-    def build(domain, subject=ANY, xtype=ANY):
+    @classmethod
+    def build(cls, domain, subject=ANY, xtype=ANY):
         if (not domain or domain == str(xMsgConstants.UNDEFINED) or
                 domain == ANY):
             raise UndefinedTopicDomain
@@ -51,20 +51,12 @@ class xMsgTopic:
                 if xtype and xtype != ANY:
                     t_arr = SEPARATOR.join([t for t in xtype.split(SEPARATOR)
                                             if t != ANY])
-                    return xMsgTopic(topic + SEPARATOR + t_arr)
-            return xMsgTopic(topic)
+                    return cls(topic + SEPARATOR + t_arr)
+            return cls(topic)
 
-    @staticmethod
-    def _get_topic_group(topic, group):
-        match = TOPIC_VALIDATOR.match(topic)
-        if match and match.group(group):
-            return match.group(group)
-        else:
-            raise MalformedCanonicalName
-
-    @staticmethod
-    def wrap(topic):
-        return xMsgTopic(topic)
+    @classmethod
+    def wrap(cls, topic):
+        return cls(topic)
 
     def domain(self):
         """
@@ -74,11 +66,14 @@ class xMsgTopic:
         :return: domain of the topic
         """
         try:
-            domain = self._get_topic_group(self.topic, TOPIC_DOMAIN_GROUP)
-        except MalformedCanonicalName:
-            raise
-        else:
-            return domain
+            return self._get_topic_group(self.topic, TOPIC_DOMAIN_GROUP)
+
+        except:
+            raise MalformedCanonicalName("xMsgTopic: undefined or malformed topic")
+
+
+    def is_parent(self, other):
+        return self.topic.startswith(str(other))
 
     def subject(self):
         """
@@ -88,11 +83,10 @@ class xMsgTopic:
         :return: subject of the topic
         """
         try:
-            subject = self._get_topic_group(self.topic, TOPIC_SUBJECT_GROUP)
-        except MalformedCanonicalName:
-            raise
-        else:
-            return subject
+            return self._get_topic_group(self.topic, TOPIC_SUBJECT_GROUP)
+
+        except:
+            raise MalformedCanonicalName("xMsgTopic: Received %s" %self.topic)
 
     def type(self):
         """
@@ -102,14 +96,17 @@ class xMsgTopic:
         :return: type of the topic
         """
         try:
-            xtype = self._get_topic_group(self.topic, TOPIC_XTYPE_GROUP)
-        except MalformedCanonicalName:
-            raise
+            return self._get_topic_group(self.topic, TOPIC_XTYPE_GROUP)
+
+        except:
+            raise MalformedCanonicalName("xMsgTopic: Received %s" %self.topic)
+
+    def _get_topic_group(self, topic, group):
+        match = TOPIC_VALIDATOR.match(topic)
+        if match.group(group):
+            return match.group(group)
         else:
-            return xtype
-        
-    def is_parent(self, other):
-        return self.topic.startswith(str(other))
+            raise MalformedCanonicalName("xMsgTopic: Received %s" %self.topic)
 
     def __str__(self):
         return self.topic
