@@ -22,6 +22,7 @@ from core.xMsg import xMsg
 from core.xMsgUtil import xMsgUtil
 from core.xMsgTopic import xMsgTopic
 from net.xMsgAddress import xMsgAddress
+from data import xMsgData_pb2
 
 __author__ = 'gurjyan'
 
@@ -37,10 +38,12 @@ class Subscriber(xMsg):
     def __init__(self, feHost="localhost"):
         xMsg.__init__(self, self.myName, feHost)
 
-    def callback(self, data):
-
-        print "Subscriber received data with type : " + str(data.type)
-        print data
+    def callback(self, msg):
+        print "Subscriber received data : "
+        # User takes care of the proper de-serialization
+        ds_msg = xMsgData_pb2.xMsgData()
+        ds_msg.ParseFromString(msg.get_data())
+        print ds_msg
 
 
 def main():

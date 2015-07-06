@@ -23,9 +23,10 @@ import sys
 
 from core.xMsg import xMsg
 from core.xMsgUtil import xMsgUtil
-from core.xMsgMessage import xMsgMessage
-from net.xMsgAddress import xMsgAddress
 from core.xMsgTopic import xMsgTopic
+from core.xMsgMessage import xMsgMessage
+from data import xMsgData_pb2, xMsgMeta_pb2
+from net.xMsgAddress import xMsgAddress
 
 
 __author__ = 'gurjyan'
@@ -62,44 +63,24 @@ def main():
     # The only argument defines the array size.
     size = sys.argv[1]
 
-    # Create transient data
-    t_msg = xMsgMessage(topic)
-    t_msg.sender = publisher.myName
-
-    data_type_array = ["T_STRING", "T_FLSINT32", "T_FLOAT", "T_FLSINT32A", "T_FLSINT64A",
-                       "T_FLOATA", "T_BYTESA"]
-
     # Publish data for ever...
     while True:
         try:
-            data_type_n = random.randint(0, 6)
+            data = [float(random.randint(1, 10)) for _ in range(0, int(size))]
 
-            if data_type_n == 0:
-                t_msg.set_data("some test string!!!")
-
-            elif data_type_n == 1:
-                t_msg.set_data(int(random.randint(1, 100)))
-
-            elif data_type_n == 2:
-                t_msg.set_data(long(random.randint(1,100)))
-
-            elif data_type_n == 3:
-                t_msg.set_data([random.randint(1, 10) for _ in range(0, int(size))])
-
-            elif data_type_n == 4:
-                t_msg.set_data([long(random.randint(1, 10)) for _ in range(0, int(size))])
-
-            elif data_type_n == 5:
-                t_msg.set_data([float(random.randint(1, 10)) for _ in range(0, int(size))])
-
-            elif data_type_n == 6:
-                t_msg.set_data(bytearray([0x00, 0x00, 0x00, 0x08, 0x00]))
-
+            # Create transient data
+            t_msg_data = xMsgData_pb2.xMsgData()
+            t_msg_data.type = xMsgData_pb2.xMsgData.T_FLOATA
+            t_msg_data.FLOATA.extend(data)
+            t_msg_meta = xMsgMeta_pb2.xMsgMeta()
+            t_msg_meta.dataType = xMsgMeta_pb2.xMsgMeta.X_Object
+            t_msg = xMsgMessage.create_with_xmsg_data(topic, t_msg_data)
             publisher.publish(con, t_msg)
-            print "publishing : " + data_type_array[data_type_n]
+            print "publishing : T_FLOATA"
             xMsgUtil.sleep(1)
 
         except KeyboardInterrupt:
+            print "Removing Registration and terminating the thread pool..."
             publisher.remove_publisher_registration(topic)
             publisher.terminate_threadpool()
             return
