@@ -67,7 +67,8 @@ class xMsgRegDatabase():
                     if len(self.db[key]) == 0:
                         del self.db[key]
 
-    def find(self, domain, subject, xtype):
+    def find(self, domain, subject=str(xMsgConstants.ANY),
+             xtype=str(xMsgConstants.ANY)):
         if subject == "*" or subject == "undefined":
             subject = ":(.+)"
             xtype = ""
@@ -105,4 +106,7 @@ class xMsgRegDatabase():
         return self.db.keys()
 
     def get(self, topic):
-        return self.db.get(topic)
+        return self.db.get(str(topic))
+
+    def __str__(self):
+        return str(self.db)

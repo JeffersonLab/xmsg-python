@@ -77,8 +77,7 @@ class xMsgRegService(threading.Thread):
 
     def process_request(self, recv_req):
         try:
-            request = xMsgRegRequest()
-            request.init_from_request(recv_req)
+            request = xMsgRegRequest.create_from_multipart_request(recv_req)
             registration = Set([])
             sender = xMsgUtil.get_local_ip() + ":" + str(xMsgConstants.REGISTRAR)
             

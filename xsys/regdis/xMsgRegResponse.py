@@ -30,32 +30,36 @@ class xMsgRegResponse:
     status = str(xMsgConstants.SUCCESS)
     data = []
 
-    def __init__(self, topic=None, sender=None, data=None):
+    def __init__(self, topic, sender, data, status=str(xMsgConstants.SUCCESS)):
         self.topic = topic
         self.sender = sender
+        self.status = status
         if data is not None:
             for d in data:
                 self.data.append(d)
 
-    def init_from_request(self, request):
-        self.topic = request[0]
-        self.sender = request[1]
-        self.status = request[2]
+    @classmethod
+    def create_from_multipart_request(cls, request):
+        topic = request[0]
+        sender = request[1]
+        status = request[2]
 
-        xMsgUtil.log("Request " + str(self.topic) + " had response : " + str(self.status).capitalize())
+        xMsgUtil.log("Request " + str(topic) + " had response : " + str(status))
         xMsgUtil.log("\tDetails  : ")
         xMsgUtil.log("\t-----------")
-        xMsgUtil.log("\ttopic  : " + str(self.topic))
-        xMsgUtil.log("\tsender : " + str(self.sender))
-        xMsgUtil.log("\tstatus : " + str(self.status))
+        xMsgUtil.log("\ttopic  : " + str(topic))
+        xMsgUtil.log("\tsender : " + str(sender))
+        xMsgUtil.log("\tstatus : " + str(status))
 
         try:
-            self.data = request[3]
-            xMsgUtil.log("\tdata   : True (with size : " + str(sys.getsizeof(self.data)) + ")")
+            data = request[3]
+            xMsgUtil.log("\tdata   : True (with size : " + str(sys.getsizeof(data)) + ")")
 
         except IndexError:
-            self.data = []
+            data = []
             xMsgUtil.log("\tdata : False")
+        finally:
+            return cls(topic, sender, data, status)
 
     def get_topic(self):
         return str(self.topic)

@@ -39,14 +39,15 @@ class xMsgRegRequest:
         self.sender = sender
         self.data = data
 
-    def init_from_request(self, request):
+    @classmethod
+    def create_from_multipart_request(cls, multipart_request):
         """
         Initialize RegRequest serialized message
         """
         try:
-            self.topic = request[0]
-            self.sender = request[1]
-            self.data = request[2]
+            return cls(multipart_request[0],
+                       multipart_request[1],
+                       multipart_request[2])
         except:
             raise BadRequest("Malformed request message")
 

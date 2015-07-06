@@ -262,8 +262,7 @@ class xMsgRegDriver:
         if poller.poll(timeout * 1000):
             # timeout in milliseconds
             request = socket.recv_multipart()
-            response = xMsgRegResponse()
-            response.init_from_request(request)
+            response = xMsgRegResponse.create_from_multipart_request(request)
 
             if response.get_status() != str(xMsgConstants.SUCCESS):
                 raise RegistrationException(response.get_status())
