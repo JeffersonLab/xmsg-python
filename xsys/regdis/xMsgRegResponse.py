@@ -20,6 +20,7 @@
 '''
 from core.xMsgConstants import xMsgConstants
 from core.xMsgUtil import xMsgUtil
+import sys
 
 
 class xMsgRegResponse:
@@ -50,7 +51,7 @@ class xMsgRegResponse:
 
         try:
             self.data = request[3]
-            xMsgUtil.log("\tdata   : True (with size : " + str(len(self.data)) + ")")
+            xMsgUtil.log("\tdata   : True (with size : " + str(sys.getsizeof(self.data)) + ")")
 
         except IndexError:
             self.data = []

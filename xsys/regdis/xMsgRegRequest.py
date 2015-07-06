@@ -29,7 +29,7 @@ class xMsgRegRequest:
     sender = str(xMsgConstants.UNDEFINED)
     data = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, topic = None, sender = None, data = None):
+    def __init__(self, topic=None, sender=None, data=None):
         '''
         :param topic: Request topic
         :param sender: sender of the xMsg request

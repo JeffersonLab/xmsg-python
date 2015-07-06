@@ -264,8 +264,7 @@ class xMsgRegDriver:
             request = socket.recv_multipart()
             response = xMsgRegResponse()
             response.init_from_request(request)
-            # data sent back from the registration server should be a string
-            # containing "success"
+
             if response.get_status() != str(xMsgConstants.SUCCESS):
                 raise RegistrationException(response.get_status())
 
