@@ -19,63 +19,209 @@
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
 import unittest
+
+from core.xMsgTopic import xMsgTopic
 from xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
 from data import xMsgRegistration_pb2
 from sets import Set
 
 
+def new_registration(topic, name, host):
+    reg_info = xMsgRegistration_pb2.xMsgRegistration()
+    reg_info.domain = topic.domain()
+    reg_info.subject = topic.subject()
+    reg_info.type = topic.type()
+    reg_info.name = name
+    reg_info.description = "some test description..."
+    reg_info.host = host
+    reg_info.port = 8000
+    return reg_info
+
 class TestXMsgRegDatabase(unittest.TestCase):
+    topic0 = xMsgTopic.build("test_domain_0", "test_subject_0", "test_type_0")
+    topic1 = xMsgTopic.build("test_domain_1", "test_subject_1", "test_type_1")
+    topic2 = xMsgTopic.build("test_domain_2", "test_subject_2", "test_type_2")
+    topic3 = xMsgTopic.build("test_domain_3", "test_subject_3", "test_type_3")
+    # First case
+    reg1 = new_registration(topic0, "name0", "10.2.2.1")
+
+    asimov1 = new_registration(topic0, "asimov", "10.2.2.1")
+    asimov2 = new_registration(topic0, "asimov", "10.2.2.2")
+    bradbury1 = new_registration(topic0, "bradbury", "10.2.2.1")
+    bradbury2 = new_registration(topic0, "bradbury", "10.2.2.2")
+
+    twain1 = new_registration(topic1, "twain", "10.2.2.1")
+    twain2 = new_registration(topic1, "twain", "10.2.2.2")
+
+    brando = new_registration(topic2, "brando", "10.2.2.2")
+
+    tolkien = new_registration(topic3, "tolkien", "10.2.2.1")
+
+    topic = "test_domain:test_subject:test_type"
 
     def setUp(self):
         self.db = xMsgRegDatabase()
-        self.reg_info = xMsgRegistration_pb2.xMsgRegistration()
-        self.reg_info.domain = "test_domain"
-        self.reg_info.subject = "test_subject"
-        self.reg_info.type = "test_type"
-        self.reg_info.name = "test_name"
-        self.reg_info.description = "some test description..."
-        self.reg_info.host = "localhost"
-        self.reg_info.port = 8000
 
-        self.topic = "test_domain:test_subject:test_type"
-        self.undefined_topic = "test_domain:test_subject:test_typexxx"
+    def test_empty_db(self):
+        self.assertIsInstance(self.db.all(), list) and not self.db.all()
 
-    def test_register(self):
-        self.db.register(self.reg_info)
-        self.assertEqual(self.db.get(self.topic),
-                         Set([self.reg_info.SerializeToString()]))
+    def test_register_first_topic_creates_first_topic(self):
+        self.db.register(self.reg1)
 
-    def test_get_some_result(self):
-        self.db.register(self.reg_info)
-        self.assertIsNotNone(self.db.get(self.topic))
+        self.assertEqual(self.db.get(self.topic0),
+                         Set([self.reg1.SerializeToString()]))
 
-    def test_get_none_result(self):
-        self.db.register(self.reg_info)
-        self.assertIsNone(self.db.get(self.undefined_topic))
+    def test_add_next_registration_of_first_topic(self):
+        self.db.register(self.twain1)
+        self.db.register(self.twain2)
+        test_case = self.db.get(self.topic1)
 
-    def test_remove(self):
-        self.db.register(self.reg_info)
-        self.db.remove(self.reg_info)
-        self.assertIsNone(self.db.get(self.topic))
+        self.assertEqual(len(test_case), 2)
+        self.assertEqual(test_case,
+                         Set([self.twain1.SerializeToString(),
+                              self.twain2.SerializeToString()]))
+
+    def test_add_first_registration_new_topic(self):
+        self.db.register(self.asimov1)
+        self.db.register(self.bradbury1)
+        self.db.register(self.twain1)
+        self.db.register(self.tolkien)
+
+        self.assertEqual(len(self.db.all()), 3)
+        self.assertEqual(self.db.all(),
+                         [str(self.topic0),
+                          str(self.topic1),
+                          str(self.topic3)])
+
+        test_case = self.db.get(self.topic0)
+        self.assertEqual(test_case, Set([self.asimov1.SerializeToString(),
+                                         self.bradbury1.SerializeToString()]))
+
+        test_case = self.db.get(self.topic1)
+        self.assertEqual(test_case, Set([self.twain1.SerializeToString()]))
+
+        test_case = self.db.get(self.topic3)
+        self.assertEqual(test_case, Set([self.tolkien.SerializeToString()]))
+
+    def add_duplicated_registration_does_nothing(self):
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.bradbury1)
+        self.db.register(self.bradbury1)
+
+        test_case = self.db.get(self.topic0)
+        self.assertEqual(test_case,
+                         Set([self.asimov1.SerializeToString(),
+                              self.bradbury1.SerializeToString()]))
+
+    def test_remove_register_with_only_topic_db_one_element(self):
+        self.db.clear()
+        self.db.register(self.reg1)
+        self.db.remove(self.reg1)
+
+        self.assertIsNone(self.db.get(self.topic0))
+        self.assertEqual(self.db.all(), [])
+
+    def test_remove_register_with_only_topic_with_several_element(self):
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.asimov2)
+        self.db.register(self.bradbury1)
+        self.db.remove(self.asimov2)
+
+        test_case = self.db.find("test_domain_0", "test_subject_0", "test_type_0")
+
+        self.assertEqual(test_case, Set([self.asimov1.SerializeToString(),
+                                         self.bradbury1.SerializeToString()]))
+
+    def test_remove_register_with_topic_with_one_element(self):
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.twain1)
+        self.db.register(self.twain2)
+        self.db.remove(self.asimov1)
+
+        test_case = self.db.find("test_domain_1", "test_subject_1", "test_type_1")
+        self.assertEqual(self.db.all(), [str(self.topic1)])
+        self.assertEqual(test_case, Set([self.twain1.SerializeToString(),
+                                         self.twain2.SerializeToString()]))
+
+    def test_remove_register_with_topic_db_several_element(self):
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.asimov2)
+        self.db.register(self.bradbury1)
+        self.db.register(self.twain1)
+        self.db.register(self.twain2)
+        self.db.remove(self.bradbury1)
+
+        self.assertEqual(self.db.all(), [str(self.topic0), str(self.topic1)])
+
+        self.assertEqual(self.db.get("test_domain_0:test_subject_0:test_type_0"),
+                         Set([self.asimov1.SerializeToString(),
+                              self.asimov2.SerializeToString()]))
+
+        self.assertEqual(self.db.get("test_domain_1:test_subject_1:test_type_1"),
+                         Set([self.twain1.SerializeToString(),
+                              self.twain2.SerializeToString()]))
+    def test_remove_missing_registration_does_nothing(self):
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.asimov2)
+
+        self.db.remove(self.bradbury1)
+
+        self.assertEqual(self.db.get(str(self.topic0)),
+                         Set([self.asimov1.SerializeToString(),
+                              self.asimov2.SerializeToString()]))
 
     def test_remove_by_host(self):
-        self.db.register(self.reg_info)
-        self.db.remove_by_host("localhost")
-        self.assertIsNone(self.db.get(self.topic))
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.asimov2)
+        self.db.register(self.bradbury1)
+        self.db.register(self.bradbury2)
+        self.db.register(self.twain1)
+        self.db.register(self.twain2)
 
-    def test_get_all_publishers_in_domain(self):
-        set_all = Set([self.reg_info.SerializeToString()])
-        self.db.register(self.reg_info)
-        test_case = self.db.find("test_domain", "*", "*")
-        self.assertEqual(test_case, set_all)
+        self.db.remove_by_host("10.2.2.1")
 
-    def test_topic(self):
-        set_topic = Set([self.reg_info.SerializeToString()])
-        self.db.register(self.reg_info)
-        self.assertEqual(self.db.get(self.topic), set_topic)
+        self.assertEqual(self.db.get("test_domain_0:test_subject_0:test_type_0"),
+                         Set([self.asimov2.SerializeToString(),
+                              self.bradbury2.SerializeToString()]))
+        self.assertEqual(self.db.get("test_domain_1:test_subject_1:test_type_1"),
+                         Set([self.twain2.SerializeToString()]))
 
-    def test_topic_none(self):
-        self.assertIsNone(self.db.get(self.undefined_topic))
+    def test_get_by_domain(self):
+        self.db.clear()
+        self.db.register(self.reg1)
+
+        test_case = self.db.find(self.reg1.domain)
+        self.assertEqual(test_case, Set([self.reg1.SerializeToString()]))
+
+    def test_get_by_domain_and_subject(self):
+        self.db.clear()
+        self.db.register(self.reg1)
+
+        test_case = self.db.find(self.reg1.domain, self.reg1.subject)
+        self.assertEqual(test_case, Set([self.reg1.SerializeToString()]))
+
+    def test_find_set_by_topic(self):
+        self.db.clear()
+        self.db.register(self.reg1)
+
+        self.assertEqual(self.db.get(self.topic0),
+                         Set([self.reg1.SerializeToString()]))
+        self.assertIsNone(self.db.get(self.topic1))
+
+    def test_find_unregistered_topic_returns_none(self):
+        self.db.clear()
+        self.db.register(self.asimov1)
+        self.db.register(self.bradbury2)
+        self.db.register(self.brando)
+        self.db.register(self.tolkien)
+
+        self.assertIsNone(self.db.find(str(self.topic1)))
 
 if __name__ == "__main__":
     unittest.main()

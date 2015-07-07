@@ -40,12 +40,10 @@ class xMsgRegDatabase():
 
     def remove(self, registration_data):
         key = self._generate_key(registration_data)
+        r_data = registration_data.SerializeToString()
         if self.db.get(key):
             for db_data in self.db[key].copy():
-                data_obj = xMsgRegistration_pb2.xMsgRegistration()
-                data_obj.ParseFromString(db_data)
-                if(data_obj.name == registration_data.name and
-                   data_obj.host == registration_data.host):
+                if db_data == r_data:
                     self.db[key].remove(db_data)
                     if len(self.db[key]) == 0:
                         del self.db[key]
@@ -107,6 +105,10 @@ class xMsgRegDatabase():
 
     def get(self, topic):
         return self.db.get(str(topic))
+
+    def clear(self):
+        self.db.clear()
+        self.db = dict()
 
     def __str__(self):
         return str(self.db)
