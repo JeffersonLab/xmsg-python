@@ -23,20 +23,11 @@ import netifaces as ni
 from datetime import datetime
 import socket
 import time
-import re
 
-from core.xMsgExceptions import MalformedCanonicalName, UndefinedTopicDomain
 from core.xMsgConstants import xMsgConstants
+from data import xMsgRegistration_pb2
 
 __author__ = 'gurjyan'
-
-TOPIC_PATTERN = "^([^: ]+)(:(\\w+)(:(\\w+))?)?$"
-TOPIC_VALIDATOR = re.compile(TOPIC_PATTERN)
-TOPIC_SEP = ":"
-# Topic groups generated in the regular expression TOPIC_PATTERN
-TOPIC_DOMAIN_GROUP = 1
-TOPIC_SUBJECT_GROUP = 3
-TOPIC_XTYPE_GROUP = 5
 
 
 class xMsgUtil:
@@ -45,72 +36,22 @@ class xMsgUtil:
         pass
 
     @staticmethod
-    def build_topic(domain, subject=None, xtype=None):
-        if (not domain or domain == str(xMsgConstants.UNDEFINED) or
-                domain == str(xMsgConstants.ANY)):
-            raise UndefinedTopicDomain
+    def build_registration(name, description, domain, subject, xtype, is_publisher):
+        r_data = xMsgRegistration_pb2.xMsgRegistration()
+        r_data.name = name
+        r_data.description = description
+        r_data.host = xMsgUtil.get_local_ip()
+        r_data.port = int(xMsgConstants.DEFAULT_PORT)
+        r_data.domain = domain
+        r_data.subject = subject
+        r_data.type = xtype
+
+        if is_publisher:
+            r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
         else:
-            topic = domain
-            if subject and subject != str(xMsgConstants.ANY):
-                topic += TOPIC_SEP + subject
-                if xtype and xtype != str(xMsgConstants.ANY):
-                    t_arr = TOPIC_SEP.join([t for t in xtype.split(TOPIC_SEP)
-                                            if t != str(xMsgConstants.ANY)])
-                    return topic + TOPIC_SEP + t_arr
-            return topic
+            r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
 
-    @staticmethod
-    def _get_topic_group(topic, group):
-        match = TOPIC_VALIDATOR.match(topic)
-        if match and match.group(group):
-            return match.group(group)
-        else:
-            raise MalformedCanonicalName
-
-    @staticmethod
-    def get_domain(topic):
-        """
-        Parses xMsg topic and returns domain of the topic
-
-        :param topic: xMsg topic constructed as domain:subject:xtype
-        :return: domain of the topic
-        """
-        try:
-            domain = xMsgUtil._get_topic_group(topic, TOPIC_DOMAIN_GROUP)
-        except MalformedCanonicalName:
-            raise
-        else:
-            return domain
-
-    @staticmethod
-    def get_subject(topic):
-        """
-        Parses xMsg topic and returns subject of the topic
-
-        :param topic: xMsg topic constructed as domain:subject:xtype
-        :return: subject of the topic
-        """
-        try:
-            subject = xMsgUtil._get_topic_group(topic, TOPIC_SUBJECT_GROUP)
-        except MalformedCanonicalName:
-            raise
-        else:
-            return subject
-
-    @staticmethod
-    def get_type(topic):
-        """
-        Parses xMsg topic and returns type of the topic
-
-        :param topic: xMsg topic constructed as domain:subject:xtype
-        :return: type of the topic
-        """
-        try:
-            xtype = xMsgUtil._get_topic_group(topic, TOPIC_XTYPE_GROUP)
-        except MalformedCanonicalName:
-            raise
-        else:
-            return xtype
+        return r_data
 
     @staticmethod
     def host_to_ip(hostname):
@@ -129,7 +70,7 @@ class xMsgUtil:
                 return hostname
 
     @staticmethod
-    def get_local_ip(n_iface='en1'):
+    def get_local_ip(n_iface='lo0'):
         try:
             return str(ni.ifaddresses(n_iface)[AF_INET][0]['addr'])
         except ValueError:
