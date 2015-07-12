@@ -65,11 +65,11 @@ class xMsgRegistrar(xMsgRegDriver):
         and go, thus making xMsg message-space elastic.
 
         """
-        xMsgRegDriver.__init__(self, fe_host)
-        self.context = zmq.Context()
-        self.proxy = xMsgProxy(self.context)
+        xMsgRegDriver.__init__(self, zmq.Context() , fe_host)
 
-        self.reg_service = xMsgRegService(self.context)
+        self.proxy = xMsgProxy(self.get_context())
+
+        self.reg_service = xMsgRegService(self.get_context())
         self.reg_service.daemon = True
         self.reg_service.start()
 
@@ -83,7 +83,7 @@ class xMsgRegistrar(xMsgRegDriver):
 
     def shutdown(self):
         xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
-        self.context.destroy()
+        self.get_context().destroy()
 
     def join(self):
         self.reg_service.join()
