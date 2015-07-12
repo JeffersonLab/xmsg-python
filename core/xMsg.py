@@ -27,10 +27,9 @@ from core.xMsgExceptions import NullConnection, NullMessage
 from core.xMsgConstants import xMsgConstants
 from core.xMsgMessage import xMsgMessage
 from core.xMsgUtil import xMsgUtil
-from data import xMsgRegistration_pb2, xMsgData_pb2, xMsgMeta_pb2
+from data import xMsgRegistration_pb2
 from net.xMsgConnection import xMsgConnection
 from xsys.regdis.xMsgRegDriver import xMsgRegDriver
-from core.xMsgExceptions import MessageException
 
 
 
@@ -74,7 +73,7 @@ class xMsg:
         self.myname = name
 
         # Initialize registration driver
-        self.driver = xMsgRegDriver(feHost)
+        self.driver = xMsgRegDriver(zmq.Context(), feHost)
         self.localhost_ip = xMsgUtil.host_to_ip("localhost")
 
         # create fixed size thread pool

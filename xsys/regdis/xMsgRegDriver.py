@@ -40,26 +40,20 @@ class xMsgRegDriver:
     # zmq context
     context = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, feHost=None):
-        self.context = zmq.Context()
+    def __init__(self, context, fe_host="localhost"):
+        self.context = context
 
-        if feHost is None:
-
+        self._feConnection = self.zmq_socket(self.context, zmq.REQ,
+                                             xMsgUtil.host_to_ip(fe_host),
+                                             int(xMsgConstants.REGISTRAR_PORT),
+                                             str(xMsgConstants.CONNECT))
+        if fe_host != "localhost":
             self._lnConnection = self.zmq_socket(self.context, zmq.REQ,
                                                  xMsgUtil.host_to_ip("localhost"),
                                                  int(xMsgConstants.REGISTRAR_PORT),
                                                  str(xMsgConstants.CONNECT))
-            self._feConnection = self._lnConnection
         else:
-            self._feConnection = self.zmq_socket(self.context, zmq.REQ,
-                                                 xMsgUtil.host_to_ip(feHost),
-                                                 int(xMsgConstants.REGISTRAR_PORT),
-                                                 str(xMsgConstants.CONNECT))
-
-            self._lnConnection = self.zmq_socket(self.context, zmq.REQ,
-                                                 xMsgUtil.host_to_ip("localhost"),
-                                                 int(xMsgConstants.REGISTRAR_PORT),
-                                                 str(xMsgConstants.CONNECT))
+            self._lnConnection = self._feConnection
 
     def get_context(self):
         """
@@ -162,7 +156,7 @@ class xMsgRegDriver:
         """
         # Data serialization
         if data.IsInitialized():
-            dt = data.SerializeToString()
+            serialized_data = data.SerializeToString()
 
             # Send topic, sender, followed by the data
             # Topic of the message is a string = "findPublisher"
@@ -172,8 +166,8 @@ class xMsgRegDriver:
             else:
                 topic = str(xMsgConstants.FIND_SUBSCRIBER)
             timeout = int(xMsgConstants.FIND_REQUEST_TIMEOUT)
-            request = xMsgRegRequest(topic, name, dt)
-            return self.request(conn_socket, request, timeout)
+            request_message = xMsgRegRequest(topic, name, serialized_data)
+            return self.request(conn_socket, request_message, timeout)
             
 
     def register_fe(self, name, data, is_publisher):
