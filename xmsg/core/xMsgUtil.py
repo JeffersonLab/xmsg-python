@@ -23,6 +23,7 @@ import netifaces as ni
 from datetime import datetime
 import socket
 import time
+import re
 
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgRegistration_pb2
@@ -77,6 +78,20 @@ class xMsgUtil:
             xMsgUtil.log("xMsg received : " + str(n_iface))
             xMsgUtil.log("A valid network interface should be provided...")
             return
+
+    @staticmethod
+    def is_ip(hostname):
+        c_pat = re.compile("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}" + \
+                           "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
+        if c_pat.match(hostname):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def get_local_ips():
+        return ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1])
+
 
     @staticmethod
     def list_to_string(in_l):

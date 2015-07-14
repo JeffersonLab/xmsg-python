@@ -23,6 +23,9 @@ import unittest
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.data import xMsgRegistration_pb2
 
+IPREGX = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}"+\
+         "(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
 
 class TestXMsgUtil(unittest.TestCase):
 
@@ -42,6 +45,13 @@ class TestXMsgUtil(unittest.TestCase):
     def test_get_local_ip(self):
         test_case = xMsgUtil.get_local_ip()
         self.assertIsInstance(test_case, basestring)
+
+    def test_get_local_ips(self):
+        test_case = xMsgUtil.get_local_ips()
+        self.assertIsNot(len(test_case), 0)
+        for ip in test_case:
+            self.assertRegexpMatches(str(ip), IPREGX)
+            self.assertEqual(True, xMsgUtil.is_ip(ip))
 
 if __name__ == "__main__":
     unittest.main()
