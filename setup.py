@@ -60,6 +60,7 @@ if __name__ == '__main__':
           cmdclass={'test': PyTest},
           packages=find_packages(exclude=["*.tests", "*.tests.*",
                                           "tests.*", "tests"]),
-          install_requires=['pyzmq>=14.5.0', 'protobuf>=2.6', 'mock>=1.0.1',
-                            'enum34>=1.0.4', 'argparse>=1.2.1', 'netifaces>=0.10.4']
+          install_requires=['setuptools>=17.1.0', 'pyzmq>=14.5.0', 'protobuf>=2.6',
+                            'mock>=1.0.1', 'enum34>=1.0.4',
+                            'argparse>=1.2.1', 'netifaces>=0.10.4']
           )
