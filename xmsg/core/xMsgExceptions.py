@@ -48,5 +48,11 @@ class TimeoutReached(RegistrationException):
 class BadResponse(MessageException):
     pass
 
+
 class BadRequest(MessageException):
     pass
+
+
+class SubscriptionException(Exception):
+    pass
+
