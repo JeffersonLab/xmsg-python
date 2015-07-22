@@ -30,7 +30,8 @@ from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.data import xMsgRegistration_pb2
 from xmsg.net.xMsgConnection import xMsgConnection
 from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
-
+from xmsg.net.xMsgAddress import xMsgAddress
+from xmsg.core.xMsgSubscription import xMsgSubscription
 
 
 __author__ = 'gurjyan'
@@ -52,7 +53,7 @@ class xMsg:
 
     # zmq context object
     driver = str(xMsgConstants.UNDEFINED)
-
+    context = str(xMsgConstants.UNDEFINED)
     # Private db of stored connections
     _connections = dict()
 
@@ -60,35 +61,52 @@ class xMsg:
     threadPool = str(xMsgConstants.UNDEFINED)
     pool_size = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, name, feHost, pool_size=2):
+    def __init__(self, name, fe_host, **kwargs):
         """
         Constructor, requires the name of the FrontEnd host that is used
         to create to the registrar service running within the xMsgFE.
         Creates the zmq context object and thread pool for servicing
         received messages in a separate threads.
-        :param feHost: host name of FE
-        :param pool_size: thread pool size
+
+        Args:
+            name (string): name for the xMsg actor
+
+            fe_host (string): hostname of the frontend host
+
+        KeyWord arguments:
+            pool_size (int): size of the actors thread pool
+
+        Returns:
+            xMsg object
         """
         # Name of xMsg Actor
         self.myname = name
 
+        context = kwargs.pop("context", False)
+        self.context = context if context else zmq.Context()
+
+        pool_size = kwargs.pop("pool_size", False)
+        self.pool_size = pool_size if pool_size else 2
+
         # Initialize registration driver
-        self.driver = xMsgRegDriver(zmq.Context(), feHost)
+        self.driver = xMsgRegDriver(self.context, fe_host)
         self.localhost_ip = xMsgUtil.host_to_ip("localhost")
 
         # create fixed size thread pool
-        self.pool_size = pool_size
         self.threadPool = Pool(self.pool_size, self.init_worker)
 
-    def connect(self, address):
+    def connect(self, address=xMsgAddress("localhost")):
         """
         Connects to the xMsgNode by creating two sockets for publishing and
         subscribing/receiving messages. It returns and the same time stores
         in the local connection database created
         xMsgConnection object.
 
-        :param address: xMsgAddress object
-        :return: xMsgConnection object
+        Args:
+            address (xMsgAddress): Address object
+
+        Returns:
+            xMsgConnection object
         """
 
         # First check to see if we have already
@@ -102,14 +120,14 @@ class xMsg:
             # Return the reference to the connection object
             feCon = xMsgConnection()
             feCon.set_address(address)
-            soc_p = self.driver.zmq_socket(self.driver.context,
+            soc_p = self.driver.zmq_socket(self.context,
                                            zmq.PUB,
                                            address.get_host(),
                                            address.get_port(),
                                            str(xMsgConstants.CONNECT))
             feCon.set_pub_sock(soc_p)
 
-            soc_s = self.driver.zmq_socket(self.driver.context,
+            soc_s = self.driver.zmq_socket(self.context,
                                            zmq.SUB,
                                            address.get_host(),
                                            address.get_port() + 1,
@@ -119,12 +137,30 @@ class xMsg:
             self._connections[address.get_key()] = feCon
             return feCon
 
+    def destroy(self, linger=-1):
+        """
+        Destroy the created context and terminates with the actor's
+        thread pool. It receives a linger parameter
+
+        Args:
+            linger (int): milliseconds that the thread will try to send
+                          messages after the socket has been closed.
+                          Default value is -1, which in ZMQ means to
+                          linger forever.
+        """
+        self.context.destroy(linger)
+        self.terminate_threadpool()
+
     def get_new_connection(self, address):
         """
         Returns a new xMsgConnection object to the xMsg proxy,
         using new zmq context
-        :param address: xMsgAddress object
-        :return: xMsgConnection object
+
+        Args:
+            address (xMsgAddress): xMsg address object
+
+        Returns:
+            feCon (xMsgConnection): xMsg connection object
         """
         new_context = zmq.Context()
         feCon = xMsgConnection()
@@ -144,24 +180,27 @@ class xMsg:
         feCon.set_sub_sock(soc_s)
         return feCon
 
-    def register_publisher(self, topic, description=str(xMsgConstants.UNDEFINED)):
+    def register_publisher(self, topic,
+                           description=str(xMsgConstants.UNDEFINED)):
         """
         If you are periodically publishing data, use this method to
         register yourself as a publisher with the local registrar.
         This is necessary for future subscribers to discover and
         listen to your messages.
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :param r_data: xMsgRegistration object
-        """
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
 
+            description (string): publisher description string
+        """
         r_data = self._registration_builder(topic, description, True)
 
         self.driver.register_local(self.myname, r_data, True)
 
-    def register_subscriber(self, topic, description=str(xMsgConstants.UNDEFINED)):
+    def register_subscriber(self, topic,
+                            description=str(xMsgConstants.UNDEFINED)):
         """
         If you are a subscriber and want to listen messages on a specific
         topic from a future publishers, you should register yourself as
@@ -170,10 +209,12 @@ class xMsg:
         a required topic of interest or might publish data only if there
         are active listeners/subscribers to their published topic.
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :param r_data: xMsgRegistration object
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
+
+            description (string): subscriber description string
         """
         r_data = self._registration_builder(topic, description, False)
 
@@ -184,10 +225,10 @@ class xMsg:
         Removes publisher registration both from the local and then from the
         global registration databases
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :param r_data: xMsgRegistration object
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
         """
         r_data = self._registration_builder(topic, None, True)
 
@@ -200,73 +241,86 @@ class xMsg:
         Removes subscriber registration both from the local and then from the
         global registration databases
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :param r_data: xMsgRegistration object
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
         """
         r_data = self._registration_builder(topic, None, False)
 
         self.driver.remove_registration_local(self.myname, r_data, False)
         self.driver.remove_registration_fe(self.myname, r_data, False)
 
-    def find_local_publisher(self, topic, description=str(xMsgConstants.UNDEFINED)):
+    def find_local_publisher(self, topic,
+                             description=str(xMsgConstants.UNDEFINED)):
         """
         Finds all local publishers, publishing  to a specified topic
         defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :return: List of xMsgRegistration objects
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
+
+            description (string): publisher description string
         """
         r_data = self._registration_builder(topic, description, True)
 
         return self.driver.find_local(self.myname, r_data, True)
 
-    def find_local_subscriber(self, topic, description=str(xMsgConstants.UNDEFINED)):
+    def find_local_subscriber(self, topic,
+                              description=str(xMsgConstants.UNDEFINED)):
         """
         Finds all local subscribers, subscribing  to a specified topic
         defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :return: List of xMsgRegistration objects
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
+
+            description (string): subscriber description string
         """
         r_data = self._registration_builder(topic, description, False)
 
         return self.driver.find_local(self.myname, r_data, False)
 
-    def find_publisher(self, topic, description=str(xMsgConstants.UNDEFINED)):
+    def find_publisher(self, topic,
+                       description=str(xMsgConstants.UNDEFINED)):
         """
         Finds all publishers, publishing  to a specified topic
         defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :param r_data: xMsgRegistration object
-        :return: List of xMsgRegistration objects
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
+
+            description (string): publisher description string
         """
         r_data = self._registration_builder(topic, description, True)
 
         return self.driver.find_global(self.myname, r_data, True)
 
-    def find_subscriber(self, topic, description=str(xMsgConstants.UNDEFINED)):
+    def find_subscriber(self, topic,
+                        description=str(xMsgConstants.UNDEFINED)):
         """
         Finds all subscribers, subscribing  to a specified topic
         defined within the input registration data object: xMsgRegistration
         Note: xMsg defines a topic as domain:subject:type
 
-        :param name: the name of the requester/sender. Required according to
-                     the xMsg zmq message structure definition.
-                     (topic, sender, data)
-        :param r_data: xMsgRegistration object
-        :return: List of xMsgRegistration objects
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
+
+            description (string): subscriber description string
+
+        Returns:
+            List of xMsgRegistration objects
         """
         r_data = self._registration_builder(topic, description, False)
 
@@ -285,8 +339,12 @@ class xMsg:
         This method will perform input data, i.e. xMsgMessage object
         serialization.
 
-        :param connection: xMsgConnection object
-        :param x_msg: xMsgMessage transient data object
+        Args:
+            connection (xMsgConnection):  object
+            msg (xMsgMessage):  transient data object
+        Raises:
+            NullConnection: if there is no connection object
+            NullMessage: if there is no message object
         """
         con = connection.get_pub_sock()
 
@@ -310,6 +368,26 @@ class xMsg:
         t1.setDaemon(True)
         t1.start()
 
+    def subscribe_new(self, connection, topic, callback):
+        """
+        Args:
+            connection (xMsgConnection): xMsg connection object
+
+            topic (xMsgTopic): xMsg topic to which the actor will subscribe
+
+            callback (xMsgCallBack): Call back function (AKA: what to do with
+                                     the received data)
+        Returns:
+            subscription_handler (xMsgSubscription)
+        """
+        name = "sub-" + self.myname + "-" + connection.get_address().get_key()
+        subscription_handle = xMsgSubscription(name, connection, topic)
+        subscription_handle.start()
+        return subscription_handle
+
+    def unsubscribe(self, subscription_handle):
+        subscription_handle.stop()
+
     def __sub_module(self, connection, topic, cb, is_sync):
         """
         Subscribes to a specified xMsg topic. 3 elements are defining
@@ -328,13 +406,16 @@ class xMsg:
         utilize private thread pool to run user callback method in a separate
         thread.
 
-        :param connection: xMsgConnection object
-        :param cb: user supplied callback function
-        :param isSync: if set to true method will block until user callback
-                       method is returned. In case you need to run in a
-                       multi-threaded mode,
-                       i.e. running parallel user call backs,
-                       set is_sync = False
+        Args:
+            connection (xMsgConnection):  connection object
+
+            cb (xMsgCallBack): user supplied callback function
+
+            is_sync (bool): if set to true method will block until user
+                            callback method is returned. In case you need to
+                            run in a multi-threaded mode,
+                            i.e. running parallel user call backs,
+                            is_sync = False
         """
 
         # get subscribers socket connection
@@ -371,6 +452,21 @@ class xMsg:
                 return
 
     def _registration_builder(self, topic, description, publisher=True):
+        """
+        Creates a xMsgRegistration object
+
+        Args:
+            topic (xMsgTopic): the name of the requester/sender. Required
+                               according to the xMsg zmq message structure
+                               definition (topic, sender, data)
+
+            description (string): subscriber description string
+
+            publisher (bool): Is publisher flag, if is set in True
+                              the registration object generated corresponds
+                              to a publisher, otherwise corresponds to a
+                              subscriber.
+        """
         r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.name = self.myname
         if description:
@@ -391,7 +487,9 @@ class xMsg:
     def get_pool_size(self):
         """
         Returns internal thread pool size
-        :return size of the thread pool
+
+        returns:
+            pool_size (int): Size of the thread pool
         """
         return self.pool_size
 
@@ -399,6 +497,6 @@ class xMsg:
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
     def terminate_threadpool(self):
-        self.driver.get_context().destroy()
+        """"Terminates the xMsg threadpool"""
         self.threadPool.terminate()
         self.threadPool.join()

@@ -277,12 +277,14 @@ class xMsgRegDriver:
         :param boc if set 0 socket will be bind, otherwise it will connect.
                     Note that for xMsg proxies we always connect (boc = 1)
                      (proxies are XPUB/XSUB sockets).
-        :return zmq socket object
+        Returns:
+            zmq socket object
         """
         # Create a zmq socket
         sb = context.socket(socket_type)
-        if socket_type == zmq.REQ:
-            sb.setsockopt(zmq.LINGER, 0)
+        sb.set_hwm(0)
+#         if socket_type == zmq.REQ:
+#             sb.setsockopt(zmq.LINGER, 0)
 
         if boc == str(xMsgConstants.BIND):
             # Bind socket to the host and port

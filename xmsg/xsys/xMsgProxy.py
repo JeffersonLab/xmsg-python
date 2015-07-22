@@ -21,14 +21,14 @@
 import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.core.xMsgUtil import xMsgUtil 
+from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class xMsgProxy:
     """
     Runs xMsg pub-sub proxy.
     This is a simple stateless message switch, i.e. a device that forwards
-    messages without inspecting them. This simplifies dynamic discovery problem.
+    messages without inspecting them. This simplifies dynamic discovery problem
     All xMsg clients (publishers and subscribers) connect to the proxy, instead
     of to each other. It becomes trivial to add more subscribers or publishers.
     """
@@ -36,6 +36,15 @@ class xMsgProxy:
     context = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, context):
+        """
+        xMsgProxy Constructor
+
+        Args:
+            context (zmq.Context): zmq context object
+
+        Returs:
+            xMsgProxy object
+        """
         self.context = context
 
     def start(self):
@@ -43,17 +52,20 @@ class xMsgProxy:
         Starts the proxy server of the xMsgNode on a local host.
         """
         self.d_sub = self.context.socket(zmq.XSUB)
+        self.d_sub.set_hwm(0)
         self.d_sub.bind("tcp://%s:%s" % (str("*"),
                                          str(int(xMsgConstants.DEFAULT_PORT))))
 
         # socket where clients subscribe data/messages
         self.d_pub = self.context.socket(zmq.XPUB)
+        self.d_pub.set_hwm(0)
         self.d_pub.bind("tcp://%s:%s" % (str("*"),
                                          str(int(xMsgConstants.DEFAULT_PORT) + 1)))
 
         xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
         zmq.proxy(self.d_sub, self.d_pub, None)
+
 
 def main():
     try:
