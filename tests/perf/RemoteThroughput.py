@@ -21,6 +21,7 @@
 import sys
 
 from xmsg.core.xMsg import xMsg
+from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.net.xMsgAddress import xMsgAddress
@@ -32,16 +33,17 @@ class Publisher(xMsg):
     myName = "throughput_publisher"
     domain = "throughput_domain"
     subject = "throughput_subject"
-    xtype = "throughput_type"    
+    xtype = "throughput_type"
 
-    def __init__(self, bind_to ,msg_size, msg_count):
+    def __init__(self, bind_to, msg_size, msg_count):
         xMsg.__init__(self, self.myName, bind_to, pool_size=1)
         self.message_size = msg_size
         self.message_count = msg_count
 
+
 def main():
     if len(sys.argv) == 4:
-        bind_to = sys.argv[1];
+        bind_to = sys.argv[1]
         message_size = int(sys.argv[2])
         message_count = long(sys.argv[3])
 
@@ -49,20 +51,22 @@ def main():
 
         pub_node_addr = xMsgAddress(bind_to)
         pub_connection = publisher.get_new_connection(pub_node_addr)
-        topic = xMsgTopic.build(publisher.domain, publisher.subject, publisher.xtype)
-        
-        publisher.register_publisher(topic)
+        topic = xMsgTopic.build(publisher.domain, publisher.subject,
+                                publisher.xtype)
         data = bytes(b'\x00' * message_size)
 
         try:
             for _ in range(message_count):
-                t_msg = xMsgMessage.create_with_serialized_data(topic, data)
-                print "publishing! (message size : " + str(sys.getsizeof(t_msg.get_data())) + ")"
+                t_msg = xMsgMessage.create_with_serialized_data(topic,
+                                                                bytes(data))
                 publisher.publish(pub_connection, t_msg)
+
+            xMsgUtil.sleep(5)
+            publisher.destroy(25000)
 
         except:
             print "Removing publisher..."
-            publisher.remove_publisher_registration(topic)
+            publisher.destroy(0)
 
     else:
         print "usage: remote_thr <bind-to> <message-size> <message-count>"
