@@ -27,21 +27,24 @@ __author__ = 'gurjyan'
 
 
 class xMsgMessage():
-    """
-    Defines a message to be serialized and passed through 0MQ.
+    """Defines a message to be serialized and passed through 0MQ.
 
-    Uses {@link xMsgData} class generated as a result of the proto-buffer
-    description to pass Java primitive types and arrays of primitive types.
+    Uses xMsgData class generated as a result of the proto-buffer
+    description to pass Python primitive types and arrays of primitive types.
     xMsgData is also used to pass byte[]: the result of a user specific
     object serialization.
-    <p>
-    This class will also contain complete metadata of the message data,
+
+    This class also contains complete metadata of the message data,
     describing details of the data. In case an object is constructed
     without a metadata, the default metadata will be created and the
     proper data type will set based on the passed data parameter type.
-    <p>
-    Note that data that is an instance of {@code byte[]} will be considered to
-    be a serialization of a specific user object only in the case when a proper
+
+    Attributes:
+        topic (xMsgTopic): topic of the message
+
+        metadata (xMsgMeta): metadata of the message
+
+        data (bytes[]): serialized data object
 
     @author gurjyan
     @version 2.x
@@ -63,6 +66,20 @@ class xMsgMessage():
 
     @classmethod
     def create_with_xmsg_data(cls, topic, xmsg_data_object):
+        """
+        Constructs a message with an unserialized xMsgData object and
+        the default metadata
+
+        Args:
+            topic (xMsgTopic): the topic of the message
+
+            xmsg_data_object (xMsgData): the xMsgData object unserialized
+        Returns:
+            xMsgMessage: xMsg message object
+
+        Raises:
+            TypeError: if the xmsg_data_object is not an xMsgData instance
+        """
         if isinstance(xmsg_data_object, xMsgData_pb2.xMsgData):
             return cls(topic, xmsg_data_object.SerializeToString())
         else:
@@ -70,57 +87,83 @@ class xMsgMessage():
 
     @classmethod
     def create_with_serialized_data(cls, topic, serialized_data):
+        """
+        Constructs a message with serialized data and the default metadata
+
+        Args:
+            topic (xMsgTopic): the topic of the message
+
+            serialized (bytes): serialized data object
+
+        Returns:
+            xMsgMessage: xMsg message object
+        """
         return cls(topic, serialized_data)
 
     def get_data(self):
         """
-        Returns data field as python bytes
+        Returns the message data
+
+        Returns:
+            bytes: data field as python bytes
         """
         return self.data
 
     def get_data_size(self):
+        """Returns the size of the message data."""
         return sys.getsizeof(self.get_data())
 
-    def set_data(self, **kwargs):
-        data = kwargs.pop("data", False)
-        self.data = data if data else str(xMsgConstants.UNDEFINED)
-        mimetype = kwargs.pop("mimetype", False)
-        if mimetype:
-            self.metadata.dataType = mimetype
+    def set_data(self, serialized_data, mimetype):
+        """
+        Args:
+            serialized_data (bytes[]): serialized data
+
+            mimetype (string): mimetype for the data
+        """
+        self.data = serialized_data
+        self.metadata.dataType = mimetype
 
     def get_metadata(self):
-        """
-        Returns metadata object (xMsgMeta)
-        """
+        """Returns metadata object (xMsgMeta)"""
         return self.metadata
 
     def get_metadata_bytes(self):
-        """
-        Returns metadata as python bytes
-        """
+        """Returns metadata as python bytes"""
         return self.metadata.SerializeToString()
 
     def set_metadata(self, metadata):
+        """
+        Sets the metadata of this message.
+        This will overwrite any mime-type already set.
+
+        Args:
+            metadata (xMsgMeta): the metadata for message
+        """
         self.metadata.MergeFrom(metadata)
 
     def get_mimetype(self):
+        """Returns the mime-type of the message data."""
         return self.metadata.dataType
 
     def set_mimetype(self, mimetype):
+        """
+        Sets the message mimetype
+
+        Args:
+            mimetype (string): data mimtype
+        """
         self.metadata.dataType = mimetype
 
-    def msg(self):
+    def serialize(self):
         """
-        Returns the msg
+        Serializes this message into a ZMQ compatible message.
+
+        Returns:
+            Array: the ZMQ raw multi-part message
         """
         return [str(self.get_topic()), self.get_metadata_bytes(),
                 self.get_data()]
 
-    def serialize(self):
-        return self.msg()
-
     def get_topic(self):
-        """
-        Returns the topic string
-        """
+        """Returns the topic string"""
         return self.topic

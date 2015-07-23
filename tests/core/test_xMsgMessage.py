@@ -35,6 +35,9 @@ class TestXMsgMessage(unittest.TestCase):
     def test_get_topic(self):
         self.assertEqual("a:b:c", str(self.message.get_topic()))
 
+    def test_get_topic_object(self):
+        self.assertIsInstance(self.message.get_topic(), xMsgTopic)
+
     def test_set_serialize_data(self):
         msg = xMsgMessage.create_with_serialized_data(self.topic,
                                                       bytes([1, 2, 3]))
@@ -56,9 +59,9 @@ class TestXMsgMessage(unittest.TestCase):
         self.assertEqual(data.T_FLSINT32A, ds_data.T_FLSINT32A)
         self.assertIsInstance(msg, xMsgMessage)
 
-    def test_msg(self):
+    def test_serialize(self):
         self.message.set_metadata(xMsgMeta_pb2.xMsgMeta())
-        for data in self.message.msg():
+        for data in self.message.serialize():
             self.assertIsInstance(data, basestring)
 
     def test_set_metadata(self):
@@ -67,9 +70,17 @@ class TestXMsgMessage(unittest.TestCase):
         self.assertIsInstance(self.message.get_metadata(),
                               xMsgMeta_pb2.xMsgMeta)
 
-    def test_get_metadata(self):
+    def test_get_metadata_bytes(self):
+        self.assertIsInstance(self.message.get_metadata_bytes(),
+                              basestring)
+
+    def test_get_metadata_set_by_set_function(self):
         data = xMsgMeta_pb2.xMsgMeta()
         self.message.set_metadata(data)
+        test_case = self.message.get_metadata()
+        self.assertIsInstance(test_case, xMsgMeta_pb2.xMsgMeta)
+
+    def test_get_metadata_set_by_default(self):
         test_case = self.message.get_metadata()
         self.assertIsInstance(test_case, xMsgMeta_pb2.xMsgMeta)
 
