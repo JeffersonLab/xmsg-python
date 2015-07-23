@@ -31,7 +31,7 @@ from xmsg.data import xMsgRegistration_pb2
 from xmsg.net.xMsgConnection import xMsgConnection
 from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 from xmsg.net.xMsgAddress import xMsgAddress
-from xmsg.core.xMsgSubscription import xMsgSubscription
+from xmsg.data import xMsgMeta_pb2
 
 
 __author__ = 'gurjyan'
@@ -355,12 +355,7 @@ class xMsg:
         if not msg:
             raise NullMessage("xMsg: Null message object")
 
-        data_serial = []
-        data_serial.append(str(msg.get_topic()))
-        data_serial.append("envelope")
-        data_serial.append(msg.get_data())
-
-        con.send_multipart(data_serial)
+        con.send_multipart(msg.serialize())
 
     def subscribe(self, connection, topic, cb, is_sync):
         t1 = threading.Thread(target=self.__sub_module,
@@ -380,10 +375,11 @@ class xMsg:
         Returns:
             subscription_handler (xMsgSubscription)
         """
-        name = "sub-" + self.myname + "-" + connection.get_address().get_key()
-        subscription_handle = xMsgSubscription(name, connection, topic)
-        subscription_handle.start()
-        return subscription_handle
+        pass
+#         name = "sub-" + self.myname + "-" + connection.get_address().get_key()
+#         subscription_handle = xMsgSubscription(name, connection, topic)
+#         subscription_handle.start()
+#         return subscription_handle
 
     def unsubscribe(self, subscription_handle):
         subscription_handle.stop()
@@ -435,6 +431,10 @@ class xMsg:
                     serialized_data = response[2]
                     result = xMsgMessage.create_with_serialized_data(topic,
                                                                      serialized_data)
+
+#                     meta = xMsgMeta_pb2.xMsgMeta()
+#                     meta.ParseFromString(response[1])
+#                     result.set_metadata(meta)
 
                     # user callback
                     if is_sync:

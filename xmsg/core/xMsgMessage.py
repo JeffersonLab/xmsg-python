@@ -18,9 +18,10 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
+import sys
+
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgMeta_pb2, xMsgData_pb2
-from xmsg.core.xMsgExceptions import MessageException
 
 __author__ = 'gurjyan'
 
@@ -39,25 +40,26 @@ class xMsgMessage():
     without a metadata, the default metadata will be created and the
     proper data type will set based on the passed data parameter type.
     <p>
-    Note that data that is an instance of {@code byte[]} will be considered to be
-    a serialization of a specific user object only in the case when a proper
+    Note that data that is an instance of {@code byte[]} will be considered to
+    be a serialization of a specific user object only in the case when a proper
 
     @author gurjyan
     @version 2.x
     @since 16/6/15
     """
     topic = str(xMsgConstants.UNDEFINED)
-    metadata = str(xMsgConstants.UNDEFINED)
+    metadata = xMsgMeta_pb2.xMsgMeta()
     data = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, topic, serialized_data=None):
         self.topic = topic
-        if(isinstance(serialized_data, basestring)
-           or isinstance(serialized_data, bytearray)
-           or isinstance(serialized_data, bytes)):
+        if(isinstance(serialized_data, basestring) or
+           isinstance(serialized_data, bytearray) or
+           isinstance(serialized_data, bytes)):
             self.data = serialized_data
         else:
-            raise TypeError("xMsgMessage: Constructor only accepts serialized data")
+            raise TypeError("xMsgMessage: Constructor only"
+                            " accepts serialized data")
 
     @classmethod
     def create_with_xmsg_data(cls, topic, xmsg_data_object):
@@ -76,6 +78,16 @@ class xMsgMessage():
         """
         return self.data
 
+    def get_data_size(self):
+        return sys.getsizeof(self.get_data())
+
+    def set_data(self, **kwargs):
+        data = kwargs.pop("data", False)
+        self.data = data if data else str(xMsgConstants.UNDEFINED)
+        mimetype = kwargs.pop("mimetype", False)
+        if mimetype:
+            self.metadata.dataType = mimetype
+
     def get_metadata(self):
         """
         Returns metadata object (xMsgMeta)
@@ -86,32 +98,29 @@ class xMsgMessage():
         """
         Returns metadata as python bytes
         """
-        if isinstance(self.get_metadata(), xMsgMeta_pb2.xMsgMeta):
-            try:
-                return self.metadata.SerializeToString()
-            except:
-                return bytes(self.metadata)
-        else:
-            raise MessageException("xMsgMessage: User needs to define metadata")
-            return
+        return self.metadata.SerializeToString()
 
-    def mimetype(self, mimetype):
-        return self.mimetype
+    def set_metadata(self, metadata):
+        self.metadata.MergeFrom(metadata)
+
+    def get_mimetype(self):
+        return self.metadata.dataType
+
+    def set_mimetype(self, mimetype):
+        self.metadata.dataType = mimetype
 
     def msg(self):
         """
         Returns the msg
         """
-        return [bytes(self.get_topic()), self.get_metadata_bytes(), self.get_data()]
+        return [str(self.get_topic()), self.get_metadata_bytes(),
+                self.get_data()]
+
+    def serialize(self):
+        return self.msg()
 
     def get_topic(self):
         """
         Returns the topic string
         """
         return self.topic
-
-    def set_metadata(self, metadata):
-        self.metadata = metadata
-
-    def set_mimetype(self, mimetype):
-        self.mimetype = mimetype
