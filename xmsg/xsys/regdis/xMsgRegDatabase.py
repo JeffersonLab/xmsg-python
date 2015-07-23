@@ -18,18 +18,32 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-from sets import Set
 import re
+from sets import Set
 
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgRegistration_pb2
 
 
 class xMsgRegDatabase():
+    """A registration database of xMsg actors.
 
+    Actors are grouped by topic, i.e., actors registered with the same topic
+    will be in the same group.
+
+    Attributes:
+        db (dict): python dict() that stores the registration information
+            for the xMsg actors.
+    """
     db = dict()
 
     def register(self, registration_data):
+        """Register the xMsg actor registration information
+
+        Args:
+            registration_data (xMsgRegistration): actor registration
+                information
+        """
         key = self._generate_key(registration_data)
 
         if registration_data is not None:
@@ -40,6 +54,12 @@ class xMsgRegDatabase():
                 self.db[key].add(registration_data.SerializeToString())
 
     def remove(self, registration_data):
+        """Removes specific registration from the database
+
+        Args:
+            registration_data (xMsgRegistration): actor registration
+                information
+        """
         key = self._generate_key(registration_data)
         r_data = registration_data.SerializeToString()
         if self.db.get(key):
@@ -50,12 +70,14 @@ class xMsgRegDatabase():
                         del self.db[key]
 
     def remove_by_host(self, host):
-        """
+        """Removes all stored registrations for specific hostname
+
         Method that removes all values of the registration database that
         have a specified host set, i.e.  removes registration information
         of all xMsg actors that are running on a specified host.
 
-        :param host: host name of the xMsgNode
+        Args:
+            host (string): host name of the xMsg
         """
         for key in self.all():
             for r_data in self.db[key].copy():
@@ -68,13 +90,35 @@ class xMsgRegDatabase():
 
     def find(self, domain, subject=str(xMsgConstants.ANY),
              xtype=str(xMsgConstants.ANY)):
+        """Finds the registration information based on the topic composition
+
+        The method will find registration from the following way
+            domain:*:* -> all registration for specific domain
+
+            domain:somesubject:* -> all registration for specific domain
+                                    and subject
+
+            domain:somesubject:sometype -> all registration for specific topic
+
+        Args:
+            domain (string): registration domain
+            subject (string): registration subject
+            xtype (string): registration type
+
+        Returns:
+            xMsgRegistration (serialized)
+            or
+            None: if does not find any match
+        """
         if subject == "*" or subject == "undefined":
             subject = ":(.+)"
             xtype = ""
+
         else:
             subject = ":" + str(subject)
             if xtype == "*" or xtype == "undefined":
                 xtype = ":(.)+"
+
             else:
                 xtype = ":" + str(xtype)
 
@@ -88,6 +132,7 @@ class xMsgRegDatabase():
 
         if len(result) is 0:
             return None
+
         else:
             return result
 
@@ -102,12 +147,15 @@ class xMsgRegDatabase():
         return key
 
     def all(self):
+        """returns all topics"""
         return self.db.keys()
 
     def get(self, topic):
+        """returns all data for specific topic"""
         return self.db.get(str(topic))
 
     def clear(self):
+        """clears the database, it will erase all data stored"""
         self.db.clear()
         self.db = dict()
 

@@ -24,16 +24,26 @@ from xmsg.data import xMsgRegistration_pb2
 
 
 class xMsgRegRequest:
+    """A wrapper for a a registration or discovery request.
 
+    Attributes:
+        topic (string): Request topic
+        sender (string): sender of the xMsg request
+        data (bytesarray): serialized data included in the message
+            (text or registration data)
+    """
     topic = str(xMsgConstants.UNDEFINED)
     sender = str(xMsgConstants.UNDEFINED)
     data = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, topic=None, sender=None, data=None):
+    def __init__(self, topic=str(xMsgConstants.UNDEFINED),
+                 sender=str(xMsgConstants.UNDEFINED),
+                 data=str(xMsgConstants.UNDEFINED)):
         '''
-        :param topic: Request topic
-        :param sender: sender of the xMsg request
-        :param data: data included in the message (text or registration)
+        topic (string): Request topic
+        sender (string): sender of the xMsg request
+        data (bytesarray): serialized data included in the message
+            (text or registration data)
         '''
         self.topic = topic
         self.sender = sender
@@ -42,7 +52,16 @@ class xMsgRegRequest:
     @classmethod
     def create_from_multipart_request(cls, multipart_request):
         """
-        Initialize RegRequest serialized message
+        Constructs RegRequest serialized message object
+
+        Args:
+            multipart_request (array): multipart zmq message
+
+        Returns:
+            xMsgRegRequest: request object
+
+        Raises:
+            BadRequest: if the message is corrupted or malformed
         """
         try:
             return cls(multipart_request[0],
@@ -52,27 +71,23 @@ class xMsgRegRequest:
             raise BadRequest("Malformed request message")
 
     def get_topic(self):
-        """
-        Gets the topic of the request
-        """
+        """Gets the topic of the request as string"""
         return str(self.topic)
 
     def get_sender(self):
-        """
-        Gets the sender of the request
-        """
+        """Gets the sender of the request"""
         return str(self.sender)
 
     def get_data(self):
-        """
-        Get registration data object
+        """Get registration data object
+
+        Returns:
+            xMsgRegistration: registration data object
         """
         r_data = xMsgRegistration_pb2.xMsgRegistration()
         r_data.ParseFromString(self.data)
         return r_data
 
     def get_serialized_msg(self):
-        """
-        Serialize the content of the request
-        """
+        """Serialize the content of the request"""
         return [str(self.topic), str(self.sender), str(self.data)]

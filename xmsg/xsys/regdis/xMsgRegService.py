@@ -31,33 +31,43 @@ from xmsg.xsys.regdis.xMsgRegResponse import xMsgRegResponse
 
 class xMsgRegService(threading.Thread):
     '''
-    The main registrar service, that always runs in a
-    separate thread. Contains two separate databases
-    to store publishers and subscribers registration data.
+    The main registration service, that always runs in a separate thread.
+    Contains two separate databases to store publishers and subscribers
+    registration data.
     The key for the data base is xMsg topic, constructed as:
-    <b>domain:subject:type</b>
+        ```domain:subject:type```
+
     Creates REP socket server on a default port
     Following request will be serviced:
-    <ul>
-        <li>Register publisher</li>
-        <li>Register subscriber</li>
-        <li>Find publisher</li>
-        <li>Find subscriber</li>
-    </ul>
+        Register publisher
+        Register subscriber
+        Find publisher
+        Find subscriber
+        Remove publisher
+        Remove subscriber
+        Remove All registration
+
+    Attributes:
+        context (zmq.Context): zmq context
+        host (string): registration service host
+        port (int): registrar service port. By default is 8888
+        subscribers_db (xMsgRegDatabase): subscribers database
+        publishers_db (xMsgRegDatabase): publishers database
     '''
     context = str(xMsgConstants.UNDEFINED)
     host = str(xMsgConstants.ANY)
     port = int(xMsgConstants.REGISTRAR_PORT)
 
+    # Databases for publishers and subscribers
     subscribers_db = xMsgRegDatabase()
     publishers_db = xMsgRegDatabase()
 
     def __init__(self, context):
         super(xMsgRegService, self).__init__()
         self.context = context
-        self.stop_request = threading.Event()
 
     def run(self):
+        """xMsgRegService main method to process registration requests"""
         reg_socket = self.context.socket(zmq.REP)
         reg_socket.bind("tcp://%s:%s" % (str(self.host), str(self.port)))
 
@@ -72,19 +82,28 @@ class xMsgRegService(threading.Thread):
                 del response
 
             except zmq.error.ContextTerminated:
-                self.log("Context terminated at xMsgRegistrationService")
+                self._log("Context terminated at xMsgRegistrationService")
                 return
 
     def process_request(self, recv_req):
+        """Method to process the request and interact with the Registration DB
+
+        Args:
+            recv_req (bytesarray): Multipart message received by the
+                xMsgRegService thread.
+
+        Returns:
+            xMsgResponse: response to the received request
+        """
         try:
             request = xMsgRegRequest.create_from_multipart_request(recv_req)
             registration = Set([])
             sender = xMsgUtil.get_local_ip() + ":" + str(xMsgConstants.REGISTRAR)
-            
+
             msg = ("Received a request from " + request.get_sender() + " to " +
                    request.get_topic())
-            self.log(msg)
-            
+            self._log(msg)
+
             s_host = str(xMsgConstants.UNDEFINED)
 
             if request.get_topic() == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
@@ -110,29 +129,29 @@ class xMsgRegService(threading.Thread):
                 registration = self.publishers_db.find(request.get_data().domain,
                                                        request.get_data().subject,
                                                        request.get_data().type)
-                self.log("RegService has found: " + str(len(registration)) +
-                         " publishers" )
+                self._log("RegService has found: " + str(len(registration)) +
+                          " publishers")
 
             elif request.get_topic() == str(xMsgConstants.FIND_SUBSCRIBER):
                 registration = self.subscribers_db.find(request.get_data().domain,
                                                         request.get_data().subject,
                                                         request.get_data().type)
-                self.log("RegService has found: " + str(len(registration)) +
-                         " subscribers" )
+                self._log("RegService has found: " + str(len(registration)) +
+                          " subscribers")
 
             else:
-                self.log("Warning: unknown registration request type...")
-                self.log("Warning: received message : " + request.get_topic())
+                self._log("Warning: unknown registration request type...")
+                self._log("Warning: received message : " + request.get_topic())
                 registration = str(xMsgConstants.ERROR)
-            # send a reply message
+            # send a response to request
             return xMsgRegResponse(request.get_topic(), sender, registration)
 
-
         except zmq.error.ContextTerminated:
-            self.log("Context terminated at xMsgRegistrationService")
+            self._log("Context terminated at xMsgRegistrationService")
             return
 
-    def log(self, msg):
+    def _log(self, msg):
+        """Prints output from RegService with a time stamp"""
         # Logging behavior should be defined
         # Meaning storing messages or notifying to someone about the Event
         print xMsgUtil.current_time() + " " + msg

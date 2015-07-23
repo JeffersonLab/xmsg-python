@@ -30,7 +30,14 @@ __author__ = 'gurjyan'
 
 
 class xMsgRegDriver:
+    """Methods for registration and discovery of xMsg actors, i.e. publishers
+    and subscribers.
 
+    This class also contains the base method used by all xMsg extending classes
+    to create 0MQ socket for communications. This means that this class owns
+    the 0MQ context.
+    The sockets use the default registrar port: xMsgConstants#REGISTRAR_PORT.
+    """
     # Front-end registrar server (req/rep) connection socket
     _feConnection = str(xMsgConstants.UNDEFINED)
 
@@ -56,201 +63,254 @@ class xMsgRegDriver:
             self._lnConnection = self._feConnection
 
     def get_context(self):
-        """
-        Returns the main zmq socket context
-        :return zmq context
-        """
+        """Returns the main zmq socket context"""
         return self.context
 
-    def _register(self, conn_socket, name, data, is_publisher):
-        """
-        Sends registration request to the server. Request is wired using
-        xMsg message construct, that have 3 part: topic, sender, and data.
-        Data is the object of the xMsgRegistrationData
-        :param _connectionSocket connection socket defines the local or
-                                front-end registration server
-        :param name the name of the sender
-        :param data xMsgRegistrationData object
-        :param isPublisher if set to be true then this is a request to register
-                           a publisher, otherwise this is a subscriber
-                           registration request
+    def _register(self, conn_socket, name, registration_data, is_publisher):
+        """Sends registration request to the server
+
+        Request is wired using xMsg message construct, that have 3 parts:
+            topic, sender, and data.
+        Data is the object of the xMsgRegistration
+
+        Args:
+            conn_socket (zmq.Socket):connection socket defines the local or
+                front-end registration server
+
+            name (string): the name of the sender
+
+            data (xMsgRegistration): registration information object
+
+            is_publisher (bool): if set to be true then this is a request
+                to register a publisher, otherwise this is a subscriber
+                registration request
         """
         # Data serialization
-        if data.IsInitialized():
-            dt = data.SerializeToString()
-
+        if registration_data.IsInitialized():
+            registration_data = registration_data.SerializeToString()
             # Send topic, sender, followed by the data
             # Topic of the message is a string = "registerPublisher"
             # or "registerSubscriber"
             if is_publisher:
                 topic = str(xMsgConstants.REGISTER_PUBLISHER)
+
             else:
                 topic = str(xMsgConstants.REGISTER_SUBSCRIBER)
-            timeout = int(xMsgConstants.REGISTER_REQUEST_TIMEOUT)
-            request = xMsgRegRequest(topic, name, dt)
-            self.request(conn_socket, request, timeout)
 
-    def _remove_registration(self, conn_socket, name, data, is_publisher):
-        """
-        Sends remove registration request to the server. Request is wired using
-        xMsg message construct, that have 3 part: topic, sender, and data.
-        Data is the object of the xMsgRegistrationData
-        :param _connectionSocket connection socket defines the local or
-                                front-end registration server
-        :param name the name of the sender
-        :param data xMsgRegistrationData object
-        :param isPublisher if set to be true then this is a request to register
-                          a publisher, otherwise this is a subscriber
-                          registration request
+            timeout = int(xMsgConstants.REGISTER_REQUEST_TIMEOUT)
+            request = xMsgRegRequest(topic, name, registration_data)
+
+            self._request(conn_socket, request, timeout)
+
+    def _remove_registration(self, conn_socket, name, registration_data,
+                             is_publisher):
+        """Sends remove registration request to the server.
+
+        Request is wired using xMsg message construct,
+        that have 3 parts: topic, sender, and data.
+        Data is the object of the xMsgRegistration
+
+        Args:
+            _conn_socket (zmq.Socket): connection socket defines the local or
+                front-end registration server
+
+            name (string):the name of the sender
+
+            registration_data (xMsgRegistration): registration information
+                object
+
+            is_publisher (bool): if set to be true then this is a request
+                to register a publisher, otherwise this is a subscriber
+                registration request
         """
 
         # Data serialization
-        if data.IsInitialized():
-            dt = data.SerializeToString()
-
+        if registration_data.IsInitialized():
+            serialized_data = registration_data.SerializeToString()
             # Send topic, sender, followed by the data
             # Topic of the message is a string = "removePublisher"
             # or "removeSubscriber"
-
             if is_publisher:
                 topic = str(xMsgConstants.REMOVE_PUBLISHER)
+
             else:
                 topic = str(xMsgConstants.REMOVE_SUBSCRIBER)
+
             timeout = int(xMsgConstants.REGISTER_REQUEST_TIMEOUT)
-            request = xMsgRegRequest(topic, name, dt)
-            self.request(conn_socket, request, timeout)
+            request = xMsgRegRequest(topic, name, serialized_data)
+
+            self._request(conn_socket, request, timeout)
 
     def remove_all_registration_fe(self, host, name):
-        """
+        """Removes all xMsg actors registration from the front-end registration
+
         Removes all xMsg actors (publishers and subscribers) registration from
         the front-end global registration and discovery database that were
         previously registered on a specified host local database. This method
-        is usually called by the xMsgNode Registrar when it shuts down or gets
+        is usually called by the xMsgRegistrar when it shuts down or gets
         interrupted.
-        :param host: host name of the xMsgNode
-        :param name: the name of the sender
+
+        Args:
+            host (string): host name of the xMsgNode
+            name (string): the name of the sender
         """
 
         # topic
         topic = str(xMsgConstants.REMOVE_ALL_REGISTRATION)
         timeout = int(xMsgConstants.REGISTER_REQUEST_TIMEOUT)
         request = xMsgRegRequest(topic, name, host)
-        self.request(self._feConnection, request, timeout)
 
-    def _find(self, conn_socket, name, data, is_publisher):
-        """
-        Searches registration database (local or global), defined by the
+        self._request(self._feConnection, request, timeout)
+
+    def _find(self, conn_socket, name, registration_data, is_publisher):
+        """Find specific registration from local and global database
+
+        Searches in the registration database (local or global), defined by the
         connection socket object, for the publisher or subscriber based
-        on the xMsg topic components. xMsg topic components, i.e. domain,
-        subject and types are defined within the xMsgRegistrationData object.
+        on the xMsgTopic components. xMsgTopic components, i.e. domain,
+        subject and types are defined within the xMsgRegistration object.
 
-        :param connectionSocket: connection socket defines the local or
+        Args:
+            connectionSocket: connection socket defines the local or
                                  front-end registration server
-        :param name: the name of the sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to find
+            name: the name of the sender
+            data: xMsgRegistrationData object
+            isPublisher: if set to be true then this is a request to find
                             publishers, otherwise subscribers
-        :return: List of publishers or subscribers xMsgRegistrationData objects
-                 that publish/subscribe required topic
+
+        Returns:
+            list(): List of publishers or subscribers xMsgRegistration objects
+                that publish/subscribe required topic
 
         """
         # Data serialization
-        if data.IsInitialized():
-            serialized_data = data.SerializeToString()
-
+        if registration_data.IsInitialized():
+            serialized_data = registration_data.SerializeToString()
             # Send topic, sender, followed by the data
             # Topic of the message is a string = "findPublisher"
             # or "findSubscriber"
             if is_publisher:
                 topic = str(xMsgConstants.FIND_PUBLISHER)
+
             else:
                 topic = str(xMsgConstants.FIND_SUBSCRIBER)
+
             timeout = int(xMsgConstants.FIND_REQUEST_TIMEOUT)
             request_message = xMsgRegRequest(topic, name, serialized_data)
-            return self.request(conn_socket, request_message, timeout)
-            
 
-    def register_fe(self, name, data, is_publisher):
+            return self._request(conn_socket, request_message, timeout)
+
+    def register_fe(self, name, registration_data, is_publisher):
+        """Registers xMsg actor in front-end registration and discovery server
+
+        Args:
+            name (string): the name of the requester/sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+
+            is_publisher: if set to be true then this is a request to
+                register a publisher, otherwise this is a subscriber
+                registration request
         """
-        Registers xMsg actor with the front-end registration and discovery
-        server
-        :param name: the name of the requester/sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to
-                            register a publisher, otherwise this is a
-                            subscriber registration request
-        """
-        self._register(self._feConnection, name, data, is_publisher)
+        self._register(self._feConnection, name, registration_data,
+                       is_publisher)
 
     def register_local(self, name, data, is_publisher):
-        """
-        Registers xMsg actor with the local registration and discovery server
-        :param name: the name of the requester/sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to
-                            register a publisher, otherwise this is a
-                            subscriber registration request
+        """Registers xMsg actor with the local registration and discovery server
+
+        Args:
+            name (string): the name of the requester/sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+
+            is_publisher: if set to be true then this is a request to
+                register a publisher, otherwise this is a subscriber
+                registration request
         """
         self._register(self._lnConnection, name, data, is_publisher)
 
     def remove_registration_fe(self, name, data, is_publisher):
-        """
-        Removes xMsg actor from the front-end registration and discovery server
-        :param name: the name of the requester/sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to
-                            register a publisher, otherwise this is a
-                            subscriber registration request
+        """Removes xMsg actor from the front-end registration and discovery server
+
+        Args:
+            name (string): the name of the requester/sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+
+            is_publisher: if set to be true then this is a request to
+                register a publisher, otherwise this is a subscriber
+                registration request
         """
         self._remove_registration(self._feConnection, name, data, is_publisher)
 
     def remove_registration_local(self, name, data, is_publisher):
-        """
-        Removes xMsg actor from the local registration and discovery server
-        :param name: the name of the requester/sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to
-                            register a publisher, otherwise this is a
-                            subscriber registration request
+        """Removes xMsg actor from the local registration and discovery server
+
+        Args:
+            name (string): the name of the requester/sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+
+            is_publisher: if set to be true then this is a request to
+                register a publisher, otherwise this is a subscriber
+                registration request
         """
         self._remove_registration(self._lnConnection, name, data, is_publisher)
 
     def find_local(self, name, data, is_publisher):
-        """
-        Searches the local registration and discovery databases for an actor
-        that publishes or subscribes the topic of the interest.
-        The search criteria i.e. topic is defined within the
-        xMsgRegistrationData object.
-        :param name: the name of the requester/sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to
-                            register a publisher, otherwise this is a
-                            subscriber registration request
-        :return List of xMsgRegistrationData objects
+        """Searches the local registration and discovery databases for an actor
+
+        The method will search for xMsg actors that publishes or subscribes
+        the topic of the interest (locally). The search criteria i.e. topic is
+        defined within the xMsgRegistration object.
+
+        Args:
+            name (string): the name of the requester/sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+
+            is_publisher: if set to be true then this is a request to
+                register a publisher, otherwise this is a subscriber
+                registration request
+
+        Returns:
+            list(): List of xMsgRegistrationData objects
         """
         return self._find(self._lnConnection, name, data, is_publisher)
 
     def find_global(self, name, data, is_publisher):
-        """
-        Searches the FE registration and discovery databases for an actor
-        that publishes or subscribes the topic of the interest.
-        The search criteria i.e. topic is defined within the
-        xMsgRegistrationData object.
-        :param name: the name of the requester/sender
-        :param data: xMsgRegistrationData object
-        :param isPublisher: if set to be true then this is a request to
-                            register a publisher, otherwise this is a
-                            subscriber registration request
-        :return List of xMsgRegistrationData objects
+        """Searches the FE registration and discovery databases for an actor
+
+        The method will search for xMsg actors that publishes or subscribes
+        the topic of the interest (globally). The search criteria i.e. topic is
+        defined within the xMsgRegistrationData object.
+
+        Args:
+            name (string): the name of the requester/sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+
+            is_publisher: if set to be true then this is a request to
+                register a publisher, otherwise this is a subscriber
+                registration request
+
+        Returns:
+            list(): List of xMsgRegistration objects
         """
         return self._find(self._feConnection, name, data, is_publisher)
-    
-    def request(self, socket, request, timeout):
+
+    def _request(self, socket, request, timeout):
+        """Sends a request to the given registrar server and waits the response.
+
+        Args:
+            socket (zmq.Socket): zmq socket for communication
+            request (xMsgRegRequest): xMsg request object
+            timeout (int): timeout for processing request in seconds
+
+        Returns:
+            bytes: serialized registration information
+        """
         request_msg = request.get_serialized_msg()
+
         try:
             socket.send_multipart(request_msg)
         except:
             raise RegistrationException("Error sending registration message")
+
         poller = zmq.Poller()
         poller.register(socket, zmq.POLLIN)
         if poller.poll(timeout * 1000):
@@ -262,35 +322,37 @@ class xMsgRegDriver:
                 raise RegistrationException(response.get_status())
 
             xMsgUtil.log("Info: xMsg actor has been registered in node")
+
             return response.get_data()
+
         else:
             raise TimeoutReached("Timeout processing registration request")
 
-    def zmq_socket(self, context, socket_type, h, port, boc):
-        """
-        Creates and returns zmq socket object
+    def zmq_socket(self, context, socket_type, hostname, port, boc):
+        """Creates and returns zmq socket object
 
-        :param context zmq context
-        :param socket_type the type of the socket (integer defined by zmq)
-        :param h host name
-        :param port port number
-        :param boc if set 0 socket will be bind, otherwise it will connect.
-                    Note that for xMsg proxies we always connect (boc = 1)
-                     (proxies are XPUB/XSUB sockets).
+        Args:
+            context (zmq.Context): zmq context
+            socket_type (int): the type of the socket (integer defined by zmq)
+            hostname (string): host name
+            port (int): port number
+            boc (int): if set 0 socket will be bind, otherwise it will connect.
+                Note that for xMsg proxies we always connect (boc = 1)
+                (proxies are XPUB/XSUB sockets).
+
         Returns:
-            zmq socket object
+            zmq.Socket: zmq socket object
         """
         # Create a zmq socket
         sb = context.socket(socket_type)
         sb.set_hwm(0)
-#         if socket_type == zmq.REQ:
-#             sb.setsockopt(zmq.LINGER, 0)
 
         if boc == str(xMsgConstants.BIND):
             # Bind socket to the host and port
-            sb.bind("tcp://%s:%s" % (str(h), str(port)))
-        elif boc == str(xMsgConstants.CONNECT):
+            sb.bind("tcp://%s:%s" % (str(hostname), str(port)))
 
+        elif boc == str(xMsgConstants.CONNECT):
             # Connect to the host and port
-            sb.connect("tcp://%s:%s" % (str(h), str(port)))
+            sb.connect("tcp://%s:%s" % (str(hostname), str(port)))
+
         return sb

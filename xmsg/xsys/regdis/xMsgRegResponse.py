@@ -18,14 +18,23 @@
  HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
  SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 '''
-import sys
-
 from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class xMsgRegResponse:
+    """A wrapper for a response to a registration or discovery request.
 
+    A response of the xMsgRegService registration service can be an string
+    indicating that the request was successful, a set of registration data
+    in case a discovery request was received, or an error description
+    indicating that something wrong happened with the request.
+
+    Attributes:
+        topic (string): topic of the response message
+        sender (string): response sender
+        status (string): status of the request to respond
+        data (bytesarray): registration datas
+    """
     topic = str(xMsgConstants.UNDEFINED)
     sender = str(xMsgConstants.UNDEFINED)
     status = str(xMsgConstants.SUCCESS)
@@ -35,59 +44,79 @@ class xMsgRegResponse:
         self.topic = topic
         self.sender = sender
         self.status = status
+
         if data is not None:
             for d in data:
                 self.data.append(d)
 
     @classmethod
     def create_from_multipart_request(cls, request):
+        """Returns (creates) a response object from multipart request"""
         topic = request[0]
         sender = request[1]
         status = request[2]
 
-        xMsgUtil.log("Request " + str(topic) + " had response : " + str(status))
-        xMsgUtil.log("\tDetails  : ")
-        xMsgUtil.log("\t-----------")
-        xMsgUtil.log("\ttopic  : " + str(topic))
-        xMsgUtil.log("\tsender : " + str(sender))
-        xMsgUtil.log("\tstatus : " + str(status))
-
         try:
             data = request[3]
-            xMsgUtil.log("\tdata   : True (with size : " + str(sys.getsizeof(data)) + ")")
 
         except IndexError:
             data = []
-            xMsgUtil.log("\tdata : False")
+
         finally:
             return cls(topic, sender, data, status)
 
     def get_topic(self):
+        """Returns topic (string) in the response"""
         return str(self.topic)
 
     def set_topic(self, topic):
+        """Sets the topic in the response
+
+        Args:
+            topic (xMsgTopic): topic for the response
+        """
         self.topic = topic
 
     def get_sender(self):
+        """Returns the sender in the response"""
         return str(self.sender)
 
     def set_sender(self, sender):
+        """Sets the sender in the response
+
+        Args:
+            sender (string): name of sender
+        """
         self.sender = sender
 
     def get_status(self):
+        """Returns request response status
+
+        It can be xMsgConstants#SUCCESS or an error string indicating
+        a problem with the request.
+        """
         return str(self.status)
 
     def set_status(self, status):
+        """Sets the status in the response
+
+        Args:
+            status (string): status by default is ```success``` otherwise
+                an string indicating the error in the request
+        """
         self.status = status
 
     def get_data(self):
+        """Returns response data array"""
         if len(self.data) is 0:
             return ""
         else:
             return self.data
 
     def get_serialized_msg(self):
+        """Returns the response instance serialized"""
         s_msg = [self.get_topic(), self.get_sender(), self.get_status()]
+
         for d in self.data:
             s_msg.append(str(d))
         return s_msg
