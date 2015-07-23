@@ -32,40 +32,39 @@ __author__ = 'gurjyan'
 
 
 class xMsgRegistrar(xMsgRegDriver):
-    """
-    xMsgRegistrar
+    """xMsgRegistrar, the main registrar service
 
-    The main registrar service, that always runs in a
-    separate thread. Contains two separate databases
-    to store publishers and subscribers registration data.
-    The key for the data base is xMsg topic, constructed as:
-    domain:subject:type
+    The service always runs in a separate thread. Contains two
+    separate databases to store publishers and subscribers
+    registration data.
+    The key for the data base is xMsgTopic, constructed as:
+        domain:subject:type
+
     Creates REP socket server on a default port
-    Following request will be serviced:
-     <ul>
-           <li>Register publisher</li>
-           <li>Register subscriber</li>
-           <li>Find publisher</li>
-           <li>Find subscriber</li>
-     </ul>
 
+    Following request will be serviced:
+        Register publisher
+        Register subscriber
+        Find publisher
+        Find subscriber
+        Remove publisher
+        Remove subscriber
     """
 
     context = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, fe_host="localhost"):
-        """
-        Constructor used by xMsgNode objects.
-        xMsgNode needs periodically report/update xMsgFe registration
+        """Constructor used by xMsgNode objects.
+
+        xMsgRegistrar needs periodically report/update frontend registration
         database with data stored in its local databases. This process
         makes sure we have proper duplication of the registration data
         for clients seeking global discovery of publishers/subscribers.
-        It is true that discovery can be done using xMsgNode registrar
-        service only, however by introducing xMsgFE, xMsgNodes can come
-        and go, thus making xMsg message-space elastic.
-
+        It is true that discovery can be done using xMsgRegistrar
+        service only, however by introducing the fe_host, xMsgRegistrar
+        can come and go, thus making xMsg message-space elastic.
         """
-        xMsgRegDriver.__init__(self, zmq.Context() , fe_host)
+        xMsgRegDriver.__init__(self, zmq.Context(), fe_host)
 
         self.proxy = xMsgProxy(self.get_context())
 
@@ -73,7 +72,8 @@ class xMsgRegistrar(xMsgRegDriver):
         self.reg_service.daemon = True
         self.reg_service.start()
 
-        xMsgUtil.log("Info: xMsg local registration and discovery server is started")
+        xMsgUtil.log("Info: xMsg local registration and discovery"\
+                     "server is started")
 
         try:
             self.proxy.start()
@@ -82,6 +82,7 @@ class xMsgRegistrar(xMsgRegDriver):
             self.shutdown()
 
     def shutdown(self):
+        """Shutdowns the register and destroy the context"""
         xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
         self.get_context().destroy()
 
@@ -90,18 +91,30 @@ class xMsgRegistrar(xMsgRegDriver):
 
 
 def main():
+    """
+    Usage:
+
+        $ python xmsg/xsys/xMsgRegistrar.py
+
+        Or if you want to specify the frontend host:
+
+        $ python xmsg/xsys/xMsgRegistrar.py -fe_host <hostname>
+
+    """
     if len(sys.argv) == 3:
-        if str(sys.argv[0]) == "-fe_host":
+        if str(sys.argv[1]) == "-fe_host":
             try:
                 registrar = xMsgRegistrar(str(sys.argv[2]))
                 registrar.join()
 
-            except:
+            except Exception as e:
+                print e
                 registrar.shutdown()
 
         else:
             print " Wrong option. Accepts -fe_host option only."
             return
+
     elif len(sys.argv) == 1:
         try:
             registrar = xMsgRegistrar()

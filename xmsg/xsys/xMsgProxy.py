@@ -25,8 +25,8 @@ from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class xMsgProxy:
-    """
-    Runs xMsg pub-sub proxy.
+    """Runs xMsg pub-sub proxy.
+    
     This is a simple stateless message switch, i.e. a device that forwards
     messages without inspecting them. This simplifies dynamic discovery problem
     All xMsg clients (publishers and subscribers) connect to the proxy, instead
@@ -48,19 +48,23 @@ class xMsgProxy:
         self.context = context
 
     def start(self):
-        """
-        Starts the proxy server of the xMsgNode on a local host.
+        """Starts the proxy server of the xMsgNode on a local host.
+        
+        It will launch the xmsg pub-sub proxy, it will exit if another node
+        running with the same address
+        
+        Usage:
+            $ python xmsg/xsys/xMsgProxy.py
+            
         """
         self.d_sub = self.context.socket(zmq.XSUB)
         self.d_sub.set_hwm(0)
-        self.d_sub.bind("tcp://%s:%s" % (str("*"),
-                                         str(int(xMsgConstants.DEFAULT_PORT))))
+        self.d_sub.bind("tcp://*:%s" % str(int(xMsgConstants.DEFAULT_PORT)))
 
         # socket where clients subscribe data/messages
         self.d_pub = self.context.socket(zmq.XPUB)
         self.d_pub.set_hwm(0)
-        self.d_pub.bind("tcp://%s:%s" % (str("*"),
-                                         str(int(xMsgConstants.DEFAULT_PORT) + 1)))
+        self.d_pub.bind("tcp://*:%s" % str(int(xMsgConstants.DEFAULT_PORT) + 1))
 
         xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
@@ -73,6 +77,7 @@ def main():
         proxy.start()
 
     except:
+        xMsgUtil.log("Cannot start proxy: address already in use...")
         return
 
 if __name__ == '__main__':
