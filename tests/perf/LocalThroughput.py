@@ -91,8 +91,7 @@ def main():
 
         pub_node = xMsgAddress(bind_to)
         connection = subscriber.get_new_connection(pub_node)
-        topic = xMsgTopic.build(subscriber.domain, subscriber.subject,
-                                subscriber.xtype)
+        topic = xMsgTopic.wrap("thr_topic")
 
         subscriber.subscribe(connection,
                              topic,

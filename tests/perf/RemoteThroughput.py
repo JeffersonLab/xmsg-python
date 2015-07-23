@@ -51,14 +51,14 @@ def main():
 
         pub_node_addr = xMsgAddress(bind_to)
         pub_connection = publisher.get_new_connection(pub_node_addr)
-        topic = xMsgTopic.build(publisher.domain, publisher.subject,
-                                publisher.xtype)
+        topic = xMsgTopic.wrap("thr_topic")
         data = bytes(b'\x00' * message_size)
 
         try:
             for _ in range(message_count):
                 t_msg = xMsgMessage.create_with_serialized_data(topic,
                                                                 bytes(data))
+                t_msg.set_mimetype("data/binary")
                 publisher.publish(pub_connection, t_msg)
 
             xMsgUtil.sleep(5)
