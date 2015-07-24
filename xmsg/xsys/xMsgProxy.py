@@ -26,7 +26,7 @@ from xmsg.core.xMsgUtil import xMsgUtil
 
 class xMsgProxy:
     """Runs xMsg pub-sub proxy.
-    
+
     This is a simple stateless message switch, i.e. a device that forwards
     messages without inspecting them. This simplifies dynamic discovery problem
     All xMsg clients (publishers and subscribers) connect to the proxy, instead
@@ -49,13 +49,12 @@ class xMsgProxy:
 
     def start(self):
         """Starts the proxy server of the xMsgNode on a local host.
-        
+
         It will launch the xmsg pub-sub proxy, it will exit if another node
         running with the same address
-        
+
         Usage:
             $ python xmsg/xsys/xMsgProxy.py
-            
         """
         self.d_sub = self.context.socket(zmq.XSUB)
         self.d_sub.set_hwm(0)
@@ -76,9 +75,13 @@ def main():
         proxy = xMsgProxy(zmq.Context())
         proxy.start()
 
-    except:
+    except zmq.error.ZMQError:
         xMsgUtil.log("Cannot start proxy: address already in use...")
-        return
+        return -1
+
+    except KeyboardInterrupt:
+        xMsgUtil.log("Exiting the proxy...")
+        return 0
 
 if __name__ == '__main__':
     main()
