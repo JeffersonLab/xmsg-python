@@ -26,7 +26,7 @@ from xmsg.data import xMsgMeta_pb2, xMsgData_pb2
 __author__ = 'gurjyan'
 
 
-class xMsgMessage():
+class xMsgMessage:
     """Defines a message to be serialized and passed through 0MQ.
 
     Uses xMsgData class generated as a result of the proto-buffer
@@ -41,9 +41,7 @@ class xMsgMessage():
 
     Attributes:
         topic (xMsgTopic): topic of the message
-
         metadata (xMsgMeta): metadata of the message
-
         data (bytes[]): serialized data object
 
     @author gurjyan
@@ -66,14 +64,13 @@ class xMsgMessage():
 
     @classmethod
     def create_with_xmsg_data(cls, topic, xmsg_data_object):
-        """
-        Constructs a message with an unserialized xMsgData object and
+        """Constructs a message with an unserialized xMsgData object and
         the default metadata
 
         Args:
             topic (xMsgTopic): the topic of the message
-
             xmsg_data_object (xMsgData): the xMsgData object unserialized
+
         Returns:
             xMsgMessage: xMsg message object
 
@@ -87,12 +84,10 @@ class xMsgMessage():
 
     @classmethod
     def create_with_serialized_data(cls, topic, serialized_data):
-        """
-        Constructs a message with serialized data and the default metadata
+        """Constructs a message with serialized data and the default metadata
 
         Args:
             topic (xMsgTopic): the topic of the message
-
             serialized (bytes): serialized data object
 
         Returns:
@@ -101,8 +96,7 @@ class xMsgMessage():
         return cls(topic, serialized_data)
 
     def get_data(self):
-        """
-        Returns the message data
+        """Returns the message data
 
         Returns:
             bytes: data field as python bytes
@@ -114,7 +108,7 @@ class xMsgMessage():
         return sys.getsizeof(self.get_data())
 
     def set_data(self, serialized_data, mimetype):
-        """
+        """Sets the serialized data and the mimetype for the message
         Args:
             serialized_data (bytes[]): serialized data
 
@@ -132,8 +126,8 @@ class xMsgMessage():
         return self.metadata.SerializeToString()
 
     def set_metadata(self, metadata):
-        """
-        Sets the metadata of this message.
+        """Sets the metadata of this message.
+
         This will overwrite any mime-type already set.
 
         Args:
@@ -146,8 +140,7 @@ class xMsgMessage():
         return self.metadata.dataType
 
     def set_mimetype(self, mimetype):
-        """
-        Sets the message mimetype
+        """Sets the message mimetype
 
         Args:
             mimetype (string): data mimtype
@@ -155,8 +148,7 @@ class xMsgMessage():
         self.metadata.dataType = mimetype
 
     def serialize(self):
-        """
-        Serializes this message into a ZMQ compatible message.
+        """Serializes this message into a ZMQ compatible message.
 
         Returns:
             Array: the ZMQ raw multi-part message
