@@ -8,13 +8,6 @@ For ubuntu (so far tested on 14.10):
 $ sudo aptitude install libzmq3-dev virtualenv csh
 ```
 
-... and then for xmsg python requirements:
-
-```sh
-$ cd /path/to/xmsg-python
-$ pip install -r requirements.txt
-```
-
 ### Installing xMsg
 
 To install xMsg in your system run:
@@ -41,19 +34,17 @@ To run the examples:
 ```sh
 $ # start a xMsgNode process using the scripts
 $ # in the scripts folder
-$ ./scripts/unix/px_node
+$ ./bin/unix/px_node
 ```
 
 then run the publisher and subscriber scripts:
 
 ```sh
-$ ./scripts/unix/px_publisher 5 # 5 or any int number
+$ ./bin/unix/px_publisher 5 # 5 or any int number
 ```
 
 ```sh
-$ ./scripts/unix/px_subscriber
+$ ./bin/unix/px_subscriber
 ```
 
 You can find the publisher and subscriber source code at the examples package
-
-
