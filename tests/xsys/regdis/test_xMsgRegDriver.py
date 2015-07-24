@@ -80,7 +80,8 @@ class TestxMsgRegDriver(unittest.TestCase):
                             str(xMsgConstants.REGISTER_REQUEST_TIMEOUT))
 
     def test_send_local_publisher_removal(self):
-        self.driver.remove_registration_local("bradbury_pub", self.publisher, True)
+        self.driver.remove_registration_local("bradbury_pub", self.publisher,
+                                              True)
 
         self.assert_request(self.ln_connection,
                             "bradbury_sub",
@@ -89,7 +90,8 @@ class TestxMsgRegDriver(unittest.TestCase):
                             str(xMsgConstants.REMOVE_REQUEST_TIMEOUT))
 
     def test_send_frontend_publisher_removal(self):
-        self.driver.remove_registration_fe("bradbury_pub", self.publisher, True)
+        self.driver.remove_registration_fe("bradbury_pub", self.publisher,
+                                           True)
 
         self.assert_request(self.fe_connection,
                             "bradbury_sub",
@@ -98,7 +100,8 @@ class TestxMsgRegDriver(unittest.TestCase):
                             str(xMsgConstants.REMOVE_REQUEST_TIMEOUT))
 
     def test_send_local_subscriber_removal(self):
-        self.driver.remove_registration_local("bradbury_sub", self.subscriber, False)
+        self.driver.remove_registration_local("bradbury_sub", self.subscriber,
+                                              False)
 
         self.assert_request(self.ln_connection,
                             "bradbury_sub",
@@ -177,7 +180,9 @@ class TestxMsgRegDriver(unittest.TestCase):
         verify(self.driver).request(socket, request_object, timeout)
 
     def set_response(self, response):
-        when(self.driver).request(any(zmq.Socket), any(xMsgRegRequest), any(int)).thenReturn(response)
+        when(self.driver).request(any(zmq.Socket),
+                                  any(xMsgRegRequest),
+                                  any(int)).thenReturn(response)
 
 if __name__ == "__main__":
     unittest.main()
