@@ -1,0 +1,19 @@
+#!/bin/csh -f
+
+# author gurjyan
+# date 12.16.14
+
+setenv PXMSG_SRC $PXMSG_HOME/xmsg
+setenv PYTHONPATH $PXMSG_SRC\:$PXMSG_SRC/core\:$PXMSG_SRC/xsys\:$PXMSG_SRC/xsys/regdis\:$PXMSG_SRC/data\:$PXMSG_SRC/net
+
+cd "$PXMSG_SRC/xsys"
+
+if ( $1 == "-h" || $1 == "-help" ) then
+    echo ""
+    echo "Starts xMsg Proxy (python binding)"
+    echo "---------------------------------"
+    echo "synopsis: px_proxy"
+    echo ""
+else
+    python xMsgProxy.py
+endif
