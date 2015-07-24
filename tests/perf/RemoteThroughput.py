@@ -21,19 +21,15 @@
 import sys
 
 from xmsg.core.xMsg import xMsg
-from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.net.xMsgAddress import xMsgAddress
+from xmsg.data import xMsgData_pb2
 
 
 class Publisher(xMsg):
 
-    # Object variables
     myName = "throughput_publisher"
-    domain = "throughput_domain"
-    subject = "throughput_subject"
-    xtype = "throughput_type"
 
     def __init__(self, bind_to, msg_size, msg_count):
         xMsg.__init__(self, self.myName, bind_to, pool_size=1)
@@ -41,32 +37,41 @@ class Publisher(xMsg):
         self.message_count = msg_count
 
 
+def runner(bind_to, message_size, message_count):
+    pub_node_addr = xMsgAddress(bind_to)
+    publisher = Publisher(bind_to, message_size, message_count)
+    pub_connection = publisher.get_new_connection(pub_node_addr)
+    topic = xMsgTopic.wrap("thr_topic")
+
+    subscriber_args = [message_count, message_size]
+    configuration_data = xMsgData_pb2.xMsgData()
+    configuration_data.type = xMsgData_pb2.xMsgData.T_FLSINT32A
+    configuration_data.FLSINT32A.extend(subscriber_args)
+    configuration_message = xMsgMessage.create_with_xmsg_data(topic,
+                                                              configuration_data)
+    publisher.publish(pub_connection, configuration_message)
+
+    try:
+        data = bytes(b'\x00' * message_size)
+        for _ in range(message_count):
+            t_msg = xMsgMessage.create_with_serialized_data(topic,
+                                                            bytes(data))
+            t_msg.set_mimetype("data/binary")
+            publisher.publish(pub_connection, t_msg)
+
+        publisher.destroy(30000)
+
+    except Exception as e:
+        print e
+        print "Removing publisher..."
+        publisher.destroy(0)
+
+    return
+
+
 def main():
     if len(sys.argv) == 4:
-        bind_to = sys.argv[1]
-        message_size = int(sys.argv[2])
-        message_count = long(sys.argv[3])
-
-        publisher = Publisher(bind_to, message_size, message_count)
-
-        pub_node_addr = xMsgAddress(bind_to)
-        pub_connection = publisher.get_new_connection(pub_node_addr)
-        topic = xMsgTopic.wrap("thr_topic")
-        data = bytes(b'\x00' * message_size)
-
-        try:
-            for _ in range(message_count):
-                t_msg = xMsgMessage.create_with_serialized_data(topic,
-                                                                bytes(data))
-                t_msg.set_mimetype("data/binary")
-                publisher.publish(pub_connection, t_msg)
-
-            xMsgUtil.sleep(5)
-            publisher.destroy(25000)
-
-        except:
-            print "Removing publisher..."
-            publisher.destroy(0)
+        runner(sys.argv[1], int(sys.argv[2]), long(sys.argv[3]))
 
     else:
         print "usage: remote_thr <bind-to> <message-size> <message-count>"
