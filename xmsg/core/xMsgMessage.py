@@ -1,26 +1,26 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import sys
 
-from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgMeta_pb2, xMsgData_pb2
 
 __author__ = 'gurjyan'
@@ -31,7 +31,7 @@ class xMsgMessage:
 
     Uses xMsgData class generated as a result of the proto-buffer
     description to pass Python primitive types and arrays of primitive types.
-    xMsgData is also used to pass byte[]: the result of a user specific
+    xMsgData is also used to pass bytes[]: the result of a user specific
     object serialization.
 
     This class also contains complete metadata of the message data,
@@ -43,21 +43,17 @@ class xMsgMessage:
         topic (xMsgTopic): topic of the message
         metadata (xMsgMeta): metadata of the message
         data (bytes[]): serialized data object
-
-    @author gurjyan
-    @version 2.x
-    @since 16/6/15
     """
-    topic = str(xMsgConstants.UNDEFINED)
-    metadata = xMsgMeta_pb2.xMsgMeta()
-    data = str(xMsgConstants.UNDEFINED)
 
-    def __init__(self, topic, serialized_data=None):
+    def __init__(self, topic, serialized_data):
         self.topic = topic
+
         if(isinstance(serialized_data, basestring) or
            isinstance(serialized_data, bytearray) or
            isinstance(serialized_data, bytes)):
             self.data = serialized_data
+            self.metadata = xMsgMeta_pb2.xMsgMeta()
+
         else:
             raise TypeError("xMsgMessage: Constructor only"
                             " accepts serialized data")
@@ -104,25 +100,37 @@ class xMsgMessage:
         return self.data
 
     def get_data_size(self):
-        """Returns the size of the message data."""
+        """Returns the size of the message data.
+
+        Returns:
+            int: message size in *bytes*
+        """
         return sys.getsizeof(self.get_data())
 
     def set_data(self, serialized_data, mimetype):
         """Sets the serialized data and the mimetype for the message
+
         Args:
             serialized_data (bytes[]): serialized data
-
             mimetype (string): mimetype for the data
         """
         self.data = serialized_data
         self.metadata.dataType = mimetype
 
     def get_metadata(self):
-        """Returns metadata object (xMsgMeta)"""
+        """Returns metadata object (xMsgMeta)
+
+        Returns:
+            xMsgMeta: message metadata object
+        """
         return self.metadata
 
     def get_metadata_bytes(self):
-        """Returns metadata as python bytes"""
+        """Returns metadata as python bytes
+
+        Returns:
+            bytes[]: message serialized metadata object
+        """
         return self.metadata.SerializeToString()
 
     def set_metadata(self, metadata):
@@ -136,14 +144,18 @@ class xMsgMessage:
         self.metadata.MergeFrom(metadata)
 
     def get_mimetype(self):
-        """Returns the mime-type of the message data."""
+        """Returns the mime-type of the message data.
+
+        Returns:
+            String: mimetype for message data
+        """
         return self.metadata.dataType
 
     def set_mimetype(self, mimetype):
         """Sets the message mimetype
 
         Args:
-            mimetype (string): data mimtype
+            mimetype (String): data mimtype
         """
         self.metadata.dataType = mimetype
 
@@ -151,11 +163,15 @@ class xMsgMessage:
         """Serializes this message into a ZMQ compatible message.
 
         Returns:
-            Array: the ZMQ raw multi-part message
+            list: the ZMQ raw multi-part message
         """
         return [str(self.get_topic()), self.get_metadata_bytes(),
                 self.get_data()]
 
     def get_topic(self):
-        """Returns the topic string"""
+        """Returns the topic string
+
+        Returns:
+            String: message topic
+        """
         return self.topic

@@ -1,23 +1,24 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import re
 
 from xmsg.core.xMsgConstants import xMsgConstants
@@ -37,18 +38,19 @@ TOPIC_XTYPE_GROUP = 5
 class xMsgTopic:
     """The main identification for xMsg pub/sub communications.
 
-    xMsg is a ```topic-based system```, and messages are published to given
-    ```topics```, or named channels, defined by ```publishers```.
-    ```Subscribers``` can received the messages published to the ```topics```
+    xMsg is a *topic-based system*, and messages are published to given
+    *topics*, or named channels, defined by *publishers*.
+    *Subscribers* can received the messages published to the *topics*
     to which they are interested, by subscribing to them.
 
-    In xMsg, a topic is composed of three parts: a ```domain```, a
-    ```subject``` and a ```type```. Each part is separated by a semicolon
+    In xMsg, a topic is composed of three parts: a *domain*, a
+    *subject* and a *type*. Each part is separated by a semicolon
     character. The subject and the type can be omitted. Thus, the following
     topics are all valid:
-        ```domain```
-        ```domain:subject```
-        ```domain:subject:type```
+
+    * *domain*
+    * *domain:subject*
+    * *domain:subject:type*
 
     The build factory method help to create a proper topic with the right
     format.
@@ -57,26 +59,26 @@ class xMsgTopic:
     messages published to that topic. To filter topics, the three  parts
     form a hierarchy, and all topics with the same prefix will be accepted.
 
-    In other words, a subscriber listening for an specific ```domain``` will
+    In other words, a subscriber listening for an specific *domain* will
     receive all messages whose topic starts with that domain, no matter the
     subject and the type. For example, if the subscription topic is "A",
     then all the messages with the following topics will be received:
-        "A"
-        "A:B"
-        "A:C"
-        "A:B:1"
-        "A:C:1"
-        "A:C:2"
-        etc...
+
+    * *"A"*
+    * *"A:B"*
+    * *"A:C"*
+    * *"A:B:1"*
+    * *"A:C:1"*
+    * *"A:C:2"*
+    * etc...
 
     More specific subscriptions will not receive messages that match only the
     parent parts of the topic.
-    Thus, subscription to "A:B" will accept "A:B","A:B:1","A:B:2", etc, but
-    will reject "A" or "A:C"
-    Similarly, a subscription to "A:B:1" will only accept that exact topic,
-    rejecting "A:B:2", "A:C", "A", etc.
+    Thus, subscription to *"A:B"* will accept *"A:B"*, *"A:B:1"*, *"A:B:2"*,
+    etc, but will reject *"A"* or *"A:C"*
+    Similarly, a subscription to *"A:B:1"* will only accept that exact topic,
+    rejecting *"A:B:2"*, *"A:C"*, *"A"*, etc.
     """
-    topic = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, topic):
         """xMsgTopic Constructor
@@ -128,6 +130,9 @@ class xMsgTopic:
     def domain(self):
         """Parses xMsg topic and returns domain of the topic
 
+        Returns:
+            Domain (String): domain of topic
+
         Raises:
             MalformedCanonicalName: if the topic is not properly formed
         """
@@ -143,10 +148,10 @@ class xMsgTopic:
         A parent topic is a prefix of other topic, or they are the same.
         Examples:
 
-        "A" is a parent of "A:B" and "A:C:1"
-        "A" is NOT parent of "W:B" nor "Z"
-        "A:C" is a parent of "A:C:1" and "A:C"
-        "A:C" is NOT a parent of "A:B"
+        * "A" is a parent of "A:B" and "A:C:1"
+        * "A" is NOT parent of "W:B" nor "Z"
+        * "A:C" is a parent of "A:C:1" and "A:C"
+        * "A:C" is NOT a parent of "A:B"
 
         A subscription to a parent topic will accept any children topic.
         See the class documentation for more details about filtering messages
@@ -163,6 +168,9 @@ class xMsgTopic:
     def subject(self):
         """Parses xMsg topic and returns subject of the topic
 
+        Returns:
+            Subject (String): subject of the topic
+
         Raises:
             MalformedCanonicalName: if the topic is not properly formed
         """
@@ -174,6 +182,9 @@ class xMsgTopic:
 
     def type(self):
         """Parses xMsg topic and returns type of the topic
+
+        Returns:
+            Type (String): type of the topic
 
         Raises:
             MalformedCanonicalName: if the topic is not properly formed
