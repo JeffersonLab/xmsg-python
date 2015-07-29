@@ -66,8 +66,9 @@ class xMsg:
             name (String): name of the xMsg actor instance
             fe_host (String): hostname of the frontend host
 
-        KeyWord arguments:
+        Keyword arguments:
             pool_size (int): size of the actors thread pool
+            context (zmq.Context): communication context
 
         Returns:
             xMsg: xmsg object
