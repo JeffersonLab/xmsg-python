@@ -66,29 +66,30 @@ class xMsgProxy:
         ::
             python xmsg/xsys/xMsgProxy.py
         """
-        self._xsub_socket = self.context.socket(zmq.XSUB)
-        self._xsub_socket.set_hwm(0)
-        self._xsub_socket.bind("tcp://*:%d" % int(xMsgConstants.DEFAULT_PORT))
+        try:
+            self._xsub_socket = self.context.socket(zmq.XSUB)
+            self._xsub_socket.set_hwm(0)
+            self._xsub_socket.bind("tcp://*:%d" % int(xMsgConstants.DEFAULT_PORT))
 
-        # socket where clients subscribe data/messages
-        self._xpub_socket = self.context.socket(zmq.XPUB)
-        self._xpub_socket.set_hwm(0)
-        xpub_port = int(xMsgConstants.DEFAULT_PORT) + 1
-        self._xpub_socket.bind("tcp://*:%d" % xpub_port)
+            # socket where clients subscribe data/messages
+            self._xpub_socket = self.context.socket(zmq.XPUB)
+            self._xpub_socket.set_hwm(0)
+            xpub_port = int(xMsgConstants.DEFAULT_PORT) + 1
+            self._xpub_socket.bind("tcp://*:%d" % xpub_port)
 
-        xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
+            xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
-        zmq.proxy(self._xsub_socket, self._xpub_socket, None)
+            zmq.proxy(self._xsub_socket, self._xpub_socket, None)
+
+        except zmq.error.ZMQError:
+            xMsgUtil.log("Cannot start proxy: address already in use...")
+            return -1
 
 
 def main():
     try:
         proxy = xMsgProxy(zmq.Context())
         proxy.start()
-
-    except zmq.error.ZMQError:
-        xMsgUtil.log("Cannot start proxy: address already in use...")
-        return -1
 
     except KeyboardInterrupt:
         xMsgUtil.log("Exiting the proxy...")

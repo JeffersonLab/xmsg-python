@@ -73,11 +73,13 @@ class xMsgRegistrar(xMsgRegDriver):
         """Starts the registrar services"""
         self.reg_service.start()
         xMsgUtil.log("Info: xMsg local registration and discovery"\
-                     "server is started")
+                     " server has started")
         try:
             self.proxy.start()
             self._join()
-        except:
+
+        except zmq.error.ZMQError:
+            xMsgUtil.log("Cannot start proxy: address already in use...")
             self.shutdown()
 
     def shutdown(self):
@@ -107,9 +109,9 @@ def main():
                 registrar = xMsgRegistrar(str(sys.argv[2]))
                 registrar.start()
 
-            except Exception as e:
-                print e
+            except KeyboardInterrupt:
                 registrar.shutdown()
+                return
 
         else:
             print " Wrong option. Accepts -fe_host option only."
@@ -120,7 +122,7 @@ def main():
             registrar = xMsgRegistrar()
             registrar.start()
 
-        except:
+        except KeyboardInterrupt:
             registrar.shutdown()
             return
 
