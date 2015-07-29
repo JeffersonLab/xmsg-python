@@ -1,23 +1,24 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
@@ -31,9 +32,18 @@ class xMsgProxy:
     messages without inspecting them. This simplifies dynamic discovery problem
     All xMsg clients (publishers and subscribers) connect to the proxy, instead
     of to each other. It becomes trivial to add more subscribers or publishers.
-    """
 
-    context = str(xMsgConstants.UNDEFINED)
+    Attributes:
+        context (zmq.Context): proxy instance context
+
+    *How to launch*
+    ::
+        python xmsg/xsys/xMsgProxy.py
+
+    *or*
+    ::
+        ./bin/unix/px_proxy
+    """
 
     def __init__(self, context):
         """
@@ -49,25 +59,26 @@ class xMsgProxy:
 
     def start(self):
         """Starts the proxy server of the xMsgNode on a local host.
-
         It will launch the xmsg pub-sub proxy, it will exit if another node
         running with the same address
 
         Usage:
-            $ python xmsg/xsys/xMsgProxy.py
+        ::
+            python xmsg/xsys/xMsgProxy.py
         """
-        self.d_sub = self.context.socket(zmq.XSUB)
-        self.d_sub.set_hwm(0)
-        self.d_sub.bind("tcp://*:%s" % str(int(xMsgConstants.DEFAULT_PORT)))
+        self._xsub_socket = self.context.socket(zmq.XSUB)
+        self._xsub_socket.set_hwm(0)
+        self._xsub_socket.bind("tcp://*:%d" % int(xMsgConstants.DEFAULT_PORT))
 
         # socket where clients subscribe data/messages
-        self.d_pub = self.context.socket(zmq.XPUB)
-        self.d_pub.set_hwm(0)
-        self.d_pub.bind("tcp://*:%s" % str(int(xMsgConstants.DEFAULT_PORT) + 1))
+        self._xpub_socket = self.context.socket(zmq.XPUB)
+        self._xpub_socket.set_hwm(0)
+        xpub_port = int(xMsgConstants.DEFAULT_PORT) + 1
+        self._xpub_socket.bind("tcp://*:%d" % xpub_port)
 
         xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
-        zmq.proxy(self.d_sub, self.d_pub, None)
+        zmq.proxy(self._xsub_socket, self._xpub_socket, None)
 
 
 def main():
