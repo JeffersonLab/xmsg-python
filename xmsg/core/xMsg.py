@@ -89,7 +89,7 @@ class xMsg:
         self._thread_pool = Pool(self.pool_size, self.__init_worker)
 
         # Private db of stored connections
-        self.__connections = dict()
+        self._connections = dict()
 
     def connect(self, address):
         """Connects to the node by creating two sockets for publishing and
