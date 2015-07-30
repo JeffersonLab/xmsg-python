@@ -19,12 +19,11 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-from netifaces import AF_INET
 import netifaces as ni
-from datetime import datetime
 import socket
 import time
 import re
+from datetime import datetime
 
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgRegistration_pb2
@@ -91,22 +90,19 @@ class xMsgUtil:
                 return hostname
 
     @staticmethod
-    def get_local_ip(network_interface='lo0'):
-        """Returns the local ip for a given network interface
-
-        Args:
-            n_iface (String): argument must be a valid network interface
+    def get_local_ip():
+        """Returns the local ip for xMsg actors
 
         Returns:
-            String: local ip for the given interface
+            String: local ip
         """
         try:
-            return str(ni.ifaddresses(network_interface)[AF_INET][0]['addr'])
+            # Gets the default gateway
+            interface = str(ni.gateways()['default'][ni.AF_INET][1])
+            return ni.ifaddresses(interface)[ni.AF_INET][0]['addr']
 
-        except ValueError:
-            xMsgUtil.log("xMsg received : " + str(network_interface))
-            xMsgUtil.log("A valid network interface should be provided...")
-            return
+        except Exception as e:
+            raise("xMsgUtil.get_local_ip received : " + e)
 
     @staticmethod
     def is_ip(host_ip):
