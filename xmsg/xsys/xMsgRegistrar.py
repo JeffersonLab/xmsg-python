@@ -31,7 +31,7 @@ from xmsg.core.xMsgUtil import xMsgUtil
 __author__ = 'gurjyan'
 
 
-class xMsgRegistrar(xMsgRegDriver):
+class xMsgRegistrar:
     """xMsgRegistrar, the main registrar service
 
     The service always runs in a separate thread. Contains two
@@ -62,12 +62,9 @@ class xMsgRegistrar(xMsgRegDriver):
         service only, however by introducing the fe_host, xMsgRegistrar
         can come and go, thus making xMsg message-space elastic.
         """
-        xMsgRegDriver.__init__(self, zmq.Context(), fe_host)
-
-        self.proxy = xMsgProxy(self.get_context())
-
-        self.reg_service = xMsgRegService(self.get_context())
-        self.reg_service.daemon = True
+        self.context = zmq.Context()
+        self.proxy = xMsgProxy(self.context)
+        self.reg_service = xMsgRegService(self.context, fe_host)
 
     def start(self):
         """Starts the registrar services"""
@@ -85,7 +82,7 @@ class xMsgRegistrar(xMsgRegDriver):
     def shutdown(self):
         """Shutdowns the register and destroy the context"""
         xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
-        self.get_context().destroy()
+        self.context.destroy()
 
     def _join(self):
         """Join method for the registration service"""
@@ -106,7 +103,8 @@ def main():
     if len(sys.argv) == 3:
         if str(sys.argv[1]) == "-fe_host":
             try:
-                registrar = xMsgRegistrar(str(sys.argv[2]))
+                fe_host = str(sys.argv[2])
+                registrar = xMsgRegistrar(fe_host)
                 registrar.start()
 
             except KeyboardInterrupt:

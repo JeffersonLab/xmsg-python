@@ -1,23 +1,24 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 from xmsg.core.xMsgConstants import xMsgConstants
 
 
@@ -30,20 +31,17 @@ class xMsgRegResponse:
     indicating that something wrong happened with the request.
 
     Attributes:
-        topic (string): topic of the response message
-        sender (string): response sender
-        status (string): status of the request to respond
-        data (bytesarray): registration datas
+        topic (String): topic of the response message
+        sender (String): response sender
+        status (String): status of the request to respond
+        data (bytes[]): registration data
     """
-    topic = str(xMsgConstants.UNDEFINED)
-    sender = str(xMsgConstants.UNDEFINED)
-    status = str(xMsgConstants.SUCCESS)
-    data = []
 
     def __init__(self, topic, sender, data, status=str(xMsgConstants.SUCCESS)):
         self.topic = topic
         self.sender = sender
         self.status = status
+        self.data = []
 
         if data is not None:
             for d in data:
@@ -51,7 +49,14 @@ class xMsgRegResponse:
 
     @classmethod
     def create_from_multipart_request(cls, request):
-        """Returns (creates) a response object from multipart request"""
+        """Returns (creates) a response object from multipart request
+
+        Args:
+            request (bytes[]): 0MQ multipart request
+
+        Returns:
+            xMsgRegResponse: response object
+        """
         topic = request[0]
         sender = request[1]
         status = request[2]
@@ -66,7 +71,11 @@ class xMsgRegResponse:
             return cls(topic, sender, data, status)
 
     def get_topic(self):
-        """Returns topic (string) in the response"""
+        """Returns topic in the response
+
+        Returns:
+            String: response topic
+        """
         return str(self.topic)
 
     def set_topic(self, topic):
@@ -78,7 +87,11 @@ class xMsgRegResponse:
         self.topic = topic
 
     def get_sender(self):
-        """Returns the sender in the response"""
+        """Returns the sender in the response
+
+        Returns:
+            String: response sender
+        """
         return str(self.sender)
 
     def set_sender(self, sender):
@@ -94,6 +107,9 @@ class xMsgRegResponse:
 
         It can be xMsgConstants#SUCCESS or an error string indicating
         a problem with the request.
+
+        Returns:
+            String: status obtained from registration service
         """
         return str(self.status)
 
@@ -101,20 +117,28 @@ class xMsgRegResponse:
         """Sets the status in the response
 
         Args:
-            status (string): status by default is ```success``` otherwise
+            status (string): status by default is *success* otherwise
                 an string indicating the error in the request
         """
         self.status = status
 
     def get_data(self):
-        """Returns response data array"""
+        """Returns response data array
+
+        Returns:
+            bytes[]: data array from response
+        """
         if len(self.data) is 0:
             return ""
         else:
             return self.data
 
     def get_serialized_msg(self):
-        """Returns the response instance serialized"""
+        """Returns the response instance serialized
+
+        Returns:
+            bytes[]: serialized message for 0MQ
+        """
         s_msg = [self.get_topic(), self.get_sender(), self.get_status()]
 
         for d in self.data:

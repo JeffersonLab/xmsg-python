@@ -1,23 +1,24 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import re
 from sets import Set
 
@@ -32,10 +33,12 @@ class xMsgRegDatabase():
     will be in the same group.
 
     Attributes:
-        db (dict): python dict() that stores the registration information
+        db (dict): dict() that stores the registration information
             for the xMsg actors.
     """
-    db = dict()
+
+    def __init__(self):
+        self.db = dict()
 
     def register(self, registration_data):
         """Register the xMsg actor registration information
@@ -77,7 +80,7 @@ class xMsgRegDatabase():
         of all xMsg actors that are running on a specified host.
 
         Args:
-            host (string): host name of the xMsg
+            host (String): host name of the xMsg
         """
         for key in self.all():
             for r_data in self.db[key].copy():
@@ -93,12 +96,10 @@ class xMsgRegDatabase():
         """Finds the registration information based on the topic composition
 
         The method will find registration from the following way
-            domain:*:* -> all registration for specific domain
 
-            domain:somesubject:* -> all registration for specific domain
-                                    and subject
-
-            domain:somesubject:sometype -> all registration for specific topic
+        * domain:\*:\* -> all registration for specific domain
+        * domain:somesubject:* -> all registration for specific domain and subject
+        * domain:somesubject:sometype -> all registration for specific topic
 
         Args:
             domain (string): registration domain
@@ -106,9 +107,7 @@ class xMsgRegDatabase():
             xtype (string): registration type
 
         Returns:
-            xMsgRegistration (serialized)
-            or
-            None: if does not find any match
+            Set: set of serialized registration data
         """
         if subject == "*" or subject == "undefined":
             subject = ":(.+)"
@@ -147,11 +146,21 @@ class xMsgRegDatabase():
         return key
 
     def all(self):
-        """returns all topics"""
+        """returns all topics
+
+        Returns:
+            list: list of all topics in the database
+        """
         return self.db.keys()
 
     def get(self, topic):
-        """returns all data for specific topic"""
+        """returns all data for specific topic
+        Args:
+            topic (String): topic of the register to retrieve
+
+        Returns:
+            bytes[]: serialized register data (serialized xMsgRegistration)
+        """
         return self.db.get(str(topic))
 
     def clear(self):

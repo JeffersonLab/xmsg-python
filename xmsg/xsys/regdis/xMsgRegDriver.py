@@ -1,23 +1,24 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
@@ -37,33 +38,40 @@ class xMsgRegDriver:
     to create 0MQ socket for communications. This means that this class owns
     the 0MQ context.
     The sockets use the default registrar port: xMsgConstants#REGISTRAR_PORT.
+
+    Attributes:
+        context (zmq.Context): zmq context
+        fe_host (String): xmsg frontend hostname
     """
-    # Front-end registrar server (req/rep) connection socket
-    _feConnection = str(xMsgConstants.UNDEFINED)
-
-    # Local registrar server (req/rep) connection socket
-    _lnConnection = str(xMsgConstants.UNDEFINED)
-
-    # zmq context
-    context = str(xMsgConstants.UNDEFINED)
 
     def __init__(self, context, fe_host="localhost"):
+        # 0MQ context
         self.context = context
 
+        # Connection settings
+        fe_host_ip = xMsgUtil.host_to_ip(fe_host)
+        localhost_ip = xMsgUtil.host_to_ip("localhost")
+        registrar_port = int(xMsgConstants.REGISTRAR_PORT)
+        connect = str(xMsgConstants.CONNECT)
+
+        # Front-end registrar server (req/rep) connection socket
         self._feConnection = self.zmq_socket(self.context, zmq.REQ,
-                                             xMsgUtil.host_to_ip(fe_host),
-                                             int(xMsgConstants.REGISTRAR_PORT),
-                                             str(xMsgConstants.CONNECT))
+                                             fe_host_ip, registrar_port,
+                                             connect)
         if fe_host != "localhost":
+            # Local registrar server (req/rep) connection socket
             self._lnConnection = self.zmq_socket(self.context, zmq.REQ,
-                                                 xMsgUtil.host_to_ip("localhost"),
-                                                 int(xMsgConstants.REGISTRAR_PORT),
-                                                 str(xMsgConstants.CONNECT))
+                                                 localhost_ip, registrar_port,
+                                                 connect)
         else:
             self._lnConnection = self._feConnection
 
     def get_context(self):
-        """Returns the main zmq socket context"""
+        """Returns the main zmq socket context
+
+        Returns:
+            zmq.Context: zmq context
+        """
         return self.context
 
     def _register(self, conn_socket, name, registration_data, is_publisher):
@@ -76,11 +84,8 @@ class xMsgRegDriver:
         Args:
             conn_socket (zmq.Socket):connection socket defines the local or
                 front-end registration server
-
-            name (string): the name of the sender
-
+            name (String): the name of the sender
             data (xMsgRegistration): registration information object
-
             is_publisher (bool): if set to be true then this is a request
                 to register a publisher, otherwise this is a subscriber
                 registration request
@@ -106,19 +111,15 @@ class xMsgRegDriver:
                              is_publisher):
         """Sends remove registration request to the server.
 
-        Request is wired using xMsg message construct,
-        that have 3 parts: topic, sender, and data.
-        Data is the object of the xMsgRegistration
+        Request is wired using xMsg message construct, that have 3 parts:
+        topic, sender, and data. Data is the object of the xMsgRegistration
 
         Args:
-            _conn_socket (zmq.Socket): connection socket defines the local or
+            conn_socket (zmq.Socket): connection socket defines the local or
                 front-end registration server
-
-            name (string):the name of the sender
-
+            name (String):the name of the sender
             registration_data (xMsgRegistration): registration information
                 object
-
             is_publisher (bool): if set to be true then this is a request
                 to register a publisher, otherwise this is a subscriber
                 registration request
@@ -151,8 +152,8 @@ class xMsgRegDriver:
         interrupted.
 
         Args:
-            host (string): host name of the xMsgNode
-            name (string): the name of the sender
+            host (String): host name of the xMsgNode
+            name (String): the name of the sender
         """
 
         # topic
@@ -171,15 +172,15 @@ class xMsgRegDriver:
         subject and types are defined within the xMsgRegistration object.
 
         Args:
-            connectionSocket: connection socket defines the local or
-                                 front-end registration server
-            name: the name of the sender
-            data: xMsgRegistrationData object
-            isPublisher: if set to be true then this is a request to find
-                            publishers, otherwise subscribers
+            conn_socket (zmq.Socket): connection socket defines the local or
+                front-end registration server
+            name (String): the name of the sender
+            registration_data (xMsgRegistration): xMsgRegistration object
+            is_publisher: if set to be true then this is a request to find
+                publishers, otherwise subscribers
 
         Returns:
-            list(): List of publishers or subscribers xMsgRegistration objects
+            list: list of publishers or subscribers xMsgRegistration objects
                 that publish/subscribe required topic
 
         """
@@ -204,13 +205,13 @@ class xMsgRegDriver:
         """Registers xMsg actor in front-end registration and discovery server
 
         Args:
-            name (string): the name of the requester/sender
+            name (String): the name of the requester/sender
             registration_data (xMsgRegistration): xMsgRegistration object
-
-            is_publisher: if set to be true then this is a request to
+            is_publisher (bool): if set to be true then this is a request to
                 register a publisher, otherwise this is a subscriber
                 registration request
         """
+        print "Me llamaron...."
         self._register(self._feConnection, name, registration_data,
                        is_publisher)
 
@@ -218,10 +219,9 @@ class xMsgRegDriver:
         """Registers xMsg actor with the local registration and discovery server
 
         Args:
-            name (string): the name of the requester/sender
+            name (String): the name of the requester/sender
             registration_data (xMsgRegistration): xMsgRegistration object
-
-            is_publisher: if set to be true then this is a request to
+            is_publisher (bool): if set to be true then this is a request to
                 register a publisher, otherwise this is a subscriber
                 registration request
         """
@@ -231,10 +231,9 @@ class xMsgRegDriver:
         """Removes xMsg actor from the front-end registration and discovery server
 
         Args:
-            name (string): the name of the requester/sender
+            name (String): the name of the requester/sender
             registration_data (xMsgRegistration): xMsgRegistration object
-
-            is_publisher: if set to be true then this is a request to
+            is_publisher (bool): if set to be true then this is a request to
                 register a publisher, otherwise this is a subscriber
                 registration request
         """
@@ -244,16 +243,15 @@ class xMsgRegDriver:
         """Removes xMsg actor from the local registration and discovery server
 
         Args:
-            name (string): the name of the requester/sender
+            name (String): the name of the requester/sender
             registration_data (xMsgRegistration): xMsgRegistration object
-
-            is_publisher: if set to be true then this is a request to
+            is_publisher (bool): if set to be true then this is a request to
                 register a publisher, otherwise this is a subscriber
                 registration request
         """
         self._remove_registration(self._lnConnection, name, data, is_publisher)
 
-    def find_local(self, name, data, is_publisher):
+    def find_local(self, name, registration_data, is_publisher):
         """Searches the local registration and discovery databases for an actor
 
         The method will search for xMsg actors that publishes or subscribes
@@ -261,17 +259,17 @@ class xMsgRegDriver:
         defined within the xMsgRegistration object.
 
         Args:
-            name (string): the name of the requester/sender
+            name (String): the name of the requester/sender
             registration_data (xMsgRegistration): xMsgRegistration object
-
             is_publisher: if set to be true then this is a request to
                 register a publisher, otherwise this is a subscriber
                 registration request
 
         Returns:
-            list(): List of xMsgRegistrationData objects
+            list: list of xMsgRegistrationData objects
         """
-        return self._find(self._lnConnection, name, data, is_publisher)
+        return self._find(self._lnConnection, name, registration_data,
+                          is_publisher)
 
     def find_global(self, name, data, is_publisher):
         """Searches the FE registration and discovery databases for an actor
@@ -281,15 +279,14 @@ class xMsgRegDriver:
         defined within the xMsgRegistrationData object.
 
         Args:
-            name (string): the name of the requester/sender
+            name (String): the name of the requester/sender
             registration_data (xMsgRegistration): xMsgRegistration object
-
-            is_publisher: if set to be true then this is a request to
+            is_publisher (bool): if set to be true then this is a request to
                 register a publisher, otherwise this is a subscriber
                 registration request
 
         Returns:
-            list(): List of xMsgRegistration objects
+            list: list of xMsgRegistration objects
         """
         return self._find(self._feConnection, name, data, is_publisher)
 
@@ -302,7 +299,7 @@ class xMsgRegDriver:
             timeout (int): timeout for processing request in seconds
 
         Returns:
-            bytes: serialized registration information
+            bytes[]: serialized registration information
         """
         request_msg = request.get_serialized_msg()
 
@@ -334,10 +331,10 @@ class xMsgRegDriver:
         Args:
             context (zmq.Context): zmq context
             socket_type (int): the type of the socket (integer defined by zmq)
-            hostname (string): host name
+            hostname (String): host name
             port (int): port number
-            boc (int): if set 0 socket will be bind, otherwise it will connect.
-                Note that for xMsg proxies we always connect (boc = 1)
+            boc (String): 'bind' or 'connect' host and port to socket
+                Note that for xMsg proxies we always connect (boc = 'connect')
                 (proxies are XPUB/XSUB sockets).
 
         Returns:

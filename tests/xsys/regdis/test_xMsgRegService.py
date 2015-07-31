@@ -1,23 +1,23 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
-
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 import unittest
 import zmq
 
@@ -27,13 +27,15 @@ from xmsg.xsys.regdis.xMsgRegService import xMsgRegService
 
 
 class TestXMsgRegService(unittest.TestCase):
-    reg_info = xMsgUtil.build_registration("test_name", "test_description", "test_domain",
-                                           "test_subject", "test_type", True)
-    topic = "test_domain:test_subject:test_type"
+    reg_info = xMsgUtil.build_registration("test_name", "test_description",
+                                           "test_domain", "test_subject",
+                                           "test_type", True)
     sender = "test_sender"
 
     def setUp(self):
-        self.reg_serv = xMsgRegService(zmq.Context())
+        context = zmq.Context()
+        fe_host = "localhost"
+        self.reg_serv = xMsgRegService(context, fe_host)
 
     def test_register_publisher(self):
         request = [str(xMsgConstants.REGISTER_PUBLISHER),
