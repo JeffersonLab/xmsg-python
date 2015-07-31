@@ -1,0 +1,964 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>xmsg.xsys.regdis package &mdash; xMsg python x documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="xMsg python x documentation" href="index.html" />
+    <link rel="up" title="xmsg.xsys package" href="xmsg.xsys.html" />
+    <link rel="prev" title="xmsg.xsys package" href="xmsg.xsys.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xmsg.xsys.html" title="xmsg.xsys package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="xmsg.html" >xmsg package</a> &raquo;</li>
+          <li><a href="xmsg.xsys.html" accesskey="U">xmsg.xsys package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="xmsg-xsys-regdis-package">
+<h1>xmsg.xsys.regdis package<a class="headerlink" href="#xmsg-xsys-regdis-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-xmsg.xsys.regdis.xMsgRegDatabase">
+<span id="xmsg-xsys-regdis-xmsgregdatabase-module"></span><h2>xmsg.xsys.regdis.xMsgRegDatabase module<a class="headerlink" href="#module-xmsg.xsys.regdis.xMsgRegDatabase" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase">
+<em class="property">class </em><tt class="descclassname">xmsg.xsys.regdis.xMsgRegDatabase.</tt><tt class="descname">xMsgRegDatabase</tt><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase" title="Permalink to this definition">¶</a></dt>
+<dd><p>A registration database of xMsg actors.</p>
+<p>Actors are grouped by topic, i.e., actors registered with the same topic
+will be in the same group.</p>
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.db">
+<tt class="descname">db</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.db" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>dict</em> &#8211; dict() that stores the registration information
+for the xMsg actors.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.all">
+<tt class="descname">all</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.all" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns all topics</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of all topics in the database</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.clear">
+<tt class="descname">clear</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.clear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>clears the database, it will erase all data stored</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.find">
+<tt class="descname">find</tt><big>(</big><em>domain</em>, <em>subject='*'</em>, <em>xtype='*'</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.find"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.find" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the registration information based on the topic composition</p>
+<p>The method will find registration from the following way</p>
+<ul class="simple">
+<li>domain:*:* -&gt; all registration for specific domain</li>
+<li>domain:somesubject:* -&gt; all registration for specific domain and subject</li>
+<li>domain:somesubject:sometype -&gt; all registration for specific topic</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>domain</strong> (<em>string</em>) &#8211; registration domain</li>
+<li><strong>subject</strong> (<em>string</em>) &#8211; registration subject</li>
+<li><strong>xtype</strong> (<em>string</em>) &#8211; registration type</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">set of serialized registration data</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">Set</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.get">
+<tt class="descname">get</tt><big>(</big><em>topic</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.get"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns all data for specific topic
+:param topic: topic of the register to retrieve</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">serialized register data (serialized xMsgRegistration)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bytes[]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.register">
+<tt class="descname">register</tt><big>(</big><em>registration_data</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.register"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.register" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register the xMsg actor registration information</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; actor registration
+information</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.remove">
+<tt class="descname">remove</tt><big>(</big><em>registration_data</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.remove"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.remove" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes specific registration from the database</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; actor registration
+information</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.remove_by_host">
+<tt class="descname">remove_by_host</tt><big>(</big><em>host</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDatabase.html#xMsgRegDatabase.remove_by_host"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDatabase.xMsgRegDatabase.remove_by_host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all stored registrations for specific hostname</p>
+<p>Method that removes all values of the registration database that
+have a specified host set, i.e.  removes registration information
+of all xMsg actors that are running on a specified host.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>host</strong> (<em>String</em>) &#8211; host name of the xMsg</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.xsys.regdis.xMsgRegDriver">
+<span id="xmsg-xsys-regdis-xmsgregdriver-module"></span><h2>xmsg.xsys.regdis.xMsgRegDriver module<a class="headerlink" href="#module-xmsg.xsys.regdis.xMsgRegDriver" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver">
+<em class="property">class </em><tt class="descclassname">xmsg.xsys.regdis.xMsgRegDriver.</tt><tt class="descname">xMsgRegDriver</tt><big>(</big><em>context</em>, <em>fe_host='localhost'</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Methods for registration and discovery of xMsg actors, i.e. publishers
+and subscribers.</p>
+<p>This class also contains the base method used by all xMsg extending classes
+to create 0MQ socket for communications. This means that this class owns
+the 0MQ context.
+The sockets use the default registrar port: xMsgConstants#REGISTRAR_PORT.</p>
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.context">
+<tt class="descname">context</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.context" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>zmq.Context</em> &#8211; zmq context</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.fe_host">
+<tt class="descname">fe_host</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.fe_host" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; xmsg frontend hostname</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.find_global">
+<tt class="descname">find_global</tt><big>(</big><em>name</em>, <em>data</em>, <em>is_publisher</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.find_global"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.find_global" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches the FE registration and discovery databases for an actor</p>
+<p>The method will search for xMsg actors that publishes or subscribes
+the topic of the interest (globally). The search criteria i.e. topic is
+defined within the xMsgRegistrationData object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the requester/sender</li>
+<li><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; xMsgRegistration object</li>
+<li><strong>is_publisher</strong> (<em>bool</em>) &#8211; if set to be true then this is a request to
+register a publisher, otherwise this is a subscriber
+registration request</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of xMsgRegistration objects</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.find_local">
+<tt class="descname">find_local</tt><big>(</big><em>name</em>, <em>registration_data</em>, <em>is_publisher</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.find_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.find_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Searches the local registration and discovery databases for an actor</p>
+<p>The method will search for xMsg actors that publishes or subscribes
+the topic of the interest (locally). The search criteria i.e. topic is
+defined within the xMsgRegistration object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the requester/sender</li>
+<li><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; xMsgRegistration object</li>
+<li><strong>is_publisher</strong> &#8211; if set to be true then this is a request to
+register a publisher, otherwise this is a subscriber
+registration request</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">list of xMsgRegistrationData objects</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">list</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.get_context">
+<tt class="descname">get_context</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.get_context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.get_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the main zmq socket context</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">zmq context</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">zmq.Context</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.register_fe">
+<tt class="descname">register_fe</tt><big>(</big><em>name</em>, <em>registration_data</em>, <em>is_publisher</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.register_fe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.register_fe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers xMsg actor in front-end registration and discovery server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the requester/sender</li>
+<li><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; xMsgRegistration object</li>
+<li><strong>is_publisher</strong> (<em>bool</em>) &#8211; if set to be true then this is a request to
+register a publisher, otherwise this is a subscriber
+registration request</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.register_local">
+<tt class="descname">register_local</tt><big>(</big><em>name</em>, <em>data</em>, <em>is_publisher</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.register_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.register_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Registers xMsg actor with the local registration and discovery server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the requester/sender</li>
+<li><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; xMsgRegistration object</li>
+<li><strong>is_publisher</strong> (<em>bool</em>) &#8211; if set to be true then this is a request to
+register a publisher, otherwise this is a subscriber
+registration request</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.remove_all_registration_fe">
+<tt class="descname">remove_all_registration_fe</tt><big>(</big><em>host</em>, <em>name</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.remove_all_registration_fe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.remove_all_registration_fe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all xMsg actors registration from the front-end registration</p>
+<p>Removes all xMsg actors (publishers and subscribers) registration from
+the front-end global registration and discovery database that were
+previously registered on a specified host local database. This method
+is usually called by the xMsgRegistrar when it shuts down or gets
+interrupted.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>host</strong> (<em>String</em>) &#8211; host name of the xMsgNode</li>
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the sender</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.remove_registration_fe">
+<tt class="descname">remove_registration_fe</tt><big>(</big><em>name</em>, <em>data</em>, <em>is_publisher</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.remove_registration_fe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.remove_registration_fe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes xMsg actor from the front-end registration and discovery server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the requester/sender</li>
+<li><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; xMsgRegistration object</li>
+<li><strong>is_publisher</strong> (<em>bool</em>) &#8211; if set to be true then this is a request to
+register a publisher, otherwise this is a subscriber
+registration request</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.remove_registration_local">
+<tt class="descname">remove_registration_local</tt><big>(</big><em>name</em>, <em>data</em>, <em>is_publisher</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.remove_registration_local"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.remove_registration_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes xMsg actor from the local registration and discovery server</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>String</em>) &#8211; the name of the requester/sender</li>
+<li><strong>registration_data</strong> (<em>xMsgRegistration</em>) &#8211; xMsgRegistration object</li>
+<li><strong>is_publisher</strong> (<em>bool</em>) &#8211; if set to be true then this is a request to
+register a publisher, otherwise this is a subscriber
+registration request</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.zmq_socket">
+<tt class="descname">zmq_socket</tt><big>(</big><em>context</em>, <em>socket_type</em>, <em>hostname</em>, <em>port</em>, <em>boc</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegDriver.html#xMsgRegDriver.zmq_socket"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegDriver.xMsgRegDriver.zmq_socket" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns zmq socket object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>context</strong> (<em>zmq.Context</em>) &#8211; zmq context</li>
+<li><strong>socket_type</strong> (<em>int</em>) &#8211; the type of the socket (integer defined by zmq)</li>
+<li><strong>hostname</strong> (<em>String</em>) &#8211; host name</li>
+<li><strong>port</strong> (<em>int</em>) &#8211; port number</li>
+<li><strong>boc</strong> (<em>String</em>) &#8211; &#8216;bind&#8217; or &#8216;connect&#8217; host and port to socket
+Note that for xMsg proxies we always connect (boc = &#8216;connect&#8217;)
+(proxies are XPUB/XSUB sockets).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">zmq socket object</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">zmq.Socket</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.xsys.regdis.xMsgRegRequest">
+<span id="xmsg-xsys-regdis-xmsgregrequest-module"></span><h2>xmsg.xsys.regdis.xMsgRegRequest module<a class="headerlink" href="#module-xmsg.xsys.regdis.xMsgRegRequest" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest">
+<em class="property">class </em><tt class="descclassname">xmsg.xsys.regdis.xMsgRegRequest.</tt><tt class="descname">xMsgRegRequest</tt><big>(</big><em>topic='undefined'</em>, <em>sender='undefined'</em>, <em>data='undefined'</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegRequest.html#xMsgRegRequest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a a registration or discovery request.</p>
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.topic">
+<tt class="descname">topic</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.topic" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; Request topic</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.sender">
+<tt class="descname">sender</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.sender" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; sender of the xMsg request</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.data">
+<tt class="descname">data</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bytes[]</em> &#8211; serialized data included in the message
+(text or registration data)</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.create_from_multipart_request">
+<em class="property">classmethod </em><tt class="descname">create_from_multipart_request</tt><big>(</big><em>multipart_request</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegRequest.html#xMsgRegRequest.create_from_multipart_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.create_from_multipart_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs RegRequest serialized message object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>multipart_request</strong> (<em>list</em>) &#8211; multipart zmq message</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">xmsg request object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">xMsgRegRequest</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><tt class="xref py py-exc docutils literal"><span class="pre">BadRequest</span></tt> &#8211; if the message is corrupted or malformed</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_data">
+<tt class="descname">get_data</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegRequest.html#xMsgRegRequest.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get registration data object</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">registration data object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">xMsgRegistration</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_sender">
+<tt class="descname">get_sender</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegRequest.html#xMsgRegRequest.get_sender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_sender" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the sender of the request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">request sender</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">String</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_serialized_msg">
+<tt class="descname">get_serialized_msg</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegRequest.html#xMsgRegRequest.get_serialized_msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_serialized_msg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize the content of the request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">serialized message for zeromq</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bytes[]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_topic">
+<tt class="descname">get_topic</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegRequest.html#xMsgRegRequest.get_topic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegRequest.xMsgRegRequest.get_topic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the topic of the request as string</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">request topic</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">String</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.xsys.regdis.xMsgRegResponse">
+<span id="xmsg-xsys-regdis-xmsgregresponse-module"></span><h2>xmsg.xsys.regdis.xMsgRegResponse module<a class="headerlink" href="#module-xmsg.xsys.regdis.xMsgRegResponse" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse">
+<em class="property">class </em><tt class="descclassname">xmsg.xsys.regdis.xMsgRegResponse.</tt><tt class="descname">xMsgRegResponse</tt><big>(</big><em>topic</em>, <em>sender</em>, <em>data</em>, <em>status='success'</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper for a response to a registration or discovery request.</p>
+<p>A response of the xMsgRegService registration service can be an string
+indicating that the request was successful, a set of registration data
+in case a discovery request was received, or an error description
+indicating that something wrong happened with the request.</p>
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.topic">
+<tt class="descname">topic</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.topic" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; topic of the response message</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.sender">
+<tt class="descname">sender</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.sender" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; response sender</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.status">
+<tt class="descname">status</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.status" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; status of the request to respond</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.data">
+<tt class="descname">data</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.data" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bytes[]</em> &#8211; registration data</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.create_from_multipart_request">
+<em class="property">classmethod </em><tt class="descname">create_from_multipart_request</tt><big>(</big><em>request</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.create_from_multipart_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.create_from_multipart_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns (creates) a response object from multipart request</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>request</strong> (<em>bytes[]</em>) &#8211; 0MQ multipart request</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">response object</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">xMsgRegResponse</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_data">
+<tt class="descname">get_data</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.get_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns response data array</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">data array from response</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bytes[]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_sender">
+<tt class="descname">get_sender</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.get_sender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_sender" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the sender in the response</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">response sender</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">String</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_serialized_msg">
+<tt class="descname">get_serialized_msg</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.get_serialized_msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_serialized_msg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the response instance serialized</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">serialized message for 0MQ</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bytes[]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_status">
+<tt class="descname">get_status</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.get_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns request response status</p>
+<p>It can be xMsgConstants#SUCCESS or an error string indicating
+a problem with the request.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">status obtained from registration service</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">String</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_topic">
+<tt class="descname">get_topic</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.get_topic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_topic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns topic in the response</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">response topic</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">String</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_sender">
+<tt class="descname">set_sender</tt><big>(</big><em>sender</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.set_sender"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_sender" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the sender in the response</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sender</strong> (<em>string</em>) &#8211; name of sender</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_status">
+<tt class="descname">set_status</tt><big>(</big><em>status</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.set_status"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the status in the response</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>status</strong> (<em>string</em>) &#8211; status by default is <em>success</em> otherwise
+an string indicating the error in the request</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_topic">
+<tt class="descname">set_topic</tt><big>(</big><em>topic</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegResponse.html#xMsgRegResponse.set_topic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_topic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the topic in the response</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>topic</strong> (<em>xMsgTopic</em>) &#8211; topic for the response</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.xsys.regdis.xMsgRegService">
+<span id="xmsg-xsys-regdis-xmsgregservice-module"></span><h2>xmsg.xsys.regdis.xMsgRegService module<a class="headerlink" href="#module-xmsg.xsys.regdis.xMsgRegService" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService">
+<em class="property">class </em><tt class="descclassname">xmsg.xsys.regdis.xMsgRegService.</tt><tt class="descname">xMsgRegService</tt><big>(</big><em>context</em>, <em>fe_host</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegService.html#xMsgRegService"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></tt></p>
+<p>The main registration service, that always runs in a separate thread.
+Contains two separate databases to store publishers and subscribers
+registration data.
+The key for the data base is xMsg topic, constructed as:</p>
+<p><em>domain:subject:type</em></p>
+<p>Creates REP socket server on a default port
+Following request will be serviced:</p>
+<ul class="simple">
+<li>Register publisher</li>
+<li>Register subscriber</li>
+<li>Find publisher</li>
+<li>Find subscriber</li>
+<li>Remove publisher</li>
+<li>Remove subscriber</li>
+<li>Remove All registration</li>
+</ul>
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.context">
+<tt class="descname">context</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.context" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>zmq.Context</em> &#8211; zmq context</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.host">
+<tt class="descname">host</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.host" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; registration service host</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.port">
+<tt class="descname">port</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.port" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>int</em> &#8211; registrar service port. By default is 8888</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.subscribers_db">
+<tt class="descname">subscribers_db</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.subscribers_db" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>xMsgRegDatabase</em> &#8211; subscribers database</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.publishers_db">
+<tt class="descname">publishers_db</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.publishers_db" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>xMsgRegDatabase</em> &#8211; publishers database</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.process_request">
+<tt class="descname">process_request</tt><big>(</big><em>registration_request</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegService.html#xMsgRegService.process_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.process_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method to process the registration request and interact with the
+Registration DB</p>
+<p>The process_request method will receive a request from a xMsg actor
+to register or for obtaining registration info from the database.
+The method is able to respond to the following requests (this request
+is taken from the topic of the request message):</p>
+<ul class="simple">
+<li><em>REMOVE_ALL_REGISTRATION</em></li>
+<li><em>REGISTER_PUBLISHER</em></li>
+<li><em>REGISTER_SUBSCRIBER</em></li>
+<li><em>REMOVE_PUBLISHER</em></li>
+<li><em>REMOVE_SUBSCRIBER</em></li>
+<li><em>FIND_PUBLISHER</em></li>
+<li><em>FIND_SUBSCRIBER</em></li>
+<li><em>REMOVE_ALL_REGISTRATION</em></li>
+</ul>
+<p>Any other request, not listed among the previous request topics is
+considered unknown, and the method will return <em>xMsgContants.ERROR</em></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>registration_request</strong> (<em>bytes[]</em>) &#8211; Multipart message received by the
+xMsgRegService thread.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">response to the received registration request</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">xMsgResponse</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegService.xMsgRegService.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegService.html#xMsgRegService.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegService.xMsgRegService.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>xMsgRegService thread method to process registration requests</p>
+<p>During its execution will receive the registration request and
+will process the petition, sending a response.</p>
+<p>Method description:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">while</span> <span class="n">thread</span> <span class="ow">is</span> <span class="n">alive</span><span class="p">:</span>
+    <span class="n">reg_service_response</span> <span class="o">=</span> <span class="n">process_request</span><span class="p">(</span><span class="n">registration_request</span><span class="p">)</span>
+    <span class="n">send_back</span><span class="p">(</span><span class="n">reg_service_response</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.xsys.regdis.xMsgRegUpdater">
+<span id="xmsg-xsys-regdis-xmsgregupdater-module"></span><h2>xmsg.xsys.regdis.xMsgRegUpdater module<a class="headerlink" href="#module-xmsg.xsys.regdis.xMsgRegUpdater" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater">
+<em class="property">class </em><tt class="descclassname">xmsg.xsys.regdis.xMsgRegUpdater.</tt><tt class="descname">xMsgRegUpdater</tt><big>(</big><em>driver</em>, <em>publishers_db</em>, <em>subscribers_db</em><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegUpdater.html#xMsgRegUpdater"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">threading.Thread</span></tt></p>
+<p>This is a thread that periodically updates xMsg front-end registration
+database with passed publishers and subscribers database contents. These
+passed databases (i.e. references) are xMsgNode resident databases,
+defined within the xMsgRegistrar class. This class will be instantiated
+by the xMsgRegistrar constructor executed by the xMsgNode:</p>
+<p>This class inherits from xMsgRegDrive where xMsg database communication
+methods are defined.</p>
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.driver">
+<tt class="descname">driver</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.driver" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>xMsgRegDriver</em> &#8211; registration driver</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.publishers_db">
+<tt class="descname">publishers_db</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.publishers_db" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>xMsgRegDatabase</em> &#8211; publishers database</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.subscribers_db">
+<tt class="descname">subscribers_db</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.subscribers_db" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>xMsgRegDatabase</em> &#8211; subscribers database</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.name">
+<tt class="descname">name</tt><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.name" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>String</em> &#8211; name of updater instance</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.run">
+<tt class="descname">run</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/xsys/regdis/xMsgRegUpdater.html#xMsgRegUpdater.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.xsys.regdis.xMsgRegUpdater.xMsgRegUpdater.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>xMsgRegUpdater thread method to update the frontend registration db</p>
+<p>Every cicle will try to push the registration information into the
+frontend registration database. The defined algorithm for this task is
+described below.</p>
+<p>Method description:</p>
+<div class="highlight-python"><div class="highlight"><pre>while thread is alive:
+    for each topic in subscribers_database:
+        register_in_fe(topic)
+
+    sleep .5 seconds
+
+    for each topic in subscribers_database:
+        register_in_fe(topic)
+
+    sleep .5 seconds
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.xsys.regdis">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-xmsg.xsys.regdis" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">xmsg.xsys.regdis package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis.xMsgRegDatabase">xmsg.xsys.regdis.xMsgRegDatabase module</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis.xMsgRegDriver">xmsg.xsys.regdis.xMsgRegDriver module</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis.xMsgRegRequest">xmsg.xsys.regdis.xMsgRegRequest module</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis.xMsgRegResponse">xmsg.xsys.regdis.xMsgRegResponse module</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis.xMsgRegService">xmsg.xsys.regdis.xMsgRegService module</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis.xMsgRegUpdater">xmsg.xsys.regdis.xMsgRegUpdater module</a></li>
+<li><a class="reference internal" href="#module-xmsg.xsys.regdis">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xmsg.xsys.html"
+                        title="previous chapter">xmsg.xsys package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/xmsg.xsys.regdis.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xmsg.xsys.html" title="xmsg.xsys package"
+             >previous</a> |</li>
+        <li><a href="index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="xmsg.html" >xmsg package</a> &raquo;</li>
+          <li><a href="xmsg.xsys.html" >xmsg.xsys package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jefferson Lab.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>xmsg.xsys.xMsgProxy &mdash; xMsg python x documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="xMsg python x documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for xmsg.xsys.xMsgProxy</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.</span>
+<span class="c"># Permission to use, copy, modify, and distribute this software and its</span>
+<span class="c"># documentation for educational, research, and not-for-profit purposes,</span>
+<span class="c"># without fee and without a signed licensing agreement.</span>
+<span class="c">#</span>
+<span class="c"># Author Vardan Gyurjyan</span>
+<span class="c"># Department of Experimental Nuclear Physics, Jefferson Lab.</span>
+<span class="c">#</span>
+<span class="c"># IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,</span>
+<span class="c"># INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF</span>
+<span class="c"># THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED</span>
+<span class="c"># OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">#</span>
+<span class="c"># JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,</span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR</span>
+<span class="c"># PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED</span>
+<span class="c"># HEREUNDER IS PROVIDED &quot;AS IS&quot;. JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,</span>
+<span class="c"># SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgConstants</span> <span class="kn">import</span> <span class="n">xMsgConstants</span>
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgUtil</span> <span class="kn">import</span> <span class="n">xMsgUtil</span>
+
+
+<div class="viewcode-block" id="xMsgProxy"><a class="viewcode-back" href="../../../xmsg.xsys.html#xmsg.xsys.xMsgProxy.xMsgProxy">[docs]</a><span class="k">class</span> <span class="nc">xMsgProxy</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Runs xMsg pub-sub proxy.</span>
+
+<span class="sd">    This is a simple stateless message switch, i.e. a device that forwards</span>
+<span class="sd">    messages without inspecting them. This simplifies dynamic discovery problem</span>
+<span class="sd">    All xMsg clients (publishers and subscribers) connect to the proxy, instead</span>
+<span class="sd">    of to each other. It becomes trivial to add more subscribers or publishers.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        context (zmq.Context): proxy instance context</span>
+
+<span class="sd">    *How to launch*</span>
+<span class="sd">    ::</span>
+<span class="sd">        python xmsg/xsys/xMsgProxy.py</span>
+
+<span class="sd">    *or*</span>
+<span class="sd">    ::</span>
+<span class="sd">        ./bin/unix/px_proxy</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">context</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        xMsgProxy Constructor</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            context (zmq.Context): zmq context object</span>
+
+<span class="sd">        Returs:</span>
+<span class="sd">            xMsgProxy object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span>
+
+<div class="viewcode-block" id="xMsgProxy.start"><a class="viewcode-back" href="../../../xmsg.xsys.html#xmsg.xsys.xMsgProxy.xMsgProxy.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Starts the proxy server of the xMsgNode on a local host.</span>
+<span class="sd">        It will launch the xmsg pub-sub proxy, it will exit if another node</span>
+<span class="sd">        running with the same address</span>
+
+<span class="sd">        Usage:</span>
+<span class="sd">        ::</span>
+<span class="sd">            python xmsg/xsys/xMsgProxy.py</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XSUB</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_socket</span><span class="o">.</span><span class="n">set_hwm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&quot;tcp://*:</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">int</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="p">))</span>
+
+            <span class="c"># socket where clients subscribe data/messages</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XPUB</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_socket</span><span class="o">.</span><span class="n">set_hwm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">xpub_port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_socket</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="s">&quot;tcp://*:</span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">xpub_port</span><span class="p">)</span>
+
+            <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s">&quot;Info: Running xMsg proxy server on the localhost...&quot;</span><span class="p">)</span>
+
+            <span class="n">zmq</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xsub_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_socket</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">ZMQError</span><span class="p">:</span>
+            <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s">&quot;Cannot start proxy: address already in use...&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+</div></div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../../xmsg.xsys.html#xmsg.xsys.xMsgProxy.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">proxy</span> <span class="o">=</span> <span class="n">xMsgProxy</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">())</span>
+        <span class="n">proxy</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+        <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s">&quot;Exiting the proxy...&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="mi">0</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jefferson Lab.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

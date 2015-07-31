@@ -1,0 +1,559 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>xmsg.core.xMsg &mdash; xMsg python x documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="xMsg python x documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for xmsg.core.xMsg</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.</span>
+<span class="c"># Permission to use, copy, modify, and distribute this software and its</span>
+<span class="c"># documentation for educational, research, and not-for-profit purposes,</span>
+<span class="c"># without fee and without a signed licensing agreement.</span>
+<span class="c">#</span>
+<span class="c"># Author Vardan Gyurjyan</span>
+<span class="c"># Department of Experimental Nuclear Physics, Jefferson Lab.</span>
+<span class="c">#</span>
+<span class="c"># IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,</span>
+<span class="c"># INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF</span>
+<span class="c"># THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED</span>
+<span class="c"># OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">#</span>
+<span class="c"># JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,</span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR</span>
+<span class="c"># PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED</span>
+<span class="c"># HEREUNDER IS PROVIDED &quot;AS IS&quot;. JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,</span>
+<span class="c"># SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
+
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgExceptions</span> <span class="kn">import</span> <span class="n">NullConnection</span><span class="p">,</span> <span class="n">NullMessage</span>
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgConstants</span> <span class="kn">import</span> <span class="n">xMsgConstants</span>
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgMessage</span> <span class="kn">import</span> <span class="n">xMsgMessage</span>
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgUtil</span> <span class="kn">import</span> <span class="n">xMsgUtil</span>
+<span class="kn">from</span> <span class="nn">xmsg.data</span> <span class="kn">import</span> <span class="n">xMsgRegistration_pb2</span>
+<span class="kn">from</span> <span class="nn">xmsg.net.xMsgConnection</span> <span class="kn">import</span> <span class="n">xMsgConnection</span>
+<span class="kn">from</span> <span class="nn">xmsg.xsys.regdis.xMsgRegDriver</span> <span class="kn">import</span> <span class="n">xMsgRegDriver</span>
+
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;gurjyan&#39;</span>
+
+
+<div class="viewcode-block" id="xMsg"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg">[docs]</a><span class="k">class</span> <span class="nc">xMsg</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;xMsg base class that provides methods for organizing pub/sub communications</span>
+
+<span class="sd">    This class provides a local database of xMsgCommunication for publishing</span>
+<span class="sd">    and/or subscribing messages without requesting registration information</span>
+<span class="sd">    from the local (running within xMsgRegistrar) and/or global registrar</span>
+<span class="sd">    services.</span>
+
+<span class="sd">    This class also provides a thread pool for servicing received messages</span>
+<span class="sd">    (as a result of a subscription) in separate threads.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        myname (String): name of the xMsg actor instance</span>
+<span class="sd">        driver (xMsgRegDriver): registration driver</span>
+<span class="sd">        context (zmq.Context): communication context for the instance</span>
+<span class="sd">        pool_size (int): fixed size thread pool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fe_host</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;xMsg Constructor</span>
+
+<span class="sd">        Constructor, requires the name of the FrontEnd host that is used to</span>
+<span class="sd">        create to the registrar service running within the xMsgFE.</span>
+<span class="sd">        Creates the zmq context object and thread pool for servicing received</span>
+<span class="sd">        messages in a separate threads.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (String): name of the xMsg actor instance</span>
+<span class="sd">            fe_host (String): hostname of the frontend host</span>
+
+<span class="sd">        Keyword arguments:</span>
+<span class="sd">            pool_size (int): size of the actors thread pool</span>
+<span class="sd">            context (zmq.Context): communication context</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            xMsg: xmsg object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c"># Name of xMsg Actor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myname</span> <span class="o">=</span> <span class="n">name</span>
+
+        <span class="n">context</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;context&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span> <span class="o">=</span> <span class="n">context</span> <span class="k">if</span> <span class="n">context</span> <span class="k">else</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+
+        <span class="n">pool_size</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&quot;pool_size&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span> <span class="o">=</span> <span class="n">pool_size</span> <span class="k">if</span> <span class="n">pool_size</span> <span class="k">else</span> <span class="mi">2</span>
+
+        <span class="c"># Initialize registration driver</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">xMsgRegDriver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">fe_host</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">localhost_ip</span> <span class="o">=</span> <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">host_to_ip</span><span class="p">(</span><span class="s">&quot;localhost&quot;</span><span class="p">)</span>
+
+        <span class="c"># create fixed size thread pool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_pool</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__init_worker</span><span class="p">)</span>
+
+        <span class="c"># Private db of stored connections</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<div class="viewcode-block" id="xMsg.connect"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Connects to the node by creating two sockets for publishing and</span>
+<span class="sd">        subscribing/receiving messages.</span>
+
+<span class="sd">        It returns and the same time stores in the local connection database</span>
+<span class="sd">        created xMsgConnection object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            address (xMsgAddress): xmsg address object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            xMsgConnection: xmsg connection object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c"># First check to see if we have already</span>
+        <span class="c"># established connection to this address</span>
+        <span class="k">if</span> <span class="n">address</span><span class="o">.</span><span class="n">get_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">address</span><span class="o">.</span><span class="n">get_key</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Otherwise create sockets to the</span>
+            <span class="c"># requested address, and store the created</span>
+            <span class="c"># connection object for the future use.</span>
+            <span class="c"># Return the reference to the connection object</span>
+            <span class="n">fe_connection</span> <span class="o">=</span> <span class="n">xMsgConnection</span><span class="p">()</span>
+            <span class="n">fe_connection</span><span class="o">.</span><span class="n">set_address</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+            <span class="n">host</span> <span class="o">=</span> <span class="n">address</span><span class="o">.</span><span class="n">get_host</span><span class="p">()</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="n">address</span><span class="o">.</span><span class="n">get_port</span><span class="p">()</span>
+            <span class="n">connect</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">CONNECT</span><span class="p">)</span>
+
+            <span class="n">pub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">zmq_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">,</span>
+                                                <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">connect</span><span class="p">)</span>
+            <span class="n">fe_connection</span><span class="o">.</span><span class="n">set_pub_sock</span><span class="p">(</span><span class="n">pub_socket</span><span class="p">)</span>
+
+            <span class="n">sub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">zmq_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">,</span>
+                                                <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">connect</span><span class="p">)</span>
+            <span class="n">fe_connection</span><span class="o">.</span><span class="n">set_sub_sock</span><span class="p">(</span><span class="n">sub_socket</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connections</span><span class="p">[</span><span class="n">address</span><span class="o">.</span><span class="n">get_key</span><span class="p">()]</span> <span class="o">=</span> <span class="n">fe_connection</span>
+            <span class="k">return</span> <span class="n">fe_connection</span>
+</div>
+<div class="viewcode-block" id="xMsg.destroy"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.destroy">[docs]</a>    <span class="k">def</span> <span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">linger</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Destroys the created context and terminates the thread pool.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            linger (int): milliseconds that the thread will try to send</span>
+<span class="sd">                messages after the socket has been closed.Default value</span>
+<span class="sd">                is -1, which in ZMQ means to linger forever.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="o">.</span><span class="n">destroy</span><span class="p">(</span><span class="n">linger</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__terminate_threadpool</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="xMsg.get_new_connection"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.get_new_connection">[docs]</a>    <span class="k">def</span> <span class="nf">get_new_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns a new xMsgConnection object to the xMsg proxy, using</span>
+<span class="sd">        new zmq context</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            address (xMsgAddress): xMsg address object</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            feCon (xMsgConnection): xMsg connection object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_context</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="n">feCon</span> <span class="o">=</span> <span class="n">xMsgConnection</span><span class="p">()</span>
+        <span class="n">feCon</span><span class="o">.</span><span class="n">set_address</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+        <span class="n">soc_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">zmq_socket</span><span class="p">(</span><span class="n">new_context</span><span class="p">,</span>
+                                       <span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">,</span>
+                                       <span class="n">address</span><span class="o">.</span><span class="n">get_host</span><span class="p">(),</span>
+                                       <span class="n">address</span><span class="o">.</span><span class="n">get_port</span><span class="p">(),</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">CONNECT</span><span class="p">))</span>
+        <span class="n">feCon</span><span class="o">.</span><span class="n">set_pub_sock</span><span class="p">(</span><span class="n">soc_p</span><span class="p">)</span>
+
+        <span class="n">soc_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">zmq_socket</span><span class="p">(</span><span class="n">new_context</span><span class="p">,</span>
+                                       <span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">,</span>
+                                       <span class="n">address</span><span class="o">.</span><span class="n">get_host</span><span class="p">(),</span>
+                                       <span class="n">address</span><span class="o">.</span><span class="n">get_port</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+                                       <span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">CONNECT</span><span class="p">))</span>
+        <span class="n">feCon</span><span class="o">.</span><span class="n">set_sub_sock</span><span class="p">(</span><span class="n">soc_s</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">feCon</span>
+</div>
+<div class="viewcode-block" id="xMsg.register_publisher"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.register_publisher">[docs]</a>    <span class="k">def</span> <span class="nf">register_publisher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span>
+                           <span class="n">description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Registers xMsg publisher actor in the publishers database</span>
+
+<span class="sd">        If you are periodically publishing data, use this method to</span>
+<span class="sd">        register yourself as a publisher with the local registrar.</span>
+<span class="sd">        This is necessary for future subscribers to discover and</span>
+<span class="sd">        listen to your messages.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): publisher description string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">register_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.register_subscriber"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.register_subscriber">[docs]</a>    <span class="k">def</span> <span class="nf">register_subscriber</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span>
+                            <span class="n">description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Subscribers xMsg publisher actor in the subscribers database</span>
+
+<span class="sd">        If you are a subscriber and want to listen messages on a specific</span>
+<span class="sd">        topic from a future publishers, you should register yourself as</span>
+<span class="sd">        a subscriber with the local registrar.</span>
+
+<span class="sd">        Future publishers might express an interest to publish data to a</span>
+<span class="sd">        a required topic of interest or might publish data only if there</span>
+<span class="sd">        are active listeners/subscribers to their published topic.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): subscriber description string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">register_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.remove_publisher_registration"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.remove_publisher_registration">[docs]</a>    <span class="k">def</span> <span class="nf">remove_publisher_registration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes publisher registration both from the local and then from the</span>
+<span class="sd">        global registration databases</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">remove_registration_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">remove_registration_fe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.remove_subscriber_registration"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.remove_subscriber_registration">[docs]</a>    <span class="k">def</span> <span class="nf">remove_subscriber_registration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Removes subscriber registration both from the local and then from the</span>
+<span class="sd">        global registration databases</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">remove_registration_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">remove_registration_fe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.find_local_publisher"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.find_local_publisher">[docs]</a>    <span class="k">def</span> <span class="nf">find_local_publisher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span>
+                             <span class="n">description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Finds all local publishers, publishing  to a specified topic</span>
+
+<span class="sd">        Note: xMsg defines a topic as domain:subject:type</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): publisher description string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            xMsgRegistration: registration info object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">find_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.find_local_subscriber"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.find_local_subscriber">[docs]</a>    <span class="k">def</span> <span class="nf">find_local_subscriber</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span>
+                              <span class="n">description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;Finds all local subscribers, subscribing  to a specified topic</span>
+
+<span class="sd">        Note: xMsg defines a topic as domain:subject:type</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): subscriber description string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of xMsgRegistration objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">find_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.find_publisher"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.find_publisher">[docs]</a>    <span class="k">def</span> <span class="nf">find_publisher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span>
+                       <span class="n">description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds all publishers, publishing  to a specified topic</span>
+<span class="sd">        defined within the input registration data object: xMsgRegistration</span>
+<span class="sd">        Note: xMsg defines a topic as domain:subject:type</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): subscriber description string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of xMsgRegistration objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">find_global</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.find_subscriber"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.find_subscriber">[docs]</a>    <span class="k">def</span> <span class="nf">find_subscriber</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span>
+                        <span class="n">description</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">UNDEFINED</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Finds all subscribers, subscribing  to a specified topic</span>
+<span class="sd">        defined within the input registration data object: xMsgRegistration</span>
+<span class="sd">        Note: xMsg defines a topic as domain:subject:type</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): subscriber description string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: list of xMsgRegistration objects</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_registration_builder</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">find_global</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">myname</span><span class="p">,</span> <span class="n">r_data</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsg.publish"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.publish">[docs]</a>    <span class="k">def</span> <span class="nf">publish</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">transient_message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Publishes data to a specified xMsg topic.</span>
+
+<span class="sd">        3 elements are defining xMsg topic: domain:subject:tip</span>
+<span class="sd">        Topic is obtained in xMsgMessage.get_topic() method.</span>
+<span class="sd">        If subject is set &quot;*&quot; type will be ignored. Here are examples of</span>
+<span class="sd">        accepted topic definitions:</span>
+
+<span class="sd">        * domain:*:*</span>
+<span class="sd">        * domain:subject:*</span>
+<span class="sd">        * domain:subject:type</span>
+
+<span class="sd">        This method will perform input data, i.e. xMsgMessage object</span>
+<span class="sd">        serialization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            connection (xMsgConnection): object</span>
+<span class="sd">            transient_message (xMsgMessage): transient data object</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            NullConnection: if there is no connection object</span>
+<span class="sd">            NullMessage: if there is no message object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">con</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_pub_sock</span><span class="p">()</span>
+
+        <span class="c"># Check connection</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">con</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NullConnection</span><span class="p">(</span><span class="s">&quot;xMsg: Null connection object&quot;</span><span class="p">)</span>
+        <span class="c"># Check msg</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">transient_message</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NullMessage</span><span class="p">(</span><span class="s">&quot;xMsg: Null message object&quot;</span><span class="p">)</span>
+
+        <span class="n">con</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">transient_message</span><span class="o">.</span><span class="n">serialize</span><span class="p">())</span>
+</div>
+<div class="viewcode-block" id="xMsg.subscribe"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.subscribe">[docs]</a>    <span class="k">def</span> <span class="nf">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">callback_function</span><span class="p">,</span> <span class="n">is_sync</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Subscribes to a specified xMsg topic.</span>
+
+<span class="sd">        3 elements are defining xMsg topic: domain:subject:tip</span>
+<span class="sd">        Topic is constructed from these elements separated by &quot;:&quot;</span>
+<span class="sd">        Domain is required , however subject and topic can be set to &quot;*&quot;.</span>
+<span class="sd">        If subject is set &quot;*&quot; type will be ignored. Here are examples of</span>
+<span class="sd">        accepted topic definitions:</span>
+
+<span class="sd">        * domain:*:*</span>
+<span class="sd">        * domain:subject:*</span>
+<span class="sd">        * domain:subject:tip</span>
+
+<span class="sd">        Supplied user callback must be defined by the user.</span>
+<span class="sd">        This method will de-serialize received xMsgData object and pass it</span>
+<span class="sd">        to the user implemented callback method.</span>
+<span class="sd">        In the case is_sync input parameter is set to be false the method will</span>
+<span class="sd">        utilize private thread pool to run user callback method in a separate</span>
+<span class="sd">        thread.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            connection (xMsgConnection):  connection object</span>
+
+<span class="sd">            callback_function: user supplied callback function</span>
+<span class="sd">            is_sync (bool): if set to true method will block until user</span>
+<span class="sd">                callback method is returned. In case you need to run in a</span>
+<span class="sd">                multi-threaded mode, i.e. running parallel user call backs,</span>
+<span class="sd">                is_sync = False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">subscriber_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__sub_module</span><span class="p">,</span>
+                                             <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span>
+                                                   <span class="n">topic</span><span class="p">,</span>
+                                                   <span class="n">callback_function</span><span class="p">,</span>
+                                                   <span class="n">is_sync</span><span class="p">))</span>
+        <span class="n">subscriber_thread</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">subscriber_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</div>
+    <span class="k">def</span> <span class="nf">__sub_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">callback_function</span><span class="p">,</span> <span class="n">is_sync</span><span class="p">):</span>
+        <span class="c"># get subscribers socket connection</span>
+        <span class="n">con</span> <span class="o">=</span> <span class="n">connection</span><span class="o">.</span><span class="n">get_sub_sock</span><span class="p">()</span>
+
+        <span class="c"># subscribe to the topic</span>
+        <span class="n">con</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUBSCRIBE</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">topic</span><span class="p">))</span>
+
+        <span class="c"># wait for messages published to a required topic</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">serialized_data</span> <span class="o">=</span> <span class="n">response</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">transient_message</span> <span class="o">=</span> <span class="n">xMsgMessage</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">serialized_data</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">is_sync</span><span class="p">:</span>
+                        <span class="n">callback_function</span><span class="p">(</span><span class="n">transient_message</span><span class="p">)</span>
+
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">sub_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">callback_function</span><span class="p">,</span>
+                                                      <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">transient_message</span><span class="p">])</span>
+                        <span class="n">sub_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="bp">True</span>
+                        <span class="n">sub_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+            <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">error</span><span class="o">.</span><span class="n">ContextTerminated</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+                <span class="k">return</span>
+
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">return</span>
+
+    <span class="k">def</span> <span class="nf">_registration_builder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">publisher</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a xMsgRegistration object</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): the name of the requester/sender. Required</span>
+<span class="sd">                according to the xMsg zmq message structure definition</span>
+<span class="sd">                (topic, sender, data)</span>
+<span class="sd">            description (String): subscriber description string</span>
+<span class="sd">            publisher (bool): Is publisher flag, if it is set to True the</span>
+<span class="sd">                registration object generated corresponds to a publisher,</span>
+<span class="sd">                otherwise corresponds to a subscriber.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="n">xMsgRegistration_pb2</span><span class="o">.</span><span class="n">xMsgRegistration</span><span class="p">()</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">myname</span>
+        <span class="k">if</span> <span class="n">description</span><span class="p">:</span>
+            <span class="n">r_data</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">host_to_ip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">localhost_ip</span><span class="p">)</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="p">)</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">domain</span><span class="p">()</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">subject</span><span class="p">()</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">topic</span><span class="o">.</span><span class="n">type</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">publisher</span><span class="p">:</span>
+            <span class="n">r_data</span><span class="o">.</span><span class="n">ownerType</span> <span class="o">=</span> <span class="n">xMsgRegistration_pb2</span><span class="o">.</span><span class="n">xMsgRegistration</span><span class="o">.</span><span class="n">PUBLISHER</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r_data</span><span class="o">.</span><span class="n">ownerType</span> <span class="o">=</span> <span class="n">xMsgRegistration_pb2</span><span class="o">.</span><span class="n">xMsgRegistration</span><span class="o">.</span><span class="n">SUBSCRIBER</span>
+
+        <span class="k">return</span> <span class="n">r_data</span>
+
+<div class="viewcode-block" id="xMsg.get_pool_size"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsg.xMsg.get_pool_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_pool_size</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns internal thread pool size</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pool_size (int): Size of the thread pool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool_size</span>
+</div>
+    <span class="k">def</span> <span class="nf">__init_worker</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_IGN</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__terminate_threadpool</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Terminates the xMsg threadpool&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_pool</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_pool</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jefferson Lab.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

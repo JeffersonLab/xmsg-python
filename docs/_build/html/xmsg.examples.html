@@ -1,0 +1,178 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>xmsg.examples package &mdash; xMsg python x documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="xMsg python x documentation" href="index.html" />
+    <link rel="up" title="xmsg package" href="xmsg.html" />
+    <link rel="next" title="xmsg.net package" href="xmsg.net.html" />
+    <link rel="prev" title="xmsg.data package" href="xmsg.data.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xmsg.net.html" title="xmsg.net package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xmsg.data.html" title="xmsg.data package"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="xmsg.html" accesskey="U">xmsg package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="xmsg-examples-package">
+<h1>xmsg.examples package<a class="headerlink" href="#xmsg-examples-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-xmsg.examples.Publisher">
+<span id="xmsg-examples-publisher-module"></span><h2>xmsg.examples.Publisher module<a class="headerlink" href="#module-xmsg.examples.Publisher" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.examples.Publisher.Publisher">
+<em class="property">class </em><tt class="descclassname">xmsg.examples.Publisher.</tt><tt class="descname">Publisher</tt><big>(</big><em>fe_host</em><big>)</big><a class="reference internal" href="_modules/xmsg/examples/Publisher.html#Publisher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.examples.Publisher.Publisher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="xmsg.core.html#xmsg.core.xMsg.xMsg" title="xmsg.core.xMsg.xMsg"><tt class="xref py py-class docutils literal"><span class="pre">xmsg.core.xMsg.xMsg</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="xmsg.examples.Publisher.main">
+<tt class="descclassname">xmsg.examples.Publisher.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/examples/Publisher.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.examples.Publisher.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Publisher usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>&quot;Usage: python xmsg/examples/Publisher &lt;array_size&gt; &lt;fe_host&gt;
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.examples.Subscriber">
+<span id="xmsg-examples-subscriber-module"></span><h2>xmsg.examples.Subscriber module<a class="headerlink" href="#module-xmsg.examples.Subscriber" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="xmsg.examples.Subscriber.Subscriber">
+<em class="property">class </em><tt class="descclassname">xmsg.examples.Subscriber.</tt><tt class="descname">Subscriber</tt><big>(</big><em>fe_host</em>, <em>pool_size</em><big>)</big><a class="reference internal" href="_modules/xmsg/examples/Subscriber.html#Subscriber"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.examples.Subscriber.Subscriber" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="xmsg.core.html#xmsg.core.xMsg.xMsg" title="xmsg.core.xMsg.xMsg"><tt class="xref py py-class docutils literal"><span class="pre">xmsg.core.xMsg.xMsg</span></tt></a></p>
+<p>Subscriber usage:</p>
+<div class="highlight-python"><div class="highlight"><pre>python xmsg/examples/Subscriber &lt;fe_host&gt;
+</pre></div>
+</div>
+<dl class="method">
+<dt id="xmsg.examples.Subscriber.Subscriber.callback">
+<tt class="descname">callback</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/xmsg/examples/Subscriber.html#Subscriber.callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.examples.Subscriber.Subscriber.callback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Example of a callback function</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="xmsg.examples.Subscriber.main">
+<tt class="descclassname">xmsg.examples.Subscriber.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/xmsg/examples/Subscriber.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#xmsg.examples.Subscriber.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-xmsg.examples">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-xmsg.examples" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">xmsg.examples package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-xmsg.examples.Publisher">xmsg.examples.Publisher module</a></li>
+<li><a class="reference internal" href="#module-xmsg.examples.Subscriber">xmsg.examples.Subscriber module</a></li>
+<li><a class="reference internal" href="#module-xmsg.examples">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xmsg.data.html"
+                        title="previous chapter">xmsg.data package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xmsg.net.html"
+                        title="next chapter">xmsg.net package</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/xmsg.examples.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xmsg.net.html" title="xmsg.net package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xmsg.data.html" title="xmsg.data package"
+             >previous</a> |</li>
+        <li><a href="index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="xmsg.html" >xmsg package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jefferson Lab.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

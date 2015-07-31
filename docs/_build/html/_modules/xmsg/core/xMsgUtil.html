@@ -1,0 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>xmsg.core.xMsgUtil &mdash; xMsg python x documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     'x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="xMsg python x documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for xmsg.core.xMsgUtil</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.</span>
+<span class="c"># Permission to use, copy, modify, and distribute this software and its</span>
+<span class="c"># documentation for educational, research, and not-for-profit purposes,</span>
+<span class="c"># without fee and without a signed licensing agreement.</span>
+<span class="c">#</span>
+<span class="c"># Author Vardan Gyurjyan</span>
+<span class="c"># Department of Experimental Nuclear Physics, Jefferson Lab.</span>
+<span class="c">#</span>
+<span class="c"># IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,</span>
+<span class="c"># INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF</span>
+<span class="c"># THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED</span>
+<span class="c"># OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">#</span>
+<span class="c"># JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,</span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR</span>
+<span class="c"># PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED</span>
+<span class="c"># HEREUNDER IS PROVIDED &quot;AS IS&quot;. JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,</span>
+<span class="c"># SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.</span>
+<span class="c">#</span>
+
+<span class="kn">import</span> <span class="nn">netifaces</span> <span class="kn">as</span> <span class="nn">ni</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgConstants</span> <span class="kn">import</span> <span class="n">xMsgConstants</span>
+<span class="kn">from</span> <span class="nn">xmsg.data</span> <span class="kn">import</span> <span class="n">xMsgRegistration_pb2</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s">&#39;gurjyan&#39;</span>
+
+
+<div class="viewcode-block" id="xMsgUtil"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil">[docs]</a><span class="k">class</span> <span class="nc">xMsgUtil</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.build_registration"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.build_registration">[docs]</a>    <span class="k">def</span> <span class="nf">build_registration</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">domain</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span>
+                           <span class="n">xtype</span><span class="p">,</span> <span class="n">is_publisher</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;xMsgRegistration builder util</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (String): registration name</span>
+<span class="sd">            description (String): registration description</span>
+<span class="sd">            domain (String): registration domain</span>
+<span class="sd">            subject (String): registration subject</span>
+<span class="sd">            xtype (String): registration type</span>
+<span class="sd">            is_publisher (bool): True if registration is for a publisher</span>
+<span class="sd">                actor otherwise means is a subscriber</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            xMsgRegistration: xMsg registration object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">r_data</span> <span class="o">=</span> <span class="n">xMsgRegistration_pb2</span><span class="o">.</span><span class="n">xMsgRegistration</span><span class="p">()</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">host</span> <span class="o">=</span> <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">get_local_ip</span><span class="p">()</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">DEFAULT_PORT</span><span class="p">)</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">domain</span> <span class="o">=</span> <span class="n">domain</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">subject</span> <span class="o">=</span> <span class="n">subject</span>
+        <span class="n">r_data</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">xtype</span>
+
+        <span class="k">if</span> <span class="n">is_publisher</span><span class="p">:</span>
+            <span class="n">r_data</span><span class="o">.</span><span class="n">ownerType</span> <span class="o">=</span> <span class="n">xMsgRegistration_pb2</span><span class="o">.</span><span class="n">xMsgRegistration</span><span class="o">.</span><span class="n">PUBLISHER</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r_data</span><span class="o">.</span><span class="n">ownerType</span> <span class="o">=</span> <span class="n">xMsgRegistration_pb2</span><span class="o">.</span><span class="n">xMsgRegistration</span><span class="o">.</span><span class="n">SUBSCRIBER</span>
+
+        <span class="k">return</span> <span class="n">r_data</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.host_to_ip"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.host_to_ip">[docs]</a>    <span class="k">def</span> <span class="nf">host_to_ip</span><span class="p">(</span><span class="n">hostname</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Converts host name to IP address representation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            hostname (String): hostname to convert</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">            String: IP address of the required host</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">hostname</span> <span class="o">==</span> <span class="s">&quot;localhost&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">xMsgUtil</span><span class="o">.</span><span class="n">get_local_ip</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hostname</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">hostname</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">hostname</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.get_local_ip"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.get_local_ip">[docs]</a>    <span class="k">def</span> <span class="nf">get_local_ip</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Returns the local ip for xMsg actors</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: local ip</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c"># Gets the default gateway</span>
+            <span class="n">interface</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ni</span><span class="o">.</span><span class="n">gateways</span><span class="p">()[</span><span class="s">&#39;default&#39;</span><span class="p">][</span><span class="n">ni</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">ni</span><span class="o">.</span><span class="n">ifaddresses</span><span class="p">(</span><span class="n">interface</span><span class="p">)[</span><span class="n">ni</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="s">&#39;addr&#39;</span><span class="p">]</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span><span class="p">(</span><span class="s">&quot;xMsgUtil.get_local_ip received : &quot;</span> <span class="o">+</span> <span class="n">e</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.is_ip"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.is_ip">[docs]</a>    <span class="k">def</span> <span class="nf">is_ip</span><span class="p">(</span><span class="n">host_ip</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;IP regex validator. Checks if the given hostname ip is a valid ip</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host_ip (String): IP string to verify</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: true if its a valid IP number, otherwise False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">c_pat</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">&quot;^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)</span><span class="se">\\</span><span class="s">.){3}&quot;</span> <span class="o">+</span> \
+                           <span class="s">&quot;(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c_pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">host_ip</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.get_local_ips"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.get_local_ips">[docs]</a>    <span class="k">def</span> <span class="nf">get_local_ips</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Returns list of local ips in the machine</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: local ips in the machine</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">([</span><span class="n">ip</span> <span class="k">for</span> <span class="n">ip</span> <span class="ow">in</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname_ex</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">())[</span><span class="mi">2</span><span class="p">]</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">ip</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&quot;127.&quot;</span><span class="p">)][:</span><span class="mi">1</span><span class="p">])</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.list_to_string"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.list_to_string">[docs]</a>    <span class="k">def</span> <span class="nf">list_to_string</span><span class="p">(</span><span class="n">list_to_convert</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;List to string converter util</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            list_to_convert (list): list to convert into string</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: converted string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">list_to_convert</span><span class="p">))</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.log"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.log">[docs]</a>    <span class="k">def</span> <span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Logger util, prints messages with timestamp in console</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            message (String): log message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">print</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">xMsgUtil</span><span class="o">.</span><span class="n">current_time</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.string_to_list"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.string_to_list">[docs]</a>    <span class="k">def</span> <span class="nf">string_to_list</span><span class="p">(</span><span class="n">string_to_convert</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;String to list converter util</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            string_to_convert (String): string to convert to list</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list: converted list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">string_to_convert</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.sleep"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.sleep">[docs]</a>    <span class="k">def</span> <span class="nf">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sleep util, time is given in seconds</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            seconds (int): time to sleep in seconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">seconds</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.keep_alive"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.keep_alive">[docs]</a>    <span class="k">def</span> <span class="nf">keep_alive</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Keep alive method, keeps the execution alive indefinitely</span>
+<span class="sd">        or until the program gets interrupted</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</div>
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="xMsgUtil.current_time"><a class="viewcode-back" href="../../../xmsg.core.html#xmsg.core.xMsgUtil.xMsgUtil.current_time">[docs]</a>    <span class="k">def</span> <span class="nf">current_time</span><span class="p">():</span>
+        <span class="sd">&quot;&quot;&quot;Returns the current time in format: %Y-%m-%d %H:%M:%S</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: current time string </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s"> %H:%M:%S&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jefferson Lab.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>xmsg.xsys.regdis.xMsgRegResponse &mdash; xMsg python x documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     'x',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="xMsg python x documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for xmsg.xsys.regdis.xMsgRegResponse</h1><div class="highlight"><pre>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.</span>
+<span class="c"># Permission to use, copy, modify, and distribute this software and its</span>
+<span class="c"># documentation for educational, research, and not-for-profit purposes,</span>
+<span class="c"># without fee and without a signed licensing agreement.</span>
+<span class="c">#</span>
+<span class="c"># Author Vardan Gyurjyan</span>
+<span class="c"># Department of Experimental Nuclear Physics, Jefferson Lab.</span>
+<span class="c">#</span>
+<span class="c"># IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,</span>
+<span class="c"># INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF</span>
+<span class="c"># THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED</span>
+<span class="c"># OF THE POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="c">#</span>
+<span class="c"># JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,</span>
+<span class="c"># THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR</span>
+<span class="c"># PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED</span>
+<span class="c"># HEREUNDER IS PROVIDED &quot;AS IS&quot;. JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,</span>
+<span class="c"># SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.</span>
+<span class="c">#</span>
+
+<span class="kn">from</span> <span class="nn">xmsg.core.xMsgConstants</span> <span class="kn">import</span> <span class="n">xMsgConstants</span>
+
+
+<div class="viewcode-block" id="xMsgRegResponse"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse">[docs]</a><span class="k">class</span> <span class="nc">xMsgRegResponse</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A wrapper for a response to a registration or discovery request.</span>
+
+<span class="sd">    A response of the xMsgRegService registration service can be an string</span>
+<span class="sd">    indicating that the request was successful, a set of registration data</span>
+<span class="sd">    in case a discovery request was received, or an error description</span>
+<span class="sd">    indicating that something wrong happened with the request.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        topic (String): topic of the response message</span>
+<span class="sd">        sender (String): response sender</span>
+<span class="sd">        status (String): status of the request to respond</span>
+<span class="sd">        data (bytes[]): registration data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">xMsgConstants</span><span class="o">.</span><span class="n">SUCCESS</span><span class="p">)):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sender</span> <span class="o">=</span> <span class="n">sender</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="xMsgRegResponse.create_from_multipart_request"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.create_from_multipart_request">[docs]</a>    <span class="k">def</span> <span class="nf">create_from_multipart_request</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">request</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns (creates) a response object from multipart request</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            request (bytes[]): 0MQ multipart request</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            xMsgRegResponse: response object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">topic</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">sender</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">request</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cls</span><span class="p">(</span><span class="n">topic</span><span class="p">,</span> <span class="n">sender</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.get_topic"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_topic">[docs]</a>    <span class="k">def</span> <span class="nf">get_topic</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns topic in the response</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: response topic</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">topic</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.set_topic"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_topic">[docs]</a>    <span class="k">def</span> <span class="nf">set_topic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">topic</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the topic in the response</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            topic (xMsgTopic): topic for the response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">topic</span> <span class="o">=</span> <span class="n">topic</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.get_sender"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_sender">[docs]</a>    <span class="k">def</span> <span class="nf">get_sender</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the sender in the response</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: response sender</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sender</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.set_sender"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_sender">[docs]</a>    <span class="k">def</span> <span class="nf">set_sender</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sender</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the sender in the response</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            sender (string): name of sender</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sender</span> <span class="o">=</span> <span class="n">sender</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.get_status"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns request response status</span>
+
+<span class="sd">        It can be xMsgConstants#SUCCESS or an error string indicating</span>
+<span class="sd">        a problem with the request.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            String: status obtained from registration service</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.set_status"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.set_status">[docs]</a>    <span class="k">def</span> <span class="nf">set_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the status in the response</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            status (string): status by default is *success* otherwise</span>
+<span class="sd">                an string indicating the error in the request</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">status</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.get_data"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns response data array</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bytes[]: data array from response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="ow">is</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&quot;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="xMsgRegResponse.get_serialized_msg"><a class="viewcode-back" href="../../../../xmsg.xsys.regdis.html#xmsg.xsys.regdis.xMsgRegResponse.xMsgRegResponse.get_serialized_msg">[docs]</a>    <span class="k">def</span> <span class="nf">get_serialized_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the response instance serialized</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bytes[]: serialized message for 0MQ</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s_msg</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">get_topic</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_sender</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_status</span><span class="p">()]</span>
+
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">s_msg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">s_msg</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../../../index.html">xMsg python x documentation</a> &raquo;</li>
+          <li><a href="../../../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Jefferson Lab.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
