@@ -173,14 +173,12 @@ class xMsgRegService(threading.Thread):
                 registration = self.publishers_db.find(register.domain,
                                                        register.subject,
                                                        register.type)
-                self._log("RegService has found: %d publishers" % len(registration))
 
             elif request.get_topic() == str(xMsgConstants.FIND_SUBSCRIBER):
                 register = request.get_data()
                 registration = self.subscribers_db.find(register.domain,
                                                         register.subject,
                                                         register.type)
-                self._log("RegService has found: %d subscribers" % len(registration))
 
             else:
                 self._log("Warning: unknown registration request type...")

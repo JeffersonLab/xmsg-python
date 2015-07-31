@@ -36,7 +36,7 @@ from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 __author__ = 'gurjyan'
 
 
-class xMsg:
+class xMsg(object):
     """xMsg base class that provides methods for organizing pub/sub communications
 
     This class provides a local database of xMsgCommunication for publishing
@@ -115,24 +115,22 @@ class xMsg:
             # requested address, and store the created
             # connection object for the future use.
             # Return the reference to the connection object
-            feCon = xMsgConnection()
-            feCon.set_address(address)
-            soc_p = self.driver.zmq_socket(self.context,
-                                           zmq.PUB,
-                                           address.get_host(),
-                                           address.get_port(),
-                                           str(xMsgConstants.CONNECT))
-            feCon.set_pub_sock(soc_p)
+            fe_connection = xMsgConnection()
+            fe_connection.set_address(address)
+            host = address.get_host()
+            port = address.get_port()
+            connect = str(xMsgConstants.CONNECT)
 
-            soc_s = self.driver.zmq_socket(self.context,
-                                           zmq.SUB,
-                                           address.get_host(),
-                                           address.get_port() + 1,
-                                           str(xMsgConstants.CONNECT))
-            feCon.set_sub_sock(soc_s)
+            pub_socket = self.driver.zmq_socket(self.context, zmq.PUB,
+                                                host, port, connect)
+            fe_connection.set_pub_sock(pub_socket)
 
-            self._connections[address.get_key()] = feCon
-            return feCon
+            sub_socket = self.driver.zmq_socket(self.context, zmq.SUB,
+                                                host, port + 1, connect)
+            fe_connection.set_sub_sock(sub_socket)
+
+            self._connections[address.get_key()] = fe_connection
+            return fe_connection
 
     def destroy(self, linger=-1):
         """ Destroys the created context and terminates the thread pool.
@@ -416,7 +414,11 @@ class xMsg:
                         sub_thread.daemon = True
                         sub_thread.start()
 
-            except KeyboardInterrupt:
+            except KeyboardInterrupt, zmq.error.ContextTerminated:
+                self.destroy()
+                return
+
+            except:
                 return
 
     def _registration_builder(self, topic, description, publisher=True):

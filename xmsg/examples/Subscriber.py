@@ -19,6 +19,8 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
+import sys
+
 from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
@@ -31,11 +33,11 @@ __author__ = 'gurjyan'
 class Subscriber(xMsg):
     """Subscriber usage:
     ::
-        python xmsg/examples/Subscriber
+        python xmsg/examples/Subscriber <fe_host>
     """
 
-    def __init__(self, fe_host="localhost"):
-        xMsg.__init__(self, "test_publisher", fe_host)
+    def __init__(self, fe_host, pool_size):
+        super(Subscriber, self).__init__("test_publisher", fe_host)
         self.domain = "test_domain"
         self.subject = "test_subject"
         self.xtype = "test_type"
@@ -50,10 +52,14 @@ class Subscriber(xMsg):
 
 
 def main():
-    subscriber = Subscriber()
+    if len(sys.argv) is 2:
+        fe_host = sys.argv[1]
+    else:
+        fe_host = "localhost"
 
+    subscriber = Subscriber(fe_host=fe_host, pool_size=1)
     # Create a socket connections to the xMsg node
-    address = xMsgAddress()
+    address = xMsgAddress(fe_host)
     con = subscriber.connect(address)
 
     # Build Topic
@@ -65,10 +71,10 @@ def main():
 
     # Find a publisher that publishes to requested topic
     # defined as a static variables above
-    if len(subscriber.find_local_publisher(topic)) > 0:
+    if subscriber.find_publisher(topic):
 
         # Subscribe by passing a callback to the subscription
-        subscriber.subscribe(con, topic, subscriber.callback, True)
+        subscriber.subscribe(con, topic, subscriber.callback, False)
 
         try:
             xMsgUtil.keep_alive()

@@ -211,7 +211,6 @@ class xMsgRegDriver:
                 register a publisher, otherwise this is a subscriber
                 registration request
         """
-        print "Me llamaron...."
         self._register(self._feConnection, name, registration_data,
                        is_publisher)
 
