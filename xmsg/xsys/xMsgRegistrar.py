@@ -23,7 +23,6 @@ import zmq
 import sys
 
 from xmsg.xsys.regdis.xMsgRegService import xMsgRegService
-from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 from xmsg.xsys.xMsgProxy import xMsgProxy
 from xmsg.core.xMsgUtil import xMsgUtil
 
@@ -65,12 +64,19 @@ class xMsgRegistrar:
         self.context = zmq.Context()
         self.proxy = xMsgProxy(self.context)
         self.reg_service = xMsgRegService(self.context, fe_host)
+        if fe_host == "localhost":
+            self.node = "frontend"
+        else:
+            self.node = "local"
 
     def start(self):
         """Starts the registrar services"""
         self.reg_service.start()
-        xMsgUtil.log("Info: xMsg local registration and discovery"\
-                     " server has started")
+
+        xMsgUtil.log("Local ip: %s" % xMsgUtil.get_local_ip())
+        msg = "xMsg %s registration and discovery server has started" % self.node
+        xMsgUtil.log(msg)
+
         try:
             self.proxy.start()
             self._join()
