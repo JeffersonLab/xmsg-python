@@ -19,15 +19,16 @@
 # HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
+import os
 
-from distutils.core import setup
+from distutils.core import setup, Command
 from distutils.command.clean import clean
 from distutils.command.install import install
 from setuptools.command.test import test as TestCommand
 from setuptools import find_packages
 
 
-class PyTest(TestCommand):
+class xMsgTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -37,6 +38,19 @@ class PyTest(TestCommand):
     def run_tests(self):
         import pytest
         pytest.main(self.test_args)
+
+
+class xMsgClean(Command):
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
 
 class xMsgInstall(install):
@@ -53,15 +67,19 @@ if __name__ == '__main__':
     setup(name='xMsg',
           version='2.0',
           description='xMsg for python',
-          author='Vardan Gyurgyan',
+          author='Vardan Gyurgyan, Ricardo Oyarzun',
           author_email='vardan@jlab.org',
+
           url='https://claraweb.jlab.org',
           test_suite="tests",
-          cmdclass={'test': PyTest},
+          cmdclass={
+              'test': xMsgTest,
+              'clean': xMsgClean,
+          },
           packages=find_packages(exclude=["*.tests", "*.tests.*",
                                           "tests.*", "tests"]),
-          install_requires=['setuptools', 'pyzmq>=14.5.0', 'protobuf>=2.6', 'enum34>=1.0.4',
-                            'argparse>=1.2.1', 'netifaces>=0.10.4', 'pytest', 'mockito',
-                            'sphinxcontrib-napoleon==0.3.11',]
-
+          install_requires=['setuptools', 'pyzmq>=14.5.0', 'protobuf>=2.6',
+                            'enum34>=1.0.4', 'argparse>=1.2.1',
+                            'netifaces>=0.10.4', 'pytest', 'mockito',
+                            'sphinxcontrib-napoleon==0.3.11']
           )
