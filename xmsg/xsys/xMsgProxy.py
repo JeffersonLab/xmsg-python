@@ -69,7 +69,8 @@ class xMsgProxy:
         try:
             self._xsub_socket = self.context.socket(zmq.XSUB)
             self._xsub_socket.set_hwm(0)
-            self._xsub_socket.bind("tcp://*:%d" % int(xMsgConstants.DEFAULT_PORT))
+            self._xsub_socket.bind("tcp://*:%d"
+                                   % int(xMsgConstants.DEFAULT_PORT))
 
             # socket where clients subscribe data/messages
             self._xpub_socket = self.context.socket(zmq.XPUB)

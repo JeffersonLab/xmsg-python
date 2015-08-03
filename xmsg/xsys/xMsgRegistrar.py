@@ -64,9 +64,9 @@ class xMsgRegistrar:
         self.context = zmq.Context()
         self.proxy = xMsgProxy(self.context)
         self.reg_service = xMsgRegService(self.context, fe_host)
-        if fe_host == "localhost":
-            self.node = "frontend"
-        else:
+        self.node = "frontend"
+
+        if fe_host != "localhost":
             self.node = "local"
 
     def start(self):
@@ -74,7 +74,8 @@ class xMsgRegistrar:
         self.reg_service.start()
 
         xMsgUtil.log("Local ip: %s" % xMsgUtil.get_local_ip())
-        msg = "xMsg %s registration and discovery server has started" % self.node
+        msg = ("xMsg %s registration and discovery server has started"
+               % self.node)
         xMsgUtil.log(msg)
 
         try:
@@ -88,6 +89,11 @@ class xMsgRegistrar:
     def shutdown(self):
         """Shutdowns the register and destroy the context"""
         xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
+        # Kill the thread before terminating the context
+        self.reg_service.stop()
+        # Give it a little time before destroying the context
+        xMsgUtil.sleep(1)
+        # Now we destroy the shared context
         self.context.destroy()
 
     def _join(self):
@@ -95,40 +101,37 @@ class xMsgRegistrar:
         self.reg_service.join()
 
 
+def runner(fe_host="localhost"):
+    try:
+        registrar = xMsgRegistrar(fe_host)
+        registrar.start()
+
+    except KeyboardInterrupt:
+        registrar.shutdown()
+        return
+
+
 def main():
-    """
+    """Main function to start a xMsg registrar
+
     Usage:
     ::
         python xmsg/xsys/xMsgRegistrar.py
 
     *Or if you want to specify the frontend host:*
     ::
-        python xmsg/xsys/xMsgRegistrar.py -fe_host <hostname>
-
+        python xmsg/xsys/xMsgRegistrar.py --fe_host <hostname>
     """
     if len(sys.argv) == 3:
-        if str(sys.argv[1]) == "-fe_host":
-            try:
-                fe_host = str(sys.argv[2])
-                registrar = xMsgRegistrar(fe_host)
-                registrar.start()
-
-            except KeyboardInterrupt:
-                registrar.shutdown()
-                return
+        if str(sys.argv[1]) == "--fe_host":
+            runner(sys.argv[2])
 
         else:
-            print " Wrong option. Accepts -fe_host option only."
+            print " Wrong option. Accepts --fe_host option only."
             return
 
     elif len(sys.argv) == 1:
-        try:
-            registrar = xMsgRegistrar()
-            registrar.start()
-
-        except KeyboardInterrupt:
-            registrar.shutdown()
-            return
+        runner()
 
 if __name__ == '__main__':
     main()
