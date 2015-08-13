@@ -22,7 +22,7 @@
 import sys
 
 from xmsg.core.xMsgUtil import xMsgUtil
-from tests.perf.RemoteThroughput import runner
+from RemoteThroughput import runner
 
 
 def remote_runner(bind_to, message_size, start_message_count,
