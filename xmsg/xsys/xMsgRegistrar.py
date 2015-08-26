@@ -61,7 +61,7 @@ class xMsgRegistrar:
         service only, however by introducing the fe_host, xMsgRegistrar
         can come and go, thus making xMsg message-space elastic.
         """
-        self.context = zmq.Context()
+        self.context = zmq.Context.instance()
         self.proxy = xMsgProxy(self.context)
         self.reg_service = xMsgRegService(self.context, fe_host)
         self.node = "frontend"

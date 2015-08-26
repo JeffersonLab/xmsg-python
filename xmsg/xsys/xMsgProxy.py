@@ -42,7 +42,7 @@ class xMsgProxy:
 
     *or*
     ::
-        ./bin/unix/px_proxy
+        px_proxy
     """
 
     def __init__(self, context):

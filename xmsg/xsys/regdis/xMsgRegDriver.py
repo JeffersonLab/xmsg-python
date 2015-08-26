@@ -41,16 +41,18 @@ class xMsgRegDriver:
 
     Attributes:
         context (zmq.Context): zmq context
+        local_address (String): xmsg frontend hostname
         fe_host (String): xmsg frontend hostname
     """
 
-    def __init__(self, context, fe_host="localhost"):
+    def __init__(self, context, local_address="localhost", fe_host="localhost"):
         # 0MQ context
         self.context = context
 
         # Connection settings
+        local_address_ip = xMsgUtil.host_to_ip(local_address)
         fe_host_ip = xMsgUtil.host_to_ip(fe_host)
-        localhost_ip = xMsgUtil.host_to_ip("localhost")
+
         registrar_port = int(xMsgConstants.REGISTRAR_PORT)
         connect = str(xMsgConstants.CONNECT)
 
@@ -61,7 +63,7 @@ class xMsgRegDriver:
         if fe_host != "localhost":
             # Local registrar server (req/rep) connection socket
             self._lnConnection = self.zmq_socket(self.context, zmq.REQ,
-                                                 localhost_ip, registrar_port,
+                                                 local_address_ip, registrar_port,
                                                  connect)
         else:
             self._lnConnection = self._feConnection

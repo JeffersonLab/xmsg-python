@@ -84,3 +84,6 @@ class xMsgAddress:
             key (String): address generated key
         """
         return self.key
+
+    def __str__(self):
+        return self.key
