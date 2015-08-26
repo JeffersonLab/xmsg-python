@@ -22,13 +22,16 @@
 import threading
 import signal
 import zmq
+import random
 from multiprocessing import Pool
+from multiprocessing.pool import ThreadPool
 
 from xmsg.core.xMsgExceptions import NullConnection, NullMessage
+from xmsg.core.xMsgSubscription import xMsgSubscription
 from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.core.xMsgMessage import xMsgMessage
+from xmsg.core.xMsgCallBack import xMsgCallBack
+from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgUtil import xMsgUtil
-from xmsg.data import xMsgRegistration_pb2
 from xmsg.net.xMsgConnection import xMsgConnection
 from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 
@@ -54,7 +57,7 @@ class xMsg(object):
         pool_size (int): fixed size thread pool
     """
 
-    def __init__(self, name, fe_host, **kwargs):
+    def __init__(self, name, local_address, frontend_address, **kwargs):
         """xMsg Constructor
 
         Constructor, requires the name of the FrontEnd host that is used to
@@ -64,7 +67,8 @@ class xMsg(object):
 
         Args:
             name (String): name of the xMsg actor instance
-            fe_host (String): hostname of the frontend host
+            local_address (String): local hostname
+            frontend_address (String): frontend hostname
 
         Keyword arguments:
             pool_size (int): size of the actors thread pool
@@ -77,14 +81,16 @@ class xMsg(object):
         self.myname = name
 
         context = kwargs.pop("context", False)
-        self.context = context if context else zmq.Context()
+        self.context = context or zmq.Context.instance()
 
         pool_size = kwargs.pop("pool_size", False)
-        self.pool_size = pool_size if pool_size else 2
+        self.pool_size = pool_size or 2
 
         # Initialize registration driver
-        self.driver = xMsgRegDriver(self.context, fe_host)
-        self.localhost_ip = xMsgUtil.host_to_ip("localhost")
+        self.driver = xMsgRegDriver(self.context,
+                                    local_address,
+                                    frontend_address)
+        self.localhost_ip = xMsgUtil.host_to_ip(local_address)
 
         # create fixed size thread pool
         self._thread_pool = Pool(self.pool_size, self.__init_worker)
@@ -105,32 +111,40 @@ class xMsg(object):
         Returns:
             xMsgConnection: xmsg connection object
         """
+        return self.__create_connection(self.context, address)
 
-        # First check to see if we have already
-        # established connection to this address
-        if address.get_key in self._connections.keys():
-            return self._connections.get(address.get_key())
-        else:
-            # Otherwise create sockets to the
-            # requested address, and store the created
-            # connection object for the future use.
-            # Return the reference to the connection object
-            fe_connection = xMsgConnection()
-            fe_connection.set_address(address)
-            host = address.get_host()
-            port = address.get_port()
-            connect = str(xMsgConstants.CONNECT)
+    def get_new_connection(self, address):
+        """Returns a new xMsgConnection object to the xMsg proxy, using
+        new zmq context
 
-            pub_socket = self.driver.zmq_socket(self.context, zmq.PUB,
-                                                host, port, connect)
-            fe_connection.set_pub_sock(pub_socket)
+        Args:
+            address (xMsgAddress): xMsg address object
 
-            sub_socket = self.driver.zmq_socket(self.context, zmq.SUB,
-                                                host, port + 1, connect)
-            fe_connection.set_sub_sock(sub_socket)
+        Returns:
+            connection (xMsgConnection): xMsg connection object
+        """
+        context = zmq.Context.instance()
+        return self.__create_connection(context, address)
 
-            self._connections[address.get_key()] = fe_connection
-            return fe_connection
+    def __create_connection(self, context, address):
+        connection = xMsgConnection()
+        connection.set_address(address)
+
+        host = address.get_host()
+        pub_port = int(address.get_port())
+        sub_port = pub_port + 1
+
+        pub_socket = context.socket(zmq.PUB)
+        sub_socket = context.socket(zmq.SUB)
+        pub_socket.connect("tcp://%s:%d" % (str(host), pub_port))
+        sub_socket.connect("tcp://%s:%d" % (str(host), sub_port))
+        pub_socket.set_hwm(0)
+        sub_socket.set_hwm(0)
+
+        connection.set_pub_sock(pub_socket)
+        connection.set_sub_sock(sub_socket)
+
+        return connection
 
     def destroy(self, linger=-1):
         """ Destroys the created context and terminates the thread pool.
@@ -142,34 +156,6 @@ class xMsg(object):
         """
         self.context.destroy(linger)
         self.__terminate_threadpool()
-
-    def get_new_connection(self, address):
-        """Returns a new xMsgConnection object to the xMsg proxy, using
-        new zmq context
-
-        Args:
-            address (xMsgAddress): xMsg address object
-
-        Returns:
-            feCon (xMsgConnection): xMsg connection object
-        """
-        new_context = zmq.Context()
-        feCon = xMsgConnection()
-        feCon.set_address(address)
-        soc_p = self.driver.zmq_socket(new_context,
-                                       zmq.PUB,
-                                       address.get_host(),
-                                       address.get_port(),
-                                       str(xMsgConstants.CONNECT))
-        feCon.set_pub_sock(soc_p)
-
-        soc_s = self.driver.zmq_socket(new_context,
-                                       zmq.SUB,
-                                       address.get_host(),
-                                       address.get_port() + 1,
-                                       str(xMsgConstants.CONNECT))
-        feCon.set_sub_sock(soc_s)
-        return feCon
 
     def register_publisher(self, topic,
                            description=str(xMsgConstants.UNDEFINED)):
@@ -352,7 +338,36 @@ class xMsg(object):
 
         con.send_multipart(transient_message.serialize())
 
-    def subscribe(self, connection, topic, callback_function, is_sync):
+    def sync_publish(self, connection, message, timeout):
+        # set the return address as replyTo in the xMsgMessage
+        return_address = "return: %d" % random.randint(0, 100)
+        message.get_metadata().replyTo = return_address
+
+        # subscribe to the return_address
+        sync_cb = SyncSendCallBack()
+        sh = self.subscribe(connection, xMsgTopic.wrap(return_address),
+                            sync_cb)
+        sync_cb.set_handler(sh)
+        xMsgUtil.sleep(0.01)
+        self.publish(connection, message)
+        # wait for the response
+        t = 0
+
+        while not sync_cb.received_message:
+            xMsgUtil.sleep(0.001)
+            if t >= timeout * 1000:
+                self.unsubscribe(sh)
+                raise Exception("Error: time_out reached - %d" % t)
+
+            else:
+                t += 1
+
+        self.unsubscribe(sh)
+        sync_cb.received_message.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
+
+        return sync_cb.received_message
+
+    def subscribe(self, connection, topic, callback):
         """Subscribes to a specified xMsg topic.
 
         3 elements are defining xMsg topic: domain:subject:tip
@@ -367,59 +382,53 @@ class xMsg(object):
 
         Supplied user callback must be defined by the user.
         This method will de-serialize received xMsgData object and pass it
-        to the user implemented callback method.
-        In the case is_sync input parameter is set to be false the method will
-        utilize private thread pool to run user callback method in a separate
-        thread.
+        to the user implemented callback method. Sync and async messaging can
+        be obtained by reading the replyTo field at the message metadata
 
         Args:
             connection (xMsgConnection):  connection object
+            topic (xMsgTopic): subscription topic
+            callback: user supplied callback function
 
-            callback_function: user supplied callback function
-            is_sync (bool): if set to true method will block until user
-                callback method is returned. In case you need to run in a
-                multi-threaded mode, i.e. running parallel user call backs,
-                is_sync = False
+        Returns:
+            xMsgSubscription: xMsg Subscription object, it allows thread handling
         """
-        subscriber_thread = threading.Thread(target=self.__sub_module,
-                                             args=(connection,
-                                                   topic,
-                                                   callback_function,
-                                                   is_sync))
-        subscriber_thread.setDaemon(True)
-        subscriber_thread.start()
+        name = "sub-%s-%s-%s" % (self.myname,
+                                 str(connection.get_address()),
+                                 str(topic))
+        subscription_handler = xMsgSubscription(name, connection, str(topic))
 
-    def __sub_module(self, connection, topic, callback_function, is_sync):
-        # get subscribers socket connection
-        con = connection.get_sub_sock()
+        def handle(msg):
+            self._call_user_callback(connection, callback, msg)
 
-        # subscribe to the topic
-        con.setsockopt(zmq.SUBSCRIBE, str(topic))
+        subscription_handler.set_handle(handle)
+        subscription_handler.start()
 
-        # wait for messages published to a required topic
-        while True:
+        return subscription_handler
+
+    def _call_user_callback(self, connection, callback, callback_message):
+        requester = callback_message.get_metadata().replyTo
+        if requester != str(xMsgConstants.UNDEFINED):
+            # Sync request
             try:
-                response = con.recv_multipart()
+                msg = callback.callback(callback_message)
+                msg.set_topic(xMsgTopic.wrap(requester))
+                msg.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
 
-                if len(response) == 3:
-                    serialized_data = response[2]
-                    transient_message = xMsgMessage(topic, serialized_data)
+                self.publish(connection, msg)
 
-                    if is_sync:
-                        callback_function(transient_message)
+            except Exception as e:
+                raise Exception(e)
 
-                    else:
-                        sub_thread = threading.Thread(target=callback_function,
-                                                      args=[transient_message])
-                        sub_thread.daemon = True
-                        sub_thread.start()
+        else:
+            # now i add the callback execution into the thread pool
+            callback.callback(callback_message)
+            #transient_message = xMsgMessage(topic=xMsgTopic.wrap(requester))
+            # self._thread_pool.apply(callback.callback, callback_message)
+            #self._thread_pool.a
 
-            except KeyboardInterrupt, zmq.error.ContextTerminated:
-                self.destroy()
-                return
-
-            except:
-                return
+    def unsubscribe(self, subscription):
+        subscription.stop()
 
     def _registration_builder(self, topic, description, publisher=True):
         """Creates a xMsgRegistration object
@@ -465,3 +474,21 @@ class xMsg(object):
         """Terminates the xMsg threadpool"""
         self._thread_pool.terminate()
         self._thread_pool.join()
+
+
+class SyncSendCallBack(xMsgCallBack):
+    handler = None
+    received_message = None
+
+    def get_message(self):
+        return self.received_message
+
+    def set_handler(self, handler):
+        self.handler = handler
+
+    def callback(self, msg):
+        self.received_message = msg
+        if self.handler is not None:
+            self.handler.stop()
+
+        return self.received_message

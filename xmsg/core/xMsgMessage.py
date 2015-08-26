@@ -45,7 +45,7 @@ class xMsgMessage:
         data (bytes[]): serialized data object
     """
 
-    def __init__(self, topic, serialized_data):
+    def __init__(self, topic=None, serialized_data=None):
         self.topic = topic
 
         if(isinstance(serialized_data, basestring) or
@@ -54,9 +54,8 @@ class xMsgMessage:
             self.data = serialized_data
             self.metadata = xMsgMeta_pb2.xMsgMeta()
 
-        else:
-            raise TypeError("xMsgMessage: Constructor only"
-                            " accepts serialized data")
+        elif serialized_data == None:
+            self.metadata = xMsgMeta_pb2.xMsgMeta()
 
     @classmethod
     def create_with_xmsg_data(cls, topic, xmsg_data_object):
@@ -79,7 +78,7 @@ class xMsgMessage:
             raise TypeError("xMsgMessage: Invalid type of data object")
 
     @classmethod
-    def create_with_serialized_data(cls, topic, serialized_data):
+    def create_with_serialized_data(cls, serialized_data):
         """Constructs a message with serialized data and the default metadata
 
         Args:
@@ -89,7 +88,17 @@ class xMsgMessage:
         Returns:
             xMsgMessage: xMsg message object
         """
-        return cls(topic, serialized_data)
+        msg = xMsgMessage()
+
+        try:
+            msg.set_topic(serialized_data[0])
+            metadata = xMsgMeta_pb2.xMsgMeta()
+            metadata.ParseFromString(serialized_data[1])
+            msg.set_metadata(metadata)
+            msg.set_data(serialized_data[2], mimetype="binary/data")
+            return msg
+        except IndexError as ie:
+            raise Exception("xMsgMessage : %s" % ie)
 
     def get_data(self):
         """Returns the message data
@@ -175,3 +184,11 @@ class xMsgMessage:
             String: message topic
         """
         return self.topic
+
+    def set_topic(self, topic):
+        """Sets the topic for xMsgMessage instance
+
+        Args:
+            topic (String): message
+        """
+        self.topic = topic

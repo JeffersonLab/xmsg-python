@@ -4,7 +4,7 @@
 # documentation for educational, research, and not-for-profit purposes,
 # without fee and without a signed licensing agreement.
 #
-# Author Vardan Gyurjyan
+# Author Ricardo Oyarzun
 # Department of Experimental Nuclear Physics, Jefferson Lab.
 #
 # IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
@@ -18,41 +18,77 @@
 # HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
+
 import zmq
 import threading
 
 from xmsg.core.xMsgExceptions import ConnectionException
-from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.core.xMsgUtil import xMsgUtil
+from xmsg.core.xMsgMessage import xMsgMessage
+
+
+class Handler(threading.Thread):
+
+    def __init__(self, socket, topic, handle):
+        super(Handler, self).__init__(name=topic)
+        self.socket = socket
+        self.topic = topic
+        self.__is_running = threading.Event()
+        self.handle = handle
+
+        self.poller = zmq.Poller()
+        self.poller.register(self.socket, zmq.POLLIN)
+
+    def run(self):
+        while not self.stopped():
+            try:
+                socks = dict(self.poller.poll())
+
+                if socks.get(self.socket) == zmq.POLLIN:
+                    msg = xMsgMessage.create_with_serialized_data(self.socket.recv_multipart())
+                    self.handle(msg)
+                    del msg
+
+            except zmq.error.ZMQError as zmq_e:
+                self.stop()
+                raise zmq.error.ZMQError("xMsgSubscription : %s" % zmq_e)
+
+            except zmq.ContextTerminated as e:
+                self.stop()
+                print "xMsgSubscription : %s" % e
+
+    def stop(self):
+        self.__is_running.set()
+
+    def stopped(self):
+        return self.__is_running.is_set()
+
 
 class xMsgSubscription:
 
-    socket = str(xMsgConstants.UNDEFINED)
-    topic = str(xMsgConstants.UNDEFINED)
-    thread = str(xMsgConstants.UNDEFINED)
-    
-    class Handler(threading.Thread):
-        is_running = False
-        
-        def run(self):
-            while self.is_running:
-                pass
-        
-        def start(self):
-            self.is_running = True
-            pass
-        
-        def stop(self):
-            pass
-        
-        def is_alive(self):
-            return self.is_running
-
     def __init__(self, name, connection, topic):
-        self.socket = connection.get_pub_sock()
-        if self.socket is None:
-            raise ConnectionException
-        self.socket.setsockopt(zmq.SUBSCRIBE, str(topic))
-        xMsgUtil.sleep(0.5)
+        self.name = name
+        self.socket = connection.get_sub_sock()
         self.topic = str(topic)
-        self.thread = None 
+
+        if self.socket:
+            self.socket.setsockopt(zmq.SUBSCRIBE, self.topic)
+
+        else:
+            raise ConnectionException
+
+    def set_handle(self, handle):
+        self.handle = handle
+        self.thread = Handler(self.socket, self.topic, self.handle)
+
+    def stop(self):
+        self.thread.stop()
+        self.socket.setsockopt(zmq.UNSUBSCRIBE, self.topic)
+
+    def start(self):
+        self.thread.start()
+
+    def is_alive(self):
+        return not self.thread.stopped()
+
+    def __str__(self):
+        return str(self.name)

@@ -22,67 +22,72 @@
 import sys
 
 from xmsg.core.xMsg import xMsg
-from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
+from xmsg.core.xMsgCallBack import xMsgCallBack
 from xmsg.net.xMsgAddress import xMsgAddress
 from xmsg.data import xMsgData_pb2
+from xmsg.core.xMsgUtil import xMsgUtil
 
-__author__ = 'gurjyan'
 
-
-class Subscriber(xMsg):
+class ExampleSubscriber(xMsg):
     """Subscriber usage:
     ::
         python xmsg/examples/Subscriber <fe_host>
     """
-
     def __init__(self, fe_host, pool_size):
-        super(Subscriber, self).__init__("test_publisher", fe_host)
+        super(ExampleSubscriber, self).__init__("test_publisher",
+                                                "localhost",
+                                                fe_host)
         self.domain = "test_domain"
         self.subject = "test_subject"
         self.xtype = "test_type"
+        self.connection = self.connect(xMsgAddress(fe_host))
+
+
+class ExampleSubscriberCallback(xMsgCallBack):
 
     def callback(self, msg):
-        """Example of a callback function"""
-        print "Subscriber received data : "
         # User takes care of the proper de-serialization
         ds_msg = xMsgData_pb2.xMsgData()
         ds_msg.ParseFromString(msg.get_data())
-        print ds_msg
+        print "Subscriber received data : %s" % ds_msg
+        return msg
 
 
 def main():
     if len(sys.argv) is 2:
         fe_host = sys.argv[1]
+
     else:
         fe_host = "localhost"
 
-    subscriber = Subscriber(fe_host=fe_host, pool_size=1)
-    # Create a socket connections to the xMsg node
-    address = xMsgAddress(fe_host)
-    con = subscriber.connect(address)
+    subscriber = ExampleSubscriber(fe_host=fe_host, pool_size=1)
 
     # Build Topic
     topic = xMsgTopic.build(subscriber.domain, subscriber.subject,
                             subscriber.xtype)
 
     # Register this publisher
-    subscriber.register_subscriber(topic)
+    # subscriber.register_subscriber(topic)
 
     # Find a publisher that publishes to requested topic
     # defined as a static variables above
-    if subscriber.find_publisher(topic):
+    #if subscriber.find_publisher(topic):
+    # Subscribe by passing a callback to the subscription
+    # subscriber.subscribe(con, topic, subscriber.callback, False)
 
-        # Subscribe by passing a callback to the subscription
-        subscriber.subscribe(con, topic, subscriber.callback, False)
+    try:
+        my_callback = ExampleSubscriberCallback()
+        subscription = subscriber.subscribe(subscriber.connection,
+                                            topic, my_callback)
 
-        try:
-            xMsgUtil.keep_alive()
+        xMsgUtil.keep_alive()
 
-        except KeyboardInterrupt:
-            subscriber.remove_subscriber_registration(topic)
-            subscriber.destroy(2000)
-            return
+    except KeyboardInterrupt:
+        #subscriber.remove_subscriber_registration(topic)
+        subscriber.unsubscribe(subscription)
+        subscriber.destroy(10)
+        return
 
 if __name__ == '__main__':
     main()
