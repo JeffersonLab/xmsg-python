@@ -25,6 +25,7 @@ import zmq
 from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
+from xmsg.core.xMsgCallBack import xMsgCallBack
 from xmsg.net.xMsgAddress import xMsgAddress
 from xmsg.data import xMsgData_pb2
 
@@ -45,8 +46,14 @@ class LocalSubscriber(xMsg):
     myName = "throughput_subscriber"
 
     def __init__(self, bind_to, csv_flag=False):
-        super(LocalSubscriber, self).__init__(self.myName, bind_to,
+        super(LocalSubscriber, self).__init__(self.myName,
+                                              bind_to,
+                                              "localhost",
                                               pool_size=1)
+
+
+class THRCallBack(xMsgCallBack):
+    def __init__(self, csv_flag):
         self.timer = Timer()
         self.csv_flag = csv_flag
         if csv_flag:
@@ -83,7 +90,7 @@ class LocalSubscriber(xMsg):
 
             throughput = float(self.message_count) / self.timer.elapsed
             megabits_per_sec = float(throughput * self.message_size * 8) / 1000000
-            latency = float(self.timer.elapsed / self.message_count)*1000.0
+            latency = float(self.timer.elapsed / self.message_count) * 1000.0
 
             if self.csv_flag:
                 print "%d;%d;%f;%s;%s" % (self.message_size, self.timer.nr,
@@ -112,10 +119,10 @@ def local_runner(bind_to, csv_flag=False):
     connection = subscriber.get_new_connection(pub_node)
     topic = xMsgTopic.wrap("thr_topic")
 
-    subscriber.subscribe(connection,
-                         topic,
-                         subscriber.callback,
-                         True)
+    callback = THRCallBack(csv_flag)
+
+    subscriber.subscribe(connection, topic, callback)
+
     try:
         xMsgUtil.keep_alive()
 

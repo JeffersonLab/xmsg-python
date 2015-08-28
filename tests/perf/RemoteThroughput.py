@@ -34,6 +34,7 @@ class Publisher(xMsg):
 
     def __init__(self, bind_to, msg_size, msg_count):
         super(Publisher, self).__init__(self.myName, bind_to,
+                                        "localhost",
                                         pool_size=1)
         self.message_size = msg_size
         self.message_count = msg_count
@@ -56,9 +57,10 @@ def runner(bind_to, message_size, message_count):
     try:
         data = bytes(b'\x00' * message_size)
         for _ in range(message_count):
-            t_msg = xMsgMessage.create_with_serialized_data(topic,
-                                                            bytes(data))
+            t_msg = xMsgMessage()
+            t_msg.set_topic(topic)
             t_msg.set_mimetype("data/binary")
+            t_msg.set_data(bytes(data), "data/binary")
             publisher.publish(pub_connection, t_msg)
 
         publisher.destroy(30000)

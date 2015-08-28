@@ -95,8 +95,9 @@ class xMsgMessage:
             metadata = xMsgMeta_pb2.xMsgMeta()
             metadata.ParseFromString(serialized_data[1])
             msg.set_metadata(metadata)
-            msg.set_data(serialized_data[2], mimetype="binary/data")
+            msg.set_data(serialized_data[2])
             return msg
+
         except IndexError as ie:
             raise Exception("xMsgMessage : %s" % ie)
 
@@ -116,7 +117,7 @@ class xMsgMessage:
         """
         return sys.getsizeof(self.get_data())
 
-    def set_data(self, serialized_data, mimetype):
+    def set_data(self, serialized_data, mimetype="data/binary"):
         """Sets the serialized data and the mimetype for the message
 
         Args:

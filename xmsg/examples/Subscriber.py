@@ -22,11 +22,11 @@
 import sys
 
 from xmsg.core.xMsg import xMsg
+from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgCallBack import xMsgCallBack
 from xmsg.net.xMsgAddress import xMsgAddress
 from xmsg.data import xMsgData_pb2
-from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class ExampleSubscriber(xMsg):
