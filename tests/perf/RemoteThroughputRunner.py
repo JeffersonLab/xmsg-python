@@ -33,15 +33,15 @@ def remote_runner(bind_to, message_size, start_message_count,
     current_message_count = start_message_count
 
     while True:
+        if current_message_count >= final_message_count:
+            break
         try:
             runner(bind_to, message_size, current_message_count)
+            current_message_count += step
+            xMsgUtil.sleep(10)
         except KeyboardInterrupt:
             print "Exiting remote runner"
             return
-        current_message_count += step
-        xMsgUtil.sleep(20)
-        if current_message_count >= final_message_count:
-            break
 
 
 def main():

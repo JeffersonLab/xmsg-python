@@ -52,23 +52,27 @@ def runner(bind_to, message_size, message_count):
     configuration_data.FLSINT32A.extend(subscriber_args)
     configuration_message = xMsgMessage.create_with_xmsg_data(topic,
                                                               configuration_data)
-    publisher.publish(pub_connection, configuration_message)
+    configuration_message.get_metadata().description = "config message"
+    publisher.sync_publish(pub_connection, configuration_message, 30)
 
     try:
         data = bytes(b'\x00' * message_size)
-        for _ in range(message_count):
+        for i in range(message_count):
             t_msg = xMsgMessage()
             t_msg.set_topic(topic)
-            t_msg.set_mimetype("data/binary")
             t_msg.set_data(bytes(data), "data/binary")
-            publisher.publish(pub_connection, t_msg)
+            if i == message_count-1:
+                t_msg.get_metadata().description = "data message end"
+                publisher.sync_publish(pub_connection, t_msg, 30)
+            else:
+                publisher.publish(pub_connection, t_msg)
 
-        publisher.destroy(30000)
+        publisher.destroy(10000)
 
     except Exception as e:
         print e
         print "Removing publisher..."
-        publisher.destroy(0)
+        publisher.destroy(10000)
 
     return
 

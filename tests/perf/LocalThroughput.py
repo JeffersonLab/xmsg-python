@@ -31,12 +31,12 @@ from xmsg.data import xMsgData_pb2
 
 
 class Timer:
-    nr = 0
+    nr = -1
     watch = 0
     elapsed = 0
 
     def reset(self):
-        self.nr = 0
+        self.nr = 1
         self.watch = 0
         self.elapsed = 0
 
@@ -56,6 +56,7 @@ class THRCallBack(xMsgCallBack):
     def __init__(self, csv_flag):
         self.timer = Timer()
         self.csv_flag = csv_flag
+
         if csv_flag:
             print "CSV output:"
             print "message_size;number_of_messages;mean_transfer_time[ms];"\
@@ -71,20 +72,18 @@ class THRCallBack(xMsgCallBack):
         self.message_size = msg_size
 
     def callback(self, msg):
-        if self.timer.nr == 0:
+        if str(msg.get_metadata().description) == 'config message':
             deserialized_msg = xMsgData_pb2.xMsgData()
             deserialized_msg.ParseFromString(msg.get_data())
             msg_count = deserialized_msg.FLSINT32A[0]
             msg_size = deserialized_msg.FLSINT32A[1]
             self.config(msg_count, msg_size)
-            self.timer.nr += 1
 
-        elif self.timer.nr == 1:
             self.timer.watch = zmq.Stopwatch()
             self.timer.watch.start()
-            self.timer.nr += 1
+            self.timer.nr = 1
 
-        elif self.timer.nr == self.message_count:
+        elif str(msg.get_metadata().description) == 'data message end':
             self.timer.elapsed = self.timer.watch.stop()
             self.timer.elapsed = float(self.timer.elapsed) / 1000000
 
@@ -103,7 +102,6 @@ class THRCallBack(xMsgCallBack):
                 print "mean transfer time: %f [ms]" % latency
                 print "mean transfer rate: %s [Mb/s]" % str(megabits_per_sec)
                 print "mean throughput: %s [message/s]" % str(throughput)
-
             self.timer.reset()
 
         else:
@@ -121,12 +119,13 @@ def local_runner(bind_to, csv_flag=False):
 
     callback = THRCallBack(csv_flag)
 
-    subscriber.subscribe(connection, topic, callback)
+    subscription = subscriber.subscribe(connection, topic, callback)
 
     try:
         xMsgUtil.keep_alive()
 
     except KeyboardInterrupt:
+        subscriber.unsubscribe(subscription)
         subscriber.destroy(5000)
         return
 
