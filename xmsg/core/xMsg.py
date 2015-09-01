@@ -344,16 +344,15 @@ class xMsg(object):
         message.get_metadata().replyTo = return_address
 
         # subscribe to the return_address
-        sync_cb = SyncSendCallBack()
-        sh = self.subscribe(connection, xMsgTopic.wrap(return_address),
-                            sync_cb)
-        sync_cb.set_handler(sh)
+        cb = SyncSendCallBack()
+        sh = self.subscribe(connection, xMsgTopic.wrap(return_address), cb)
+        cb.set_handler(sh)
         xMsgUtil.sleep(0.01)
         self.publish(connection, message)
         # wait for the response
         t = 0
 
-        while not sync_cb.received_message:
+        while not cb.received_message:
             xMsgUtil.sleep(0.001)
             if t >= timeout * 1000:
                 self.unsubscribe(sh)
@@ -363,9 +362,9 @@ class xMsg(object):
                 t += 1
 
         self.unsubscribe(sh)
-        sync_cb.received_message.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
+        cb.received_message.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
 
-        return sync_cb.received_message
+        return cb.received_message
 
     def subscribe(self, connection, topic, callback):
         """Subscribes to a specified xMsg topic.
@@ -425,7 +424,6 @@ class xMsg(object):
             callback.callback(callback_message)
             #transient_message = xMsgMessage(topic=xMsgTopic.wrap(requester))
             # self._thread_pool.apply(callback.callback, callback_message)
-            #self._thread_pool.a
 
     def unsubscribe(self, subscription):
         subscription.stop()

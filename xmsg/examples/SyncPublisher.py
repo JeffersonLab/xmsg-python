@@ -64,9 +64,6 @@ def main():
                                 sync_publisher.subject,
                                 sync_publisher.xtype)
 
-        # Register this publisher
-        # sync_publisher.register_publisher(topic)
-
         # Publish data for ever...
         count = 0
         while True:

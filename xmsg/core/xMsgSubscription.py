@@ -49,11 +49,9 @@ class Handler(threading.Thread):
                     del msg
 
             except zmq.error.ZMQError as zmq_e:
-                self.stop()
                 raise zmq.error.ZMQError("xMsgSubscription : %s" % zmq_e)
 
             except zmq.ContextTerminated as e:
-                self.stop()
                 print "xMsgSubscription : %s" % e
 
     def stop(self):

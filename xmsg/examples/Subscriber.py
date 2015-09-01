@@ -67,15 +67,6 @@ def main():
     topic = xMsgTopic.build(subscriber.domain, subscriber.subject,
                             subscriber.xtype)
 
-    # Register this publisher
-    # subscriber.register_subscriber(topic)
-
-    # Find a publisher that publishes to requested topic
-    # defined as a static variables above
-    #if subscriber.find_publisher(topic):
-    # Subscribe by passing a callback to the subscription
-    # subscriber.subscribe(con, topic, subscriber.callback, False)
-
     try:
         my_callback = ExampleSubscriberCallback()
         subscription = subscriber.subscribe(subscriber.connection,
@@ -84,7 +75,6 @@ def main():
         xMsgUtil.keep_alive()
 
     except KeyboardInterrupt:
-        #subscriber.remove_subscriber_registration(topic)
         subscriber.unsubscribe(subscription)
         subscriber.destroy(10)
         return
