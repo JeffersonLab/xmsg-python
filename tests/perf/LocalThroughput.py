@@ -53,8 +53,8 @@ class THRCallBack(xMsgCallBack):
         self.condition = condition
 
         if csv_flag:
-            print "message_size;number_of_messages;mean_transfer_time[ms];"\
-                "mean_transfer_rate[Mb/s];mean_throughput[msg/s]"
+            print "message_size;number_of_messages;mean_transfer_time[us];"\
+                "mean_transfer_rate[msg/s];mean_throughput[Mb/s]"
 
     def callback(self, msg):
         if self.timer.nr == 1:
@@ -74,10 +74,10 @@ class THRCallBack(xMsgCallBack):
         return msg
 
     def write(self):
-        self.timer.elapsed = float(self.timer.elapsed) / 1000000
-        throughput = float(self.message_count) / self.timer.elapsed
+        self.timer.elapsed = float(self.timer.elapsed)
+        throughput = float(self.message_count) / self.timer.elapsed * 1000000
         megabits_per_sec = float(throughput * self.message_size * 8) / 1000000
-        latency = float(self.timer.elapsed / self.message_count) * 1000.0
+        latency = float(self.timer.elapsed / self.message_count)
 
         if self.csv_flag:
             print "%d;%d;%f;%s;%s" % (self.message_size, self.timer.nr,
@@ -87,9 +87,9 @@ class THRCallBack(xMsgCallBack):
         else:
             print "message size: %d " % self.message_size
             print "message count: %d" % self.timer.nr
-            print "mean transfer time: %f [ms]" % latency
-            print "mean transfer rate: %s [Mb/s]" % str(megabits_per_sec)
-            print "mean throughput: %s [message/s]" % str(throughput)
+            print "mean transfer time: %f [us]" % latency
+            print "mean transfer rate: %s [msg/s]" % str(throughput)
+            print "mean throughput: %s [Mb/s]" % str(megabits_per_sec)
 
 
 def local_runner(bind_to, size_message, n_messages, csv_flag=False):
