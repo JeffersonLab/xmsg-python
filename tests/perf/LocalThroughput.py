@@ -21,69 +21,49 @@
 
 import sys
 import zmq
+from threading import Condition
 
 from xmsg.core.xMsg import xMsg
-from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgCallBack import xMsgCallBack
 from xmsg.net.xMsgAddress import xMsgAddress
-from xmsg.data import xMsgData_pb2
 
 
 class Timer:
-    nr = -1
+    nr = 1
     watch = 0
     elapsed = 0
 
-    def reset(self):
-        self.nr = 1
-        self.watch = 0
-        self.elapsed = 0
 
-
-class LocalSubscriber(xMsg):
+class Subscriber(xMsg):
 
     myName = "throughput_subscriber"
 
     def __init__(self, bind_to, csv_flag=False):
-        super(LocalSubscriber, self).__init__(self.myName,
-                                              bind_to,
-                                              "localhost",
-                                              pool_size=1)
+        super(Subscriber, self).__init__(self.myName, bind_to, "localhost",
+                                         pool_size=1)
 
 
 class THRCallBack(xMsgCallBack):
-    def __init__(self, csv_flag):
+    def __init__(self, csv_flag, messages, message_size, condition):
         self.timer = Timer()
         self.csv_flag = csv_flag
+        self.message_count = int(messages)
+        self.message_size = int(message_size)
+        self.condition = condition
 
         if csv_flag:
-            print "CSV output:"
             print "message_size;number_of_messages;mean_transfer_time[ms];"\
                 "mean_transfer_rate[Mb/s];mean_throughput[msg/s]"
 
-    def check_data_valid_size(self, message_data):
-        if sys.getsizeof(message_data.get_data()) != self.message_size + 37:
-            return False
-        return True
-
-    def config(self, msg_count, msg_size):
-        self.message_count = msg_count
-        self.message_size = msg_size
-
     def callback(self, msg):
-        if str(msg.get_metadata().description) == 'config message':
-            deserialized_msg = xMsgData_pb2.xMsgData()
-            deserialized_msg.ParseFromString(msg.get_data())
-            msg_count = deserialized_msg.FLSINT32A[0]
-            msg_size = deserialized_msg.FLSINT32A[1]
-            self.config(msg_count, msg_size)
-
+        if self.timer.nr == 1:
+            self.condition.acquire()
             self.timer.watch = zmq.Stopwatch()
             self.timer.watch.start()
-            self.timer.nr = 1
+            self.timer.nr += 1
 
-        elif str(msg.get_metadata().description) == 'data message end':
+        elif self.timer.nr == self.message_count:
             self.timer.elapsed = self.timer.watch.stop()
             self.timer.elapsed = float(self.timer.elapsed) / 1000000
 
@@ -102,47 +82,46 @@ class THRCallBack(xMsgCallBack):
                 print "mean transfer time: %f [ms]" % latency
                 print "mean transfer rate: %s [Mb/s]" % str(megabits_per_sec)
                 print "mean throughput: %s [message/s]" % str(throughput)
-            self.timer.reset()
-
+            self.condition.notifyAll()
+            self.condition.release()
         else:
             self.timer.nr += 1
 
         return msg
 
 
-def local_runner(bind_to, csv_flag=False):
-    subscriber = LocalSubscriber(bind_to, csv_flag)
+def local_runner(bind_to, size_message, n_messages, csv_flag=False):
+    subscriber = Subscriber(bind_to, csv_flag)
 
     pub_node = xMsgAddress(bind_to)
     connection = subscriber.get_new_connection(pub_node)
     topic = xMsgTopic.wrap("thr_topic")
 
-    callback = THRCallBack(csv_flag)
-
+    condition = Condition()
+    callback = THRCallBack(csv_flag, n_messages, size_message, condition)
     subscription = subscriber.subscribe(connection, topic, callback)
 
-    try:
-        xMsgUtil.keep_alive()
+    with condition:
+        condition.wait()
 
-    except KeyboardInterrupt:
-        subscriber.unsubscribe(subscription)
-        subscriber.destroy(5000)
-        return
+    subscriber.unsubscribe(subscription)
+    subscriber.destroy(5000)
+    return
 
 
 def main():
-    if len(sys.argv) == 3:
-        if sys.argv[2] == "--csv-output":
-            local_runner(sys.argv[1], True)
+    if len(sys.argv) == 5:
+        if sys.argv[4] == "--csv-output":
+            local_runner(sys.argv[1], sys.argv[2], sys.argv[3], True)
 
         else:
-            print "usage: python LocalThoughput.py <bind-to> [--csv-output]"
+            print "usage: python LocalThoughput.py <bind-to> <message_size> <number_messages> [--csv-output]"
 
-    elif len(sys.argv) == 2:
-        local_runner(sys.argv[1])
+    elif len(sys.argv) == 4:
+        local_runner(sys.argv[1], sys.argv[2], sys.argv[3])
 
     else:
-        print "usage: python LocalThoughput.py <bind-to> [--csv-output]"
+        print "usage: python LocalThoughput.py <bind-to> <message_size> <number_messages> [--csv-output]"
         return -1
 
 if __name__ == '__main__':

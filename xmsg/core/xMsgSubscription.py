@@ -48,11 +48,11 @@ class Handler(threading.Thread):
                     self.handle(msg)
                     del msg
 
-            except zmq.error.ZMQError as zmq_e:
-                raise zmq.error.ZMQError("xMsgSubscription : %s" % zmq_e)
-
             except zmq.ContextTerminated as e:
                 print "xMsgSubscription : %s" % e
+
+            except:
+                return
 
     def stop(self):
         self.__is_running.set()
@@ -79,8 +79,11 @@ class xMsgSubscription:
         self.thread = Handler(self.socket, self.topic, self.handle)
 
     def stop(self):
-        self.thread.stop()
-        self.socket.setsockopt(zmq.UNSUBSCRIBE, self.topic)
+        try:
+            self.thread.stop()
+            self.socket.setsockopt(zmq.UNSUBSCRIBE, self.topic)
+        except:
+            return
 
     def start(self):
         self.thread.start()

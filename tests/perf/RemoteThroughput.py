@@ -25,7 +25,6 @@ from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.net.xMsgAddress import xMsgAddress
-from xmsg.data import xMsgData_pb2
 
 
 class Publisher(xMsg):
@@ -33,9 +32,7 @@ class Publisher(xMsg):
     myName = "throughput_publisher"
 
     def __init__(self, bind_to, msg_size, msg_count):
-        super(Publisher, self).__init__(self.myName, bind_to,
-                                        "localhost",
-                                        pool_size=1)
+        super(Publisher, self).__init__(self.myName, bind_to, "localhost")
         self.message_size = msg_size
         self.message_count = msg_count
 
@@ -46,26 +43,13 @@ def runner(bind_to, message_size, message_count):
     pub_connection = publisher.get_new_connection(pub_node_addr)
     topic = xMsgTopic.wrap("thr_topic")
 
-    subscriber_args = [message_count, message_size]
-    configuration_data = xMsgData_pb2.xMsgData()
-    configuration_data.type = xMsgData_pb2.xMsgData.T_FLSINT32A
-    configuration_data.FLSINT32A.extend(subscriber_args)
-    configuration_message = xMsgMessage.create_with_xmsg_data(topic,
-                                                              configuration_data)
-    configuration_message.get_metadata().description = "config message"
-    publisher.sync_publish(pub_connection, configuration_message, 30)
-
     try:
         data = bytes(b'\x00' * message_size)
         for i in range(message_count):
             t_msg = xMsgMessage()
             t_msg.set_topic(topic)
             t_msg.set_data(bytes(data), "data/binary")
-            if i == message_count-1:
-                t_msg.get_metadata().description = "data message end"
-                publisher.sync_publish(pub_connection, t_msg, 30)
-            else:
-                publisher.publish(pub_connection, t_msg)
+            publisher.publish(pub_connection, t_msg)
 
         publisher.destroy(10000)
 
