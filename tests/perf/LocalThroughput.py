@@ -65,29 +65,31 @@ class THRCallBack(xMsgCallBack):
 
         elif self.timer.nr == self.message_count:
             self.timer.elapsed = self.timer.watch.stop()
-            self.timer.elapsed = float(self.timer.elapsed) / 1000000
 
-            throughput = float(self.message_count) / self.timer.elapsed
-            megabits_per_sec = float(throughput * self.message_size * 8) / 1000000
-            latency = float(self.timer.elapsed / self.message_count) * 1000.0
-
-            if self.csv_flag:
-                print "%d;%d;%f;%s;%s" % (self.message_size, self.timer.nr,
-                                          latency, str(throughput),
-                                          str(megabits_per_sec))
-
-            else:
-                print "message size: %d " % self.message_size
-                print "message count: %d" % self.timer.nr
-                print "mean transfer time: %f [ms]" % latency
-                print "mean transfer rate: %s [Mb/s]" % str(megabits_per_sec)
-                print "mean throughput: %s [message/s]" % str(throughput)
             self.condition.notifyAll()
             self.condition.release()
+
         else:
             self.timer.nr += 1
-
         return msg
+
+    def write(self):
+        self.timer.elapsed = float(self.timer.elapsed) / 1000000
+        throughput = float(self.message_count) / self.timer.elapsed
+        megabits_per_sec = float(throughput * self.message_size * 8) / 1000000
+        latency = float(self.timer.elapsed / self.message_count) * 1000.0
+
+        if self.csv_flag:
+            print "%d;%d;%f;%s;%s" % (self.message_size, self.timer.nr,
+                                      latency, str(throughput),
+                                      str(megabits_per_sec))
+
+        else:
+            print "message size: %d " % self.message_size
+            print "message count: %d" % self.timer.nr
+            print "mean transfer time: %f [ms]" % latency
+            print "mean transfer rate: %s [Mb/s]" % str(megabits_per_sec)
+            print "mean throughput: %s [message/s]" % str(throughput)
 
 
 def local_runner(bind_to, size_message, n_messages, csv_flag=False):
@@ -99,14 +101,18 @@ def local_runner(bind_to, size_message, n_messages, csv_flag=False):
 
     condition = Condition()
     callback = THRCallBack(csv_flag, n_messages, size_message, condition)
-    subscription = subscriber.subscribe(connection, topic, callback)
+    try:
+        subscription = subscriber.subscribe(connection, topic, callback)
 
-    with condition:
-        condition.wait()
-
-    subscriber.unsubscribe(subscription)
-    subscriber.destroy(5000)
-    return
+        with condition:
+            condition.wait()
+        callback.write()
+    except:
+        print "Exiting..."
+    finally:
+        subscriber.unsubscribe(subscription)
+        subscriber.destroy()
+        return
 
 
 def main():

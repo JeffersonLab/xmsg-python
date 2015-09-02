@@ -25,6 +25,7 @@ from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.net.xMsgAddress import xMsgAddress
+from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class Publisher(xMsg):
@@ -45,18 +46,17 @@ def runner(bind_to, message_size, message_count):
 
     try:
         data = bytes(b'\x00' * message_size)
-        for i in range(message_count):
+        for _ in range(message_count):
             t_msg = xMsgMessage()
             t_msg.set_topic(topic)
             t_msg.set_data(bytes(data), "data/binary")
             publisher.publish(pub_connection, t_msg)
-
-        publisher.destroy(10000)
+        publisher.destroy()
 
     except Exception as e:
-        print e
         print "Removing publisher..."
-        publisher.destroy(10000)
+        publisher.destroy()
+        return
 
     return
 

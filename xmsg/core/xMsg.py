@@ -136,14 +136,13 @@ class xMsg(object):
 
         pub_socket = context.socket(zmq.PUB)
         sub_socket = context.socket(zmq.SUB)
-        pub_socket.connect("tcp://%s:%d" % (str(host), pub_port))
-        sub_socket.connect("tcp://%s:%d" % (str(host), sub_port))
         pub_socket.set_hwm(0)
         sub_socket.set_hwm(0)
-
+        pub_socket.connect("tcp://%s:%d" % (str(host), pub_port))
+        sub_socket.connect("tcp://%s:%d" % (str(host), sub_port))
         connection.set_pub_sock(pub_socket)
         connection.set_sub_sock(sub_socket)
-
+        context.setsockopt(zmq.LINGER, -1)
         return connection
 
     def destroy(self, linger=-1):
@@ -214,7 +213,7 @@ class xMsg(object):
 
     def remove_subscriber_registration(self, topic):
         """Removes subscriber registration both from the local and then from the
-        global registration databases
+        global registration database
 
         Args:
             topic (xMsgTopic): the name of the requester/sender. Required
@@ -423,7 +422,6 @@ class xMsg(object):
             # now i add the callback execution into the thread pool
             callback.callback(callback_message)
             #transient_message = xMsgMessage(topic=xMsgTopic.wrap(requester))
-            # self._thread_pool.apply(callback.callback, callback_message)
 
     def unsubscribe(self, subscription):
         subscription.stop()

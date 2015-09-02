@@ -41,16 +41,12 @@ class Handler(threading.Thread):
     def run(self):
         while not self.stopped():
             try:
-                socks = dict(self.poller.poll())
+                socks = dict(self.poller.poll(100))
 
                 if socks.get(self.socket) == zmq.POLLIN:
                     msg = xMsgMessage.create_with_serialized_data(self.socket.recv_multipart())
                     self.handle(msg)
                     del msg
-
-            except zmq.ContextTerminated as e:
-                print "xMsgSubscription : %s" % e
-
             except:
                 return
 
