@@ -69,15 +69,15 @@ if __name__ == '__main__':
           description='xMsg for python',
           author='Vardan Gyurgyan, Ricardo Oyarzun',
           author_email='vardan@jlab.org',
-
           url='https://claraweb.jlab.org',
+
           test_suite="tests",
           cmdclass={
-              'test': xMsgTest,
-              'clean': xMsgClean,
+            'test': xMsgTest,
+            'clean': xMsgClean,
           },
-          packages=find_packages(exclude=["*.tests", "*.tests.*",
-                                          "tests.*", "tests"]),
+
+          packages=find_packages(exclude=["tests.*", "tests"]),
           install_requires=['setuptools', 'pyzmq>=14.5.0', 'protobuf>=2.6',
                             'enum34>=1.0.4', 'argparse>=1.2.1',
                             'netifaces>=0.10.4', 'pytest', 'mockito',
