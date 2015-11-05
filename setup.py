@@ -65,8 +65,10 @@ class xMsgInstall(install):
 
 if __name__ == '__main__':
     setup(name='xMsg',
-          version='2.0',
-          description='xMsg for python',
+          version='4.0',
+          description='xMsg is a lightweight, yet full featured publish/subscribe\
+            messaging system, presenting asynchronous publish/subscribe\
+            inter-process communication protocol: an API layer in Java, Python and C++.',
           author='Vardan Gyurgyan, Ricardo Oyarzun',
           author_email='vardan@jlab.org',
           url='https://claraweb.jlab.org',
@@ -80,7 +82,6 @@ if __name__ == '__main__':
           packages=find_packages(exclude=["tests.*", "tests"]),
           install_requires=['setuptools', 'pyzmq>=14.5.0', 'protobuf>=2.6',
                             'enum34>=1.0.4', 'argparse>=1.2.1',
-                            'netifaces>=0.10.4', 'pytest', 'mockito',
-                            'sphinxcontrib-napoleon==0.3.11'],
+                            'netifaces>=0.10.4', 'pytest', 'mockito'],
           scripts=['bin/unix/px_node', 'bin/unix/px_proxy']
           )
