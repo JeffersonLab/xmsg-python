@@ -35,7 +35,7 @@ TOPIC_SUBJECT_GROUP = 3
 TOPIC_XTYPE_GROUP = 5
 
 
-class xMsgTopic:
+class xMsgTopic(object):
     """The main identification for xMsg pub/sub communications.
 
     xMsg is a *topic-based system*, and messages are published to given
@@ -163,7 +163,7 @@ class xMsgTopic:
         Returns:
             boolean: True if this topic is a parent of the other
         """
-        return self.topic.startswith(str(other))
+        return str(other).startswith(str(self))
 
     def subject(self):
         """Parses xMsg topic and returns subject of the topic
