@@ -19,29 +19,13 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-import sys
 
 from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgCallBack import xMsgCallBack
-from xmsg.net.xMsgAddress import xMsgAddress
+from xmsg.net.xMsgAddress import ProxyAddress
 from xmsg.data import xMsgData_pb2
-
-
-class ExampleSubscriber(xMsg):
-    """Subscriber usage:
-    ::
-        python xmsg/examples/Subscriber <fe_host>
-    """
-    def __init__(self, fe_host, pool_size):
-        super(ExampleSubscriber, self).__init__("test_publisher",
-                                                "localhost",
-                                                fe_host)
-        self.domain = "test_domain"
-        self.subject = "test_subject"
-        self.xtype = "test_type"
-        self.connection = self.connect(xMsgAddress(fe_host))
 
 
 class ExampleSubscriberCallback(xMsgCallBack):
@@ -54,23 +38,16 @@ class ExampleSubscriberCallback(xMsgCallBack):
         return msg
 
 
-def main():
-    if len(sys.argv) is 2:
-        fe_host = sys.argv[1]
-
-    else:
-        fe_host = "localhost"
-
-    subscriber = ExampleSubscriber(fe_host=fe_host, pool_size=1)
+def main(fe_host="localhost"):
+    subscriber = xMsg("test_publisher", "localhost", fe_host)
 
     # Build Topic
-    topic = xMsgTopic.build(subscriber.domain, subscriber.subject,
-                            subscriber.xtype)
+    topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
+    connection = subscriber.connect(ProxyAddress(fe_host))
 
     try:
-        my_callback = ExampleSubscriberCallback()
-        subscription = subscriber.subscribe(subscriber.connection,
-                                            topic, my_callback)
+        callback = ExampleSubscriberCallback()
+        subscription = subscriber.subscribe(topic, connection, callback)
 
         xMsgUtil.keep_alive()
 
@@ -78,6 +55,3 @@ def main():
         subscriber.unsubscribe(subscription)
         subscriber.destroy(10)
         return
-
-if __name__ == '__main__':
-    main()

@@ -83,5 +83,6 @@ if __name__ == '__main__':
           install_requires=['setuptools', 'pyzmq>=14.5.0', 'protobuf>=2.6',
                             'enum34>=1.0.4', 'argparse>=1.2.1',
                             'netifaces>=0.10.4', 'pytest', 'mockito'],
-          scripts=['bin/unix/px_node', 'bin/unix/px_proxy']
+          scripts=['bin/unix/px_node', 'bin/unix/px_proxy', 'bin/unix/px_publisher',
+                   'bin/unix/px_subscriber']
           )

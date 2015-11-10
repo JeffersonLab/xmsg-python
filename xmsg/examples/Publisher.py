@@ -19,78 +19,46 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-import random
-import sys
+from random import randint
 
 from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.data import xMsgData_pb2
-from xmsg.net.xMsgAddress import xMsgAddress
 
 
-__author__ = 'gurjyan'
-
-
-class Publisher(xMsg):
-
-    def __init__(self, fe_host):
-        super(Publisher, self).__init__("test_publisher", "localhost", fe_host)
-        self.domain = "test_domain"
-        self.subject = "test_subject"
-        self.xtype = "test_type"
-
-
-def main():
+def main(array_size, frontend_host="localhost"):
     """Publisher usage:
     ::
         "Usage: python xmsg/examples/Publisher <array_size> <fe_host>
     """
-    if len(sys.argv) >= 2:
-        array_size = int(sys.argv[1])
+    publisher = xMsg("test_publisher", "localhost", frontend_host)
+
+    # Create a socket connections to the xMsg node
+    connection = publisher.connect()
+
+    # Build Topic
+    topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
+
+    # Publish data for ever...
+    while True:
         try:
-            fe_host = sys.argv[2]
-        except IndexError:
-            fe_host = "localhost"
+            data = [float(randint(1, 10)) for _ in range(int(array_size))]
 
-        publisher = Publisher(fe_host)
+            # Create transient data
+            t_msg_data = xMsgData_pb2.xMsgData()
+            t_msg_data.type = xMsgData_pb2.xMsgData.T_FLOATA
+            t_msg_data.FLOATA.extend(data)
+            t_msg = xMsgMessage.create_with_xmsg_data(topic, t_msg_data)
 
-        # Create a socket connections to the xMsg node
-        address = xMsgAddress(fe_host)
-        con = publisher.connect(address)
+            # Publishing
+            publisher.publish(connection, t_msg)
+            print "publishing : T_FLOATA"
+            xMsgUtil.sleep(1)
 
-        # Build Topic
-        topic = xMsgTopic.build(publisher.domain, publisher.subject,
-                                publisher.xtype)
-
-        # Register this publisher
-        publisher.register_publisher(topic)
-
-        # Publish data for ever...
-        while True:
-            try:
-                data = [float(random.randint(1, 10)) for _ in range(array_size)]
-
-                # Create transient data
-                t_msg_data = xMsgData_pb2.xMsgData()
-                t_msg_data.type = xMsgData_pb2.xMsgData.T_FLOATA
-                t_msg_data.FLOATA.extend(data)
-                t_msg = xMsgMessage.create_with_xmsg_data(topic, t_msg_data)
-
-                # Publishing
-                publisher.publish(con, t_msg)
-                print "publishing : T_FLOATA"
-                xMsgUtil.sleep(1)
-
-            except KeyboardInterrupt:
-                print "Removing Registration and terminating the thread pool."
-                publisher.remove_publisher_registration(topic)
-                publisher.destroy()
-                return
-    else:
-        print "Usage: python xmsg/examples/Publisher <array_size> <fe_host>"
-        return
-
-if __name__ == '__main__':
-    main()
+        except KeyboardInterrupt:
+            print ""
+            xMsgUtil.log("Removing Registration and terminating thread pool")
+            publisher.destroy()
+            return
