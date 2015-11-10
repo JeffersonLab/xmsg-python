@@ -7,4 +7,6 @@ dist/
 *egg-info/
 .project
 .pydevproject
+.cache
+.eggs
 
