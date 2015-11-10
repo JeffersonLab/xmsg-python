@@ -88,10 +88,10 @@ class xMsgSubscription:
             return
 
     def start(self):
-        self.thread.start()
+        self.handle_thread.start()
 
     def is_alive(self):
-        return not self.thread.stopped()
+        return not self.handle_thread.stopped()
 
     def __str__(self):
         return str(self.name)
