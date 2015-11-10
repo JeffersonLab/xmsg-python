@@ -1,17 +1,17 @@
-# 
+#
 # Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for educational, research, and not-for-profit purposes,
 # without fee and without a signed licensing agreement.
-# 
+#
 # Author Vardan Gyurjyan
 # Department of Experimental Nuclear Physics, Jefferson Lab.
-# 
+#
 # IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
 # INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
 # THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
 # OF THE POSSIBILITY OF SUCH DAMAGE.
-# 
+#
 # JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
 # THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
 # PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
@@ -22,9 +22,10 @@
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgUtil import xMsgUtil
 
+
 def default_sub_port(pub_port):
     return pub_port + 1
-    
+
 
 class RegAddress(object):
     """xMsg network address container class.
@@ -82,8 +83,9 @@ class RegAddress(object):
 
 
 class ProxyAddress(object):
-    
-    def __init__(self, host="localhost", pub_port=xMsgConstants.REGISTRAR_PORT, sub_port=None):
+
+    def __init__(self, host="localhost", pub_port=xMsgConstants.DEFAULT_PORT,
+                 sub_port=None):
         self.host = xMsgUtil.host_to_ip(host)
         self.pub_port = int(pub_port)
         self.sub_port = sub_port or default_sub_port(self.pub_port)

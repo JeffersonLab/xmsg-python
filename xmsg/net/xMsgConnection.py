@@ -19,71 +19,46 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-from xmsg.core.xMsgConstants import xMsgConstants
-
-__author__ = 'gurjyan'
+import zmq
 
 
 class xMsgConnection:
-    """xMsg connection class
 
-    Contains xMSgAddress object and two zmq socket objects for
-    publishing and subscribing xMsg messages respectfully.
-
-    Attributes:
-        address (xMsgAddress): xMsg address object
-        pub_sock (zmq.Socket): connection PUB socket
-        sub_sock (zmq.Socket): connection SUB socket
-    """
-
-    def __init__(self, address=str(xMsgConstants.UNDEFINED)):
-        self.pub_sock = str(xMsgConstants.UNDEFINED)
-        self.sub_sock = str(xMsgConstants.UNDEFINED)
-
-    def set_address(self, address):
-        """Sets the connection address
-
-        Args:
-            address (xMsgAddress): xMsg address object
-        """
+    def __init__(self, address, setup, pub_socket, sub_socket):
         self.address = address
+        self.setup = setup
+        self.pub = pub_socket
+        self.sub = sub_socket
 
-    def get_address(self):
-        """Returns connection address
+    def connect(self):
+        self.setup.pre_connection(self.pub)
+        self.setup.pre_connection(self.sub)
 
-        Returns:
-            address (xMsgAddress): connection address
-        """
-        return self.address
+        pub_port = str(self.address.pub_port)
+        sub_port = str(self.address.sub_port)
 
-    def set_pub_sock(self, socket):
-        """Returns xMsg PUB socket
+        self.pub.connect("tcp://%s:%s" % (self.address.host, pub_port))
+        self.sub.connect("tcp://%s:%s" % (self.address.host, sub_port))
 
-        Args:
-            socket (zmq.Socket): connection PUB socket
-        """
-        self.pub_sock = socket
+        self.setup.post_connection()
 
-    def get_pub_sock(self):
-        """Returns xMsg PUB socket
+    def send(self, message):
+        topic = str(message.get_topic())
+        meta = message.get_metadata().SerializeToString()
+        data = message.get_data()
 
-        Returns:
-            pub_sock (zmq.Socket): connection PUB socket
-        """
-        return self.pub_sock
+        self.pub.send(topic, zmq.SNDMORE)
+        self.pub.send(meta, zmq.SNDMORE)
+        self.pub.send(data)
 
-    def set_sub_sock(self, socket):
-        """Returns xMSg SUB socket
+    def recv(self):
+        return self.sub.recv_multipart()
 
-        Args:
-            socket (zmq.Socket): connection SUB socket
-        """
-        self.sub_sock = socket
+    def subscribe(self, topic):
+        self.sub.setsockopt(zmq.SUBSCRIBE, topic)
 
-    def get_sub_sock(self):
-        """Returns xMsg SUB socket
+    def unsubscribe(self, topic):
+        self.sub.setsockopt(zmq.UNSUBSCRIBE, topic)
 
-        Returns:
-            sub_sock (zmq.Socket): connection SUB socket
-        """
-        return self.sub_sock
+    def address(self):
+        pass
