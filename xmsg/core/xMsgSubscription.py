@@ -22,33 +22,39 @@
 import zmq
 import threading
 
-from xmsg.core.xMsgExceptions import ConnectionException
 from xmsg.core.xMsgMessage import xMsgMessage
+from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class Handler(threading.Thread):
 
-    def __init__(self, socket, topic, handle):
+    def __init__(self, topic, connection, handle):
         super(Handler, self).__init__(name=topic)
-        self.socket = socket
-        self.topic = topic
+        self.connection = connection
         self.__is_running = threading.Event()
         self.handle = handle
 
         self.poller = zmq.Poller()
-        self.poller.register(self.socket, zmq.POLLIN)
+        self.poller.register(connection.sub, zmq.POLLIN)
 
     def run(self):
         while not self.stopped():
             try:
                 socks = dict(self.poller.poll(100))
 
-                if socks.get(self.socket) == zmq.POLLIN:
-                    msg = xMsgMessage.create_with_serialized_data(self.socket.recv_multipart())
+                if socks.get(self.connection.sub) == zmq.POLLIN:
+                    received_data = self.connection.recv()
+                    msg = xMsgMessage.create_with_serialized_data(received_data)
                     self.handle(msg)
                     del msg
-            except:
-                return
+
+            except zmq.error.ZMQError:
+                if self.stopped():
+                    xMsgUtil.log("Subscription stopped correctly.")
+                    return
+
+                else:
+                    print "Exception: Something happened while running!!!"
 
     def stop(self):
         self.__is_running.set()
@@ -59,26 +65,25 @@ class Handler(threading.Thread):
 
 class xMsgSubscription:
 
-    def __init__(self, name, connection, topic):
-        self.name = name
-        self.socket = connection.get_sub_sock()
+    def __init__(self, topic, connection):
+        self.connection = connection
         self.topic = str(topic)
 
-        if self.socket:
-            self.socket.setsockopt(zmq.SUBSCRIBE, self.topic)
-
-        else:
-            raise ConnectionException
+        self.connection.subscribe(self.topic)
 
     def set_handle(self, handle):
+        # TODO: remind WHY?
         self.handle = handle
-        self.thread = Handler(self.socket, self.topic, self.handle)
+        self.thread = Handler(self.topic, self.connection, self.handle)
 
     def stop(self):
         try:
             self.thread.stop()
-            self.socket.setsockopt(zmq.UNSUBSCRIBE, self.topic)
-        except:
+            self.connection.unsubscribe(self.topic)
+
+        except Exception as e:
+            # TODO: Proper exception HERE!
+            print e
             return
 
     def start(self):
