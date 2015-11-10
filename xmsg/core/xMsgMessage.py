@@ -135,14 +135,6 @@ class xMsgMessage:
         """
         return self.metadata
 
-    def get_metadata_bytes(self):
-        """Returns metadata as python bytes
-
-        Returns:
-            bytes[]: message serialized metadata object
-        """
-        return self.metadata.SerializeToString()
-
     def set_metadata(self, metadata):
         """Sets the metadata of this message.
 
