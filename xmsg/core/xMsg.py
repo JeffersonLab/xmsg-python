@@ -19,12 +19,10 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-import threading
 import signal
 import zmq
 import random
 from multiprocessing import Pool
-from multiprocessing.pool import ThreadPool
 
 from xmsg.core.xMsgExceptions import NullConnection, NullMessage
 from xmsg.core.xMsgSubscription import xMsgSubscription
@@ -32,11 +30,11 @@ from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgCallBack import xMsgCallBack
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgUtil import xMsgUtil
+from xmsg.data import xMsgRegistration_pb2
+from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
 from xmsg.net.xMsgConnection import xMsgConnection
+from xmsg.net.xMsgAddress import ProxyAddress
 from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
-
-
-__author__ = 'gurjyan'
 
 
 class xMsg(object):
@@ -98,7 +96,7 @@ class xMsg(object):
         # Private db of stored connections
         self._connections = dict()
 
-    def connect(self, address):
+    def connect(self, address=None):
         """Connects to the node by creating two sockets for publishing and
         subscribing/receiving messages.
 
@@ -106,12 +104,13 @@ class xMsg(object):
         created xMsgConnection object.
 
         Args:
-            address (xMsgAddress): xmsg address object
+            address (ProxyAddress): xmsg proxy address object
 
         Returns:
             xMsgConnection: xmsg connection object
         """
-        return self.__create_connection(self.context, address)
+        p_address = address or ProxyAddress()
+        return self.__create_connection(self.context, p_address)
 
     def get_new_connection(self, address):
         """Returns a new xMsgConnection object to the xMsg proxy, using
@@ -126,23 +125,11 @@ class xMsg(object):
         context = zmq.Context.instance()
         return self.__create_connection(context, address)
 
-    def __create_connection(self, context, address):
-        connection = xMsgConnection()
-        connection.set_address(address)
-
-        host = address.get_host()
-        pub_port = int(address.get_port())
-        sub_port = pub_port + 1
-
-        pub_socket = context.socket(zmq.PUB)
-        sub_socket = context.socket(zmq.SUB)
-        pub_socket.set_hwm(0)
-        sub_socket.set_hwm(0)
-        pub_socket.connect("tcp://%s:%d" % (str(host), pub_port))
-        sub_socket.connect("tcp://%s:%d" % (str(host), sub_port))
-        connection.set_pub_sock(pub_socket)
-        connection.set_sub_sock(sub_socket)
-        context.setsockopt(zmq.LINGER, -1)
+    def __create_connection(self, context, p_address):
+        connection = xMsgConnection(p_address, xMsgConnectionSetup(),
+                                    context.socket(zmq.PUB),
+                                    context.socket(zmq.SUB))
+        connection.connect()
         return connection
 
     def destroy(self, linger=-1):
@@ -326,16 +313,15 @@ class xMsg(object):
             NullConnection: if there is no connection object
             NullMessage: if there is no message object
         """
-        con = connection.get_pub_sock()
 
         # Check connection
-        if not con:
+        if not connection.pub:
             raise NullConnection("xMsg: Null connection object")
         # Check msg
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
 
-        con.send_multipart(transient_message.serialize())
+        connection.send(transient_message)
 
     def sync_publish(self, connection, message, timeout):
         # set the return address as replyTo in the xMsgMessage
@@ -365,7 +351,7 @@ class xMsg(object):
 
         return cb.received_message
 
-    def subscribe(self, connection, topic, callback):
+    def subscribe(self, topic, connection, callback):
         """Subscribes to a specified xMsg topic.
 
         3 elements are defining xMsg topic: domain:subject:tip
@@ -391,10 +377,7 @@ class xMsg(object):
         Returns:
             xMsgSubscription: xMsg Subscription object, it allows thread handling
         """
-        name = "sub-%s-%s-%s" % (self.myname,
-                                 str(connection.get_address()),
-                                 str(topic))
-        subscription_handler = xMsgSubscription(name, connection, str(topic))
+        subscription_handler = xMsgSubscription(str(topic), connection)
 
         def handle(msg):
             self._call_user_callback(connection, callback, msg)
@@ -409,19 +392,19 @@ class xMsg(object):
         if requester != str(xMsgConstants.UNDEFINED):
             # Sync request
             try:
-                msg = callback.callback(callback_message)
-                msg.set_topic(xMsgTopic.wrap(requester))
-                msg.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
+                message = callback.callback(callback_message)
+                message.set_topic(xMsgTopic.wrap(requester))
+                message.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
 
-                self.publish(connection, msg)
+                self.publish(connection, message)
 
             except Exception as e:
+                # TODO: proper exception
                 raise Exception(e)
 
         else:
             # now i add the callback execution into the thread pool
             callback.callback(callback_message)
-            #transient_message = xMsgMessage(topic=xMsgTopic.wrap(requester))
 
     def unsubscribe(self, subscription):
         subscription.stop()
