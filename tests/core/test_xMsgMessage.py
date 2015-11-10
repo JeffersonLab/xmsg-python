@@ -1,23 +1,24 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+#
+# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
+# Permission to use, copy, modify, and distribute this software and its
+# documentation for educational, research, and not-for-profit purposes,
+# without fee and without a signed licensing agreement.
+#
+# Author Vardan Gyurjyan
+# Department of Experimental Nuclear Physics, Jefferson Lab.
+#
+# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
+# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
+# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
+# OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
+# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
+# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
+#
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import unittest
 
 from xmsg.core.xMsgMessage import xMsgMessage
@@ -29,8 +30,7 @@ class TestXMsgMessage(unittest.TestCase):
 
     def setUp(self):
         self.topic = xMsgTopic.wrap("a:b:c")
-        self.message = xMsgMessage.create_with_serialized_data(self.topic,
-                                                               bytes([1, 2, 3]))
+        self.message = xMsgMessage(self.topic, bytes([1, 2, 3]))
 
     def test_get_topic(self):
         self.assertEqual("a:b:c", str(self.message.get_topic()))
@@ -39,8 +39,7 @@ class TestXMsgMessage(unittest.TestCase):
         self.assertIsInstance(self.message.get_topic(), xMsgTopic)
 
     def test_set_serialize_data(self):
-        msg = xMsgMessage.create_with_serialized_data(self.topic,
-                                                      bytes([1, 2, 3]))
+        msg = xMsgMessage(self.topic, bytes([1, 2, 3]))
         self.assertEqual("a:b:c", str(self.message.get_topic()))
         self.assertEqual(msg.get_data(), bytes([1, 2, 3]))
         self.assertIsInstance(msg, xMsgMessage)
@@ -69,10 +68,6 @@ class TestXMsgMessage(unittest.TestCase):
         self.message.set_metadata(metadata)
         self.assertIsInstance(self.message.get_metadata(),
                               xMsgMeta_pb2.xMsgMeta)
-
-    def test_get_metadata_bytes(self):
-        self.assertIsInstance(self.message.get_metadata_bytes(),
-                              basestring)
 
     def test_get_metadata_set_by_set_function(self):
         data = xMsgMeta_pb2.xMsgMeta()

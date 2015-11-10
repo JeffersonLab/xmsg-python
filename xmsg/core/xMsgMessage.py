@@ -167,7 +167,7 @@ class xMsgMessage:
         Returns:
             list: the ZMQ raw multi-part message
         """
-        return [str(self.get_topic()), self.get_metadata_bytes(),
+        return [str(self.get_topic()), self.get_metadata().SerializeToString(),
                 self.get_data()]
 
     def get_topic(self):
