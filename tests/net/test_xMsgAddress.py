@@ -30,7 +30,7 @@ class TestRegAddress(unittest.TestCase):
 
     def setUp(self):
         self.host = util.get_local_ip()
-        self.key1 = "%s:7771" % self.host
+        self.key1 = "%s:%d" % (self.host, int(constants.DEFAULT_PORT))
         self.key2 = "%s:7777" % self.host
 
     def test_RegAddress_empty_constructor(self):
@@ -67,24 +67,24 @@ class TestProxyAddress(unittest.TestCase):
     def test_ProxyAddress_empty_constructor(self):
         proxy_addr = ProxyAddress()
         self.assertEqual(proxy_addr.host, self.host)
-        self.assertEqual(proxy_addr.pub_port, int(constants.REGISTRAR_PORT))
-        self.assertEqual(proxy_addr.sub_port, int(constants.REGISTRAR_PORT) + 1)
+        self.assertEqual(proxy_addr.pub_port, int(constants.DEFAULT_PORT))
+        self.assertEqual(proxy_addr.sub_port, int(constants.DEFAULT_PORT) + 1)
         self.assertIsInstance(proxy_addr, ProxyAddress)
 
     def test_ProxyAddress_constructor_only_with_hostname(self):
         proxy_addr = ProxyAddress("localhost")
         self.assertEqual(proxy_addr.host, self.host)
-        self.assertEqual(proxy_addr.pub_port, int(constants.REGISTRAR_PORT))
-        self.assertEqual(proxy_addr.sub_port, int(constants.REGISTRAR_PORT) + 1)
+        self.assertEqual(proxy_addr.pub_port, int(constants.DEFAULT_PORT))
+        self.assertEqual(proxy_addr.sub_port, int(constants.DEFAULT_PORT) + 1)
         self.assertIsInstance(proxy_addr, ProxyAddress)
-        
+
     def test_ProxyAddress_constructor_only_with_hostname_and_pub_port(self):
         proxy_addr = ProxyAddress("localhost", 1111)
         self.assertEqual(proxy_addr.host, self.host)
         self.assertEqual(proxy_addr.pub_port, 1111)
         self.assertEqual(proxy_addr.sub_port, 1112)
         self.assertIsInstance(proxy_addr, ProxyAddress)
-        
+
     def test_ProxyAddress_constructor_only_with_hostname_and_pub_port_and_sub_port(self):
         proxy_addr = ProxyAddress("localhost", 1111, 2222)
         self.assertEqual(proxy_addr.host, self.host)
