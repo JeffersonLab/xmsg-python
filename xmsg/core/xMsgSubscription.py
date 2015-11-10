@@ -54,7 +54,8 @@ class Handler(threading.Thread):
                     return
 
                 else:
-                    print "Exception: Something happened while running!!!"
+                    # print "xMsgSubscription.Handler: " + str(e)
+                    return
 
     def stop(self):
         self.__is_running.set()
@@ -74,11 +75,11 @@ class xMsgSubscription:
     def set_handle(self, handle):
         # TODO: remind WHY?
         self.handle = handle
-        self.thread = Handler(self.topic, self.connection, self.handle)
+        self.handle_thread = Handler(self.topic, self.connection, self.handle)
 
     def stop(self):
         try:
-            self.thread.stop()
+            self.handle_thread.stop()
             self.connection.unsubscribe(self.topic)
 
         except Exception as e:

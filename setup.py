@@ -84,5 +84,5 @@ if __name__ == '__main__':
                             'enum34>=1.0.4', 'argparse>=1.2.1',
                             'netifaces>=0.10.4', 'pytest', 'mockito'],
           scripts=['bin/unix/px_node', 'bin/unix/px_proxy', 'bin/unix/px_publisher',
-                   'bin/unix/px_subscriber']
+                   'bin/unix/px_subscriber', 'bin/unix/px_sync_publisher']
           )

@@ -21,7 +21,7 @@
 
 import signal
 import zmq
-import random
+from random import randint
 from multiprocessing import Pool
 
 from xmsg.core.xMsgExceptions import NullConnection, NullMessage
@@ -323,17 +323,18 @@ class xMsg(object):
 
         connection.send(transient_message)
 
-    def sync_publish(self, connection, message, timeout):
+    def sync_publish(self, connection, transient_message, timeout):
         # set the return address as replyTo in the xMsgMessage
-        return_address = "return: %d" % random.randint(0, 100)
-        message.get_metadata().replyTo = return_address
+        return_address = "return: %d" % randint(0, 100)
+        return_topic = xMsgTopic.wrap(return_address)
+        transient_message.get_metadata().replyTo = return_address
 
         # subscribe to the return_address
         cb = SyncSendCallBack()
-        sh = self.subscribe(connection, xMsgTopic.wrap(return_address), cb)
+        sh = self.subscribe(return_topic, connection, cb)
         cb.set_handler(sh)
         xMsgUtil.sleep(0.01)
-        self.publish(connection, message)
+        self.publish(connection, transient_message)
         # wait for the response
         t = 0
 
