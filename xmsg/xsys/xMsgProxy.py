@@ -69,14 +69,13 @@ class xMsgProxy:
         try:
             self._xsub_socket = self.context.socket(zmq.XSUB)
             self._xsub_socket.set_hwm(0)
-            self._xsub_socket.bind("tcp://*:%d"
-                                   % int(xMsgConstants.DEFAULT_PORT))
+            default_port = int(xMsgConstants.DEFAULT_PORT)
+            self._xsub_socket.bind("tcp://*:%d" % default_port)
 
             # socket where clients subscribe data/messages
             self._xpub_socket = self.context.socket(zmq.XPUB)
-            xpub_port = int(xMsgConstants.DEFAULT_PORT) + 1
             self._xpub_socket.set_hwm(0)
-            self._xpub_socket.bind("tcp://*:%d" % xpub_port)
+            self._xpub_socket.bind("tcp://*:%d" % (default_port + 1))
 
             xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
