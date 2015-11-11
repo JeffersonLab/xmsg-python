@@ -47,39 +47,18 @@ class RegAddress(object):
         port. If port is not defined uses default port
 
         Args:
-            hostname (String): hostname
-            port (int): port number
+            hostname (String): registrar service hostname
+            port (int): registrar port number
         """
         self.host = xMsgUtil.host_to_ip(host)
         self.port = int(port)
-        self.key = "%s:%d" % (self.host, self.port)
+        self.address = "tcp://%s:%d" % (self.host, self.port)
 
-    def get_host(self):
-        """Returns the host ip address
-
-        Returns:
-            host (String): host ip address
-        """
-        return self.host
-
-    def get_port(self):
-        """Returns the address port
-
-        Returns:
-            port (int): host port
-        """
-        return self.port
-
-    def get_key(self):
-        """Returns address generated key
-
-        Returns:
-            key (String): address generated key
-        """
-        return self.key
+    def __eq__(self, other):
+        return self.host == other.host and self.port == other.port
 
     def __str__(self):
-        return self.key
+        return self.address
 
 
 class ProxyAddress(object):

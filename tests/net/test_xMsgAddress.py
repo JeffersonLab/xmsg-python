@@ -1,12 +1,12 @@
-# 
+#
 # Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for educational, research, and not-for-profit purposes,
 # without fee and without a signed licensing agreement.
-# 
+#
 # Author Vardan Gyurjyan
 # Department of Experimental Nuclear Physics, Jefferson Lab.
-# 
+#
 # IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
 # INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
 # THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
@@ -30,33 +30,43 @@ class TestRegAddress(unittest.TestCase):
 
     def setUp(self):
         self.host = util.get_local_ip()
-        self.key1 = "%s:%d" % (self.host, int(constants.DEFAULT_PORT))
-        self.key2 = "%s:7777" % self.host
+        self.key1 = "tcp://%s:%d" % (self.host, int(constants.DEFAULT_PORT))
+        self.key2 = "tcp://%s:7777" % self.host
 
     def test_RegAddress_empty_constructor(self):
         reg_addr = RegAddress()
-        self.assertEqual(reg_addr.get_host(), self.host)
-        self.assertEqual(reg_addr.get_port(), 7771)
-        self.assertEqual(reg_addr.get_key(), self.key1)
+        self.assertEqual(reg_addr.host, self.host)
+        self.assertEqual(reg_addr.port, 7771)
+        self.assertEqual(reg_addr.address, self.key1)
         self.assertIsInstance(reg_addr, RegAddress)
 
     def test_RegAddress_constructor_only_with_hostname(self):
         reg_addr = RegAddress("localhost")
-        self.assertEqual(reg_addr.get_host(), self.host)
-        self.assertEqual(reg_addr.get_port(), 7771)
-        self.assertEqual(reg_addr.get_key(), self.key1)
+        self.assertEqual(reg_addr.host, self.host)
+        self.assertEqual(reg_addr.port, 7771)
+        self.assertEqual(reg_addr.address, self.key1)
         self.assertIsInstance(reg_addr, RegAddress)
 
     def test_RegAddress_constructor_with_all_parameters(self):
         reg_addr = RegAddress("localhost", 7771)
-        self.assertEqual(reg_addr.get_host(), self.host)
-        self.assertEqual(reg_addr.get_port(), 7771)
+        self.assertEqual(reg_addr.host, self.host)
+        self.assertEqual(reg_addr.port, 7771)
         self.assertIsInstance(reg_addr, RegAddress)
         reg_addr = RegAddress("localhost", 7777)
-        self.assertEqual(reg_addr.get_host(), self.host)
-        self.assertEqual(reg_addr.get_key(), self.key2)
-        self.assertEqual(reg_addr.get_port(), 7777)
+        self.assertEqual(reg_addr.host, self.host)
+        self.assertEqual(reg_addr.address, self.key2)
+        self.assertEqual(reg_addr.port, 7777)
         self.assertIsInstance(reg_addr, RegAddress)
+
+    def test__equal__operator_true(self):
+        reg_1 = RegAddress("1.1.1.1", 80)
+        reg_2 = RegAddress("1.1.1.1", 80)
+        self.assertEqual(reg_1, reg_2)
+
+    def test__equal__operator_false(self):
+        reg_1 = RegAddress("1.1.1.2", 80)
+        reg_2 = RegAddress("1.1.1.1", 81)
+        self.assertNotEqual(reg_1, reg_2)
 
 
 class TestProxyAddress(unittest.TestCase):
