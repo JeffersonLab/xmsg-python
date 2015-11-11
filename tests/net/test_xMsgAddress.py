@@ -102,6 +102,22 @@ class TestProxyAddress(unittest.TestCase):
         self.assertEqual(proxy_addr.sub_port, 2222)
         self.assertIsInstance(proxy_addr, ProxyAddress)
 
+    def test__equal__operator_true(self):
+        reg_1 = ProxyAddress("1.1.1.1", 80)
+        reg_2 = ProxyAddress("1.1.1.1", 80)
+        self.assertEqual(reg_1, reg_2)
+        reg_1 = ProxyAddress("1.1.1.1", 81)
+        reg_2 = ProxyAddress("1.1.1.1", 81)
+        self.assertEqual(reg_1, reg_2)
+
+    def test__equal__operator_false(self):
+        reg_1 = ProxyAddress("1.1.1.2", 80)
+        reg_2 = ProxyAddress("1.1.1.1", 80)
+        self.assertNotEqual(reg_1, reg_2)
+        reg_1 = ProxyAddress("1.1.1.1", 80)
+        reg_2 = ProxyAddress("1.1.1.1", 81)
+        self.assertNotEqual(reg_1, reg_2)
+
 
 if __name__ == "__main__":
     unittest.main()

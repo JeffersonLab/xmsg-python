@@ -68,3 +68,7 @@ class ProxyAddress(object):
         self.host = xMsgUtil.host_to_ip(host)
         self.pub_port = int(pub_port)
         self.sub_port = sub_port or default_sub_port(self.pub_port)
+
+    def __eq__(self, other):
+        return (self.host == other.host and self.pub_port == other.pub_port and
+                self.sub_port == other.sub_port)
