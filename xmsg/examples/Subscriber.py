@@ -24,7 +24,6 @@ from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgCallBack import xMsgCallBack
-from xmsg.net.xMsgAddress import ProxyAddress
 from xmsg.data import xMsgData_pb2
 
 
@@ -39,11 +38,11 @@ class ExampleSubscriberCallback(xMsgCallBack):
 
 
 def main(fe_host="localhost"):
-    subscriber = xMsg("test_publisher", "localhost", fe_host)
+    subscriber = xMsg("test_subscriber")
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
-    connection = subscriber.connect(ProxyAddress(fe_host))
+    connection = subscriber.connect()
 
     try:
         callback = ExampleSubscriberCallback()

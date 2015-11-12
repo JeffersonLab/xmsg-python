@@ -28,12 +28,12 @@ from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.data import xMsgData_pb2
 
 
-def main(array_size, frontend_host="localhost"):
+def main(array_size):
     """Publisher usage:
     ::
-        "Usage: python xmsg/examples/Publisher <array_size> <fe_host>
+        "Usage: python xmsg/examples/Publisher <array_size>
     """
-    publisher = xMsg("test_publisher", "localhost", frontend_host)
+    publisher = xMsg("test_publisher")
 
     # Create a socket connections to the xMsg node
     connection = publisher.connect()

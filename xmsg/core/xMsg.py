@@ -33,7 +33,7 @@ from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.data import xMsgRegistration_pb2
 from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
 from xmsg.net.xMsgConnection import xMsgConnection
-from xmsg.net.xMsgAddress import ProxyAddress
+from xmsg.net.xMsgAddress import ProxyAddress, RegAddress
 from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 
 
@@ -55,7 +55,8 @@ class xMsg(object):
         pool_size (int): fixed size thread pool
     """
 
-    def __init__(self, name, local_address, frontend_address, **kwargs):
+    def __init__(self, name, proxy_address=ProxyAddress(),
+                 registrar_address=RegAddress(), **kwargs):
         """xMsg Constructor
 
         Constructor, requires the name of the FrontEnd host that is used to
@@ -84,11 +85,11 @@ class xMsg(object):
         pool_size = kwargs.pop("pool_size", False)
         self.pool_size = pool_size or 2
 
+        self.default_proxy_address = proxy_address
+        self.default_registrar_address = registrar_address
+
         # Initialize registration driver
-        self.driver = xMsgRegDriver(self.context,
-                                    local_address,
-                                    frontend_address)
-        self.localhost_ip = xMsgUtil.host_to_ip(local_address)
+        self.driver = xMsgRegDriver(self.context, registrar_address)
 
         # create fixed size thread pool
         self._thread_pool = Pool(self.pool_size, self.__init_worker)
@@ -143,8 +144,8 @@ class xMsg(object):
         self.context.destroy(linger)
         self.__terminate_threadpool()
 
-    def register_publisher(self, topic,
-                           description=str(xMsgConstants.UNDEFINED)):
+    def register_as_publisher(self, topic,
+                              description=str(xMsgConstants.UNDEFINED)):
         """Registers xMsg publisher actor in the publishers database
 
         If you are periodically publishing data, use this method to
@@ -162,8 +163,8 @@ class xMsg(object):
 
         self.driver.register_local(self.myname, r_data, True)
 
-    def register_subscriber(self, topic,
-                            description=str(xMsgConstants.UNDEFINED)):
+    def register_as_subscriber(self, topic,
+                               description=str(xMsgConstants.UNDEFINED)):
         """Subscribers xMsg publisher actor in the subscribers database
 
         If you are a subscriber and want to listen messages on a specific
@@ -184,7 +185,7 @@ class xMsg(object):
 
         self.driver.register_local(self.myname, r_data, False)
 
-    def remove_publisher_registration(self, topic):
+    def remove_as_publisher(self, topic):
         """Removes publisher registration both from the local and then from the
         global registration databases
 
@@ -196,9 +197,8 @@ class xMsg(object):
         r_data = self._registration_builder(topic, None, True)
 
         self.driver.remove_registration_local(self.myname, r_data, True)
-        self.driver.remove_registration_fe(self.myname, r_data, True)
 
-    def remove_subscriber_registration(self, topic):
+    def remove_as_subscriber(self, topic):
         """Removes subscriber registration both from the local and then from the
         global registration database
 
@@ -210,45 +210,6 @@ class xMsg(object):
         r_data = self._registration_builder(topic, None, False)
 
         self.driver.remove_registration_local(self.myname, r_data, False)
-        self.driver.remove_registration_fe(self.myname, r_data, False)
-
-    def find_local_publisher(self, topic,
-                             description=str(xMsgConstants.UNDEFINED)):
-        """Finds all local publishers, publishing  to a specified topic
-
-        Note: xMsg defines a topic as domain:subject:type
-
-        Args:
-            topic (xMsgTopic): the name of the requester/sender. Required
-                according to the xMsg zmq message structure definition
-                (topic, sender, data)
-            description (String): publisher description string
-
-        Returns:
-            xMsgRegistration: registration info object
-        """
-        r_data = self._registration_builder(topic, description, True)
-
-        return self.driver.find_local(self.myname, r_data, True)
-
-    def find_local_subscriber(self, topic,
-                              description=str(xMsgConstants.UNDEFINED)):
-        """Finds all local subscribers, subscribing  to a specified topic
-
-        Note: xMsg defines a topic as domain:subject:type
-
-        Args:
-            topic (xMsgTopic): the name of the requester/sender. Required
-                according to the xMsg zmq message structure definition
-                (topic, sender, data)
-            description (String): subscriber description string
-
-        Returns:
-            list: list of xMsgRegistration objects
-        """
-        r_data = self._registration_builder(topic, description, False)
-
-        return self.driver.find_local(self.myname, r_data, False)
 
     def find_publisher(self, topic,
                        description=str(xMsgConstants.UNDEFINED)):
