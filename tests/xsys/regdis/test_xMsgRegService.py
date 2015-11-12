@@ -34,8 +34,7 @@ class TestXMsgRegService(unittest.TestCase):
 
     def setUp(self):
         context = zmq.Context()
-        fe_host = "localhost"
-        self.reg_serv = xMsgRegService(context, fe_host)
+        self.reg_serv = xMsgRegService(context)
 
     def test_register_publisher(self):
         request = [str(xMsgConstants.REGISTER_PUBLISHER),

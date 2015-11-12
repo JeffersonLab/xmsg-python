@@ -68,6 +68,11 @@ class xMsgRegRequest:
         except IndexError:
             raise BadRequest("Malformed request message")
 
+    def get_data(self):
+        ds_msg = xMsgRegistration_pb2.xMsgRegistration()
+        ds_msg.ParseFromString(self.data)
+        return ds_msg
+
     def msg(self):
         """Serialize the content of the request
 

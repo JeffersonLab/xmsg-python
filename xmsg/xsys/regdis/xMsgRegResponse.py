@@ -37,7 +37,7 @@ class xMsgRegResponse:
         data (bytes[]): registration data
     """
 
-    def __init__(self, topic, sender, data, status=str(xMsgConstants.SUCCESS)):
+    def __init__(self, topic, sender, data=None, status=str(xMsgConstants.SUCCESS)):
         self.topic = topic
         self.sender = sender
         self.status = status
@@ -133,7 +133,7 @@ class xMsgRegResponse:
         else:
             return self.data
 
-    def get_serialized_msg(self):
+    def msg(self):
         """Returns the response instance serialized
 
         Returns:
