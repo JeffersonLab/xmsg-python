@@ -86,7 +86,7 @@ class xMsgRegDriver:
             request = xMsgRegRequest(topic, registration_data.name,
                                      registration_data)
 
-            self.request(self._connection, request, timeout)
+            self.request(request, timeout)
 
     def remove(self, registration_data, is_publisher):
         """Sends remove registration request to the server.
@@ -117,7 +117,7 @@ class xMsgRegDriver:
             request = xMsgRegRequest(topic, registration_data.name,
                                      registration_data)
 
-            self.request(self._connection, request, timeout)
+            self.request(request, timeout)
 
     def remove_all(self, s_host):
         pass
@@ -154,9 +154,9 @@ class xMsgRegDriver:
             request_message = xMsgRegRequest(topic, registration_data.name,
                                              registration_data)
 
-            return self.request(self._connection, request_message, timeout)
+            return self.request(request_message, timeout)
 
-    def request(self, socket, request, timeout):
+    def request(self, request, timeout):
         """Sends a request to the given registrar server and waits the response.
 
         Args:
@@ -167,29 +167,31 @@ class xMsgRegDriver:
         Returns:
             bytes[]: serialized registration information
         """
-        request_msg = request.get_serialized_msg()
-
         try:
-            socket.send_multipart(request_msg)
+            self._connection.send_multipart(request.msg())
         except:
             raise RegistrationException("Error sending registration message")
 
         poller = zmq.Poller()
-        poller.register(socket, zmq.POLLIN)
-        if poller.poll(timeout * 1000):
-            # timeout in milliseconds
-            request = socket.recv_multipart()
-            response = xMsgRegResponse.create_from_multipart_request(request)
+        poller.register(self._connection, zmq.POLLIN)
+        try:
+            if poller.poll(timeout * 1000):
+                # timeout in milliseconds
+                request = self._connection.recv_multipart()
+                response = xMsgRegResponse.create_from_multipart_request(request)
 
-            if response.get_status() != str(xMsgConstants.SUCCESS):
-                raise RegistrationException(response.get_status())
+                if response.get_status() != str(xMsgConstants.SUCCESS):
+                    raise RegistrationException(response.get_status())
 
-            xMsgUtil.log("Info: xMsg actor has been registered in node")
+                xMsgUtil.log("Info: xMsg actor has been registered in node")
 
-            return response.get_data()
+                return response.get_data()
 
-        else:
-            raise TimeoutReached("Timeout processing registration request")
+            else:
+                raise TimeoutReached("Timeout processing registration request")
+
+        except KeyboardInterrupt:
+            raise RegistrationException("Keyboard Interrupt while trying to register")
 
     def zmq_socket(self, context, socket_type, reg_address, boc):
         """Creates and returns zmq socket object

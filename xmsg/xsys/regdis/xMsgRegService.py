@@ -59,11 +59,10 @@ class xMsgRegService(threading.Thread):
         publishers_db (xMsgRegDatabase): publishers database
     '''
 
-    def __init__(self, context):
+    def __init__(self, context, reg_address):
         super(xMsgRegService, self).__init__()
         self.context = context
-        self.host = str(xMsgConstants.ANY)
-        self.port = int(xMsgConstants.REGISTRAR_PORT)
+        self.address = reg_address.address
 
         #Thread settings
         self.daemon = True
@@ -72,8 +71,6 @@ class xMsgRegService(threading.Thread):
         # Databases for publishers and subscribers
         self.subscribers_db = xMsgRegDatabase()
         self.publishers_db = xMsgRegDatabase()
-
-        self.driver = xMsgRegDriver(context, RegAddress("localhost"))
 
     def stop(self):
         self._stop.set()
@@ -95,7 +92,7 @@ class xMsgRegService(threading.Thread):
 
         """
         reg_service_socket = self.context.socket(zmq.REP)
-        reg_service_socket.bind("tcp://%s:%d" % (self.host, self.port))
+        reg_service_socket.bind(self.address)
 
         while threading.currentThread().is_alive() and not self.stopped():
             try:

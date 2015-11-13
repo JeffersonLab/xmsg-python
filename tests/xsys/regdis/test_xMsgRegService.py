@@ -24,6 +24,7 @@ import zmq
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.xsys.regdis.xMsgRegService import xMsgRegService
+from xmsg.net.xMsgAddress import RegAddress
 
 
 class TestXMsgRegService(unittest.TestCase):
@@ -34,7 +35,7 @@ class TestXMsgRegService(unittest.TestCase):
 
     def setUp(self):
         context = zmq.Context()
-        self.reg_serv = xMsgRegService(context)
+        self.reg_serv = xMsgRegService(context, RegAddress())
 
     def test_register_publisher(self):
         request = [str(xMsgConstants.REGISTER_PUBLISHER),

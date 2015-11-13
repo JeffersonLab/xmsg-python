@@ -118,8 +118,7 @@ class TestxMsgRegDriver(unittest.TestCase):
         verify(self.driver).request(socket, request_object, timeout)
 
     def set_response(self, response):
-        when(self.driver).request(any(zmq.Socket),
-                                  any(xMsgRegRequest),
+        when(self.driver).request(any(xMsgRegRequest),
                                   any(int)).thenReturn(response)
 
 if __name__ == "__main__":
