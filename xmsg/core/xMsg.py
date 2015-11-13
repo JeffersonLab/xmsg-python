@@ -161,7 +161,7 @@ class xMsg(object):
         """
         r_data = self._registration_builder(topic, description, True)
 
-        self.driver.register_local(self.myname, r_data, True)
+        self.driver.add(r_data, True)
 
     def register_as_subscriber(self, topic,
                                description=str(xMsgConstants.UNDEFINED)):
@@ -183,7 +183,7 @@ class xMsg(object):
         """
         r_data = self._registration_builder(topic, description, False)
 
-        self.driver.register_local(self.myname, r_data, False)
+        self.driver.add(r_data, False)
 
     def remove_as_publisher(self, topic):
         """Removes publisher registration both from the local and then from the
@@ -194,9 +194,10 @@ class xMsg(object):
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
         """
-        r_data = self._registration_builder(topic, None, True)
+        r_data = self._registration_builder(topic,
+                                            str(xMsgConstants.UNDEFINED), True)
 
-        self.driver.remove_registration_local(self.myname, r_data, True)
+        self.driver.remove(r_data, True)
 
     def remove_as_subscriber(self, topic):
         """Removes subscriber registration both from the local and then from the
@@ -207,9 +208,9 @@ class xMsg(object):
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
         """
-        r_data = self._registration_builder(topic, None, False)
+        r_data = self._registration_builder(topic, "None", False)
 
-        self.driver.remove_registration_local(self.myname, r_data, False)
+        self.driver.remove(r_data, False)
 
     def find_publisher(self, topic,
                        description=str(xMsgConstants.UNDEFINED)):
@@ -229,7 +230,7 @@ class xMsg(object):
         """
         r_data = self._registration_builder(topic, description, True)
 
-        return self.driver.find_global(self.myname, r_data, True)
+        return self.driver.find(r_data, True)
 
     def find_subscriber(self, topic,
                         description=str(xMsgConstants.UNDEFINED)):
@@ -249,7 +250,7 @@ class xMsg(object):
         """
         r_data = self._registration_builder(topic, description, False)
 
-        return self.find_global(self.myname, r_data, False)
+        return self.find(r_data, False)
 
     def publish(self, connection, transient_message):
         """Publishes data to a specified xMsg topic.
@@ -387,7 +388,7 @@ class xMsg(object):
         r_data.name = self.myname
         if description:
             r_data.description = description
-        r_data.host = xMsgUtil.host_to_ip(self.localhost_ip)
+        r_data.host = topic.domain()
         r_data.port = int(xMsgConstants.DEFAULT_PORT)
         r_data.domain = topic.domain()
         r_data.subject = topic.subject()
