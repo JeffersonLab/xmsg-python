@@ -9,21 +9,12 @@ then
 	echo "------------------------------------------"
 	echo "synopsis: px_node"
 	echo ""
-
-elif [ "$1" = "--fe_host" ]
-then
-	if ! $(python -c 'from xmsg.xsys.xMsgRegistrar import runner' &> /dev/null);
-	then
-		echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
-	else
-		python -c 'from xmsg.xsys.xMsgRegistrar import runner; runner('\"$2\"')'
-	fi
-
 else
-	if ! $(python -c 'from xmsg.xsys.xMsgRegistrar import runner' &> /dev/null);
+	if ! $(python -c 'from xmsg.xsys.xMsgRegistrar import main' &> /dev/null);
 	then
 		echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
 	else
-		python -c 'from xmsg.xsys.xMsgRegistrar import runner; runner()'
+		python -c 'from xmsg.xsys.xMsgRegistrar import main; main()'
 	fi
+
 fi

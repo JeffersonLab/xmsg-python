@@ -20,14 +20,11 @@
 #
 
 import zmq
-import sys
 
 from xmsg.xsys.regdis.xMsgRegService import xMsgRegService
 from xmsg.xsys.xMsgProxy import xMsgProxy
 from xmsg.core.xMsgUtil import xMsgUtil
-
-
-__author__ = 'gurjyan'
+from xmsg.net.xMsgAddress import RegAddress
 
 
 class xMsgRegistrar:
@@ -50,7 +47,7 @@ class xMsgRegistrar:
     * Remove subscriber
     """
 
-    def __init__(self, fe_host="localhost"):
+    def __init__(self):
         """Constructor used by xMsgNode objects.
 
         xMsgRegistrar needs periodically report/update frontend registration
@@ -63,27 +60,23 @@ class xMsgRegistrar:
         """
         self.context = zmq.Context.instance()
         self.proxy = xMsgProxy(self.context)
-        self.reg_service = xMsgRegService(self.context, fe_host)
-        self.node = "frontend"
-
-        if fe_host != "localhost":
-            self.node = "local"
+        self.reg_service = xMsgRegService(self.context, RegAddress("localhost"))
+        self.node = "local"
 
     def start(self):
-        """Starts the registrar services"""
-        self.reg_service.start()
-
-        xMsgUtil.log("Local ip: %s" % xMsgUtil.get_local_ip())
-        msg = ("xMsg %s registration and discovery server has started"
-               % self.node)
-        xMsgUtil.log(msg)
-
         try:
+            """Starts the registrar services"""
+            self.reg_service.start()
+
+            xMsgUtil.log("Local ip: %s" % xMsgUtil.get_local_ip())
+            msg = ("xMsg %s registration and discovery server has started"
+                   % self.node)
+            xMsgUtil.log(msg)
             self.proxy.start()
             self._join()
 
         except zmq.error.ZMQError:
-            xMsgUtil.log("Cannot start proxy: address already in use...")
+            xMsgUtil.log("Cannot start node: address already in use...")
             self.shutdown()
 
     def shutdown(self):
@@ -101,37 +94,24 @@ class xMsgRegistrar:
         self.reg_service.join()
 
 
-def runner(fe_host="localhost"):
-    try:
-        registrar = xMsgRegistrar(fe_host)
-        registrar.start()
-
-    except KeyboardInterrupt:
-        registrar.shutdown()
-        return
-
-
 def main():
     """Main function to start a xMsg registrar
 
     Usage:
     ::
         python xmsg/xsys/xMsgRegistrar.py
-
-    *Or if you want to specify the frontend host:*
-    ::
-        python xmsg/xsys/xMsgRegistrar.py --fe_host <hostname>
     """
-    if len(sys.argv) == 3:
-        if str(sys.argv[1]) == "--fe_host":
-            runner(sys.argv[2])
+    try:
+        registrar = xMsgRegistrar()
+        registrar.start()
 
-        else:
-            print " Wrong option. Accepts --fe_host option only."
-            return
+    except KeyboardInterrupt:
+        registrar.shutdown()
+        return
 
-    elif len(sys.argv) == 1:
-        runner()
+    except zmq.error.ZMQError:
+        xMsgUtil.log("Cannot start registrar: address already in use...")
+        return -1
 
 if __name__ == '__main__':
     main()
