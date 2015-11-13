@@ -23,8 +23,6 @@ import sys
 
 from xmsg.data import xMsgMeta_pb2, xMsgData_pb2
 
-__author__ = 'gurjyan'
-
 
 class xMsgMessage:
     """Defines a message to be serialized and passed through 0MQ.
@@ -54,7 +52,7 @@ class xMsgMessage:
             self.data = serialized_data
             self.metadata = xMsgMeta_pb2.xMsgMeta()
 
-        elif serialized_data == None:
+        elif not serialized_data:
             self.metadata = xMsgMeta_pb2.xMsgMeta()
 
     @classmethod

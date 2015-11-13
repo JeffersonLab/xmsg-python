@@ -54,7 +54,6 @@ class Handler(threading.Thread):
                     return
 
                 else:
-                    # print "xMsgSubscription.Handler: " + str(e)
                     return
 
     def stop(self):
@@ -73,7 +72,6 @@ class xMsgSubscription:
         self.connection.subscribe(self.topic)
 
     def set_handle(self, handle):
-        # TODO: remind WHY?
         self.handle = handle
         self.handle_thread = Handler(self.topic, self.connection, self.handle)
 
@@ -83,7 +81,6 @@ class xMsgSubscription:
             self.connection.unsubscribe(self.topic)
 
         except Exception as e:
-            # TODO: Proper exception HERE!
             print e
             return
 

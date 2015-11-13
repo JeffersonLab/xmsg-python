@@ -28,13 +28,8 @@ from datetime import datetime
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgRegistration_pb2
 
-__author__ = 'gurjyan'
-
 
 class xMsgUtil:
-
-    def __init__(self):
-        pass
 
     @staticmethod
     def build_registration(name, description, domain, subject,
