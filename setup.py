@@ -65,10 +65,11 @@ class xMsgInstall(install):
 
 if __name__ == '__main__':
     setup(name='xMsg',
-          version='4.0',
+          version='2.3',
           description='xMsg is a lightweight, yet full featured publish/subscribe\
             messaging system, presenting asynchronous publish/subscribe\
-            inter-process communication protocol: an API layer in Java, Python and C++.',
+            inter-process communication protocol: an API layer in Java, Python\
+            and C++.',
           author='Vardan Gyurgyan, Ricardo Oyarzun',
           author_email='vardan@jlab.org',
           url='https://claraweb.jlab.org',
