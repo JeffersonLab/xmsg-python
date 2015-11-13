@@ -33,6 +33,7 @@ def main(array_size):
     ::
         "Usage: python xmsg/examples/Publisher <array_size>
     """
+    # Create an xMsg actor
     publisher = xMsg("test_publisher")
 
     # Create a socket connections to the xMsg node

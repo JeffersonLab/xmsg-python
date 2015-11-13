@@ -37,12 +37,15 @@ class ExampleSubscriberCallback(xMsgCallBack):
         return msg
 
 
-def main(fe_host="localhost"):
+def main():
+    # Create an xMsg actor
     subscriber = xMsg("test_subscriber")
+
+    # Create a socket connections to the xMsg node
+    connection = subscriber.connect()
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
-    connection = subscriber.connect()
 
     try:
         callback = ExampleSubscriberCallback()
