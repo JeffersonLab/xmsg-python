@@ -25,11 +25,9 @@ from sets import Set
 
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.net.xMsgAddress import RegAddress
 from xmsg.xsys.regdis.xMsgRegRequest import xMsgRegRequest
 from xmsg.xsys.regdis.xMsgRegResponse import xMsgRegResponse
 from xmsg.xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
-from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 
 
 class xMsgRegService(threading.Thread):
@@ -64,7 +62,7 @@ class xMsgRegService(threading.Thread):
         self.context = context
         self.address = reg_address.address
 
-        #Thread settings
+        # Thread settings
         self.daemon = True
         self._stop = threading.Event()
 

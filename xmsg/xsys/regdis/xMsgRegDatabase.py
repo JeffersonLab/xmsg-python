@@ -40,6 +40,16 @@ class xMsgRegDatabase():
     def __init__(self):
         self.db = dict()
 
+    def get(self, topic):
+        """returns all data for specific topic
+        Args:
+            topic (String): topic of the register to retrieve
+
+        Returns:
+            bytes[]: serialized register data (serialized xMsgRegistration)
+        """
+        return self.db.get(str(topic))
+
     def register(self, registration_data):
         """Register the xMsg actor registration information
 
@@ -135,6 +145,22 @@ class xMsgRegDatabase():
         else:
             return result
 
+    def all(self):
+        """returns all topics
+
+        Returns:
+            list: list of all topics in the database
+        """
+        return self.db.keys()
+
+    def clear(self):
+        """clears the database, it will erase all data stored"""
+        self.db.clear()
+        self.db = dict()
+
+    def __str__(self):
+        return str(self.db)
+
     def _generate_key(self, registration_data):
         key = registration_data.domain
         if(registration_data.subject != str(xMsgConstants.UNDEFINED) and
@@ -144,29 +170,3 @@ class xMsgRegDatabase():
            registration_data.type != str(xMsgConstants.ANY)):
             key = key + ":" + registration_data.type
         return key
-
-    def all(self):
-        """returns all topics
-
-        Returns:
-            list: list of all topics in the database
-        """
-        return self.db.keys()
-
-    def get(self, topic):
-        """returns all data for specific topic
-        Args:
-            topic (String): topic of the register to retrieve
-
-        Returns:
-            bytes[]: serialized register data (serialized xMsgRegistration)
-        """
-        return self.db.get(str(topic))
-
-    def clear(self):
-        """clears the database, it will erase all data stored"""
-        self.db.clear()
-        self.db = dict()
-
-    def __str__(self):
-        return str(self.db)
