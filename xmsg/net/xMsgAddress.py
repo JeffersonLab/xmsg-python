@@ -30,16 +30,18 @@ def default_sub_port(pub_port):
 class RegAddress(object):
     """xMsg network address container class.
 
-    Defines a key constructed as host:port (xMsg convention) for storing
-    xMsgConnection objects.
+    The network address of an %xMsg registrar service.
+    Registration services allow discoverability of running %xMsg actors.
+    By default, registrar services use localhost IP as its address,
+    and xMsgConstants.REGISTRAR_PORT as the listening port.
+
 
     Attributes:
         host (String): address host
         port (int): address port
-        key (String): address dotted notation
+        address (String): address dotted notation
     """
-
-    def __init__(self, host="localhost", port=xMsgConstants.DEFAULT_PORT):
+    def __init__(self, host="localhost", port=xMsgConstants.REGISTRAR_PORT):
         """Constructor that converts host name into a dotted notation
         of the IP address.
 
@@ -47,8 +49,8 @@ class RegAddress(object):
         port. If port is not defined uses default port
 
         Args:
-            hostname (String): registrar service hostname
-            port (int): registrar port number
+            hostname (String): The registrar service hostname
+            port (int): The registrar port number
         """
         self.host = xMsgUtil.host_to_ip(host)
         self.port = int(port)
@@ -62,9 +64,21 @@ class RegAddress(object):
 
 
 class ProxyAddress(object):
+    """xMsg network address container class.
 
+    Defines a key constructed as host:port (xMsg convention) for storing
+    xMsgConnection objects.
+
+    Attributes:
+        host (String): The hostname for the proxy
+        pub_port (int): The publication port of the proxy
+        sub_port (int): The subscription port of the proxy
+    """
     def __init__(self, host="localhost", pub_port=xMsgConstants.DEFAULT_PORT,
                  sub_port=None):
+        """"By default creates an address using localhost and default port if
+        no parameters are given
+        """
         self.host = xMsgUtil.host_to_ip(host)
         self.pub_port = int(pub_port)
         self.sub_port = sub_port or default_sub_port(self.pub_port)
