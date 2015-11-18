@@ -30,20 +30,20 @@ class TestRegAddress(unittest.TestCase):
 
     def setUp(self):
         self.host = util.get_local_ip()
-        self.key1 = "tcp://%s:%d" % (self.host, int(constants.DEFAULT_PORT))
+        self.key1 = "tcp://%s:%d" % (self.host, int(constants.REGISTRAR_PORT))
         self.key2 = "tcp://%s:7777" % self.host
 
     def test_RegAddress_empty_constructor(self):
         reg_addr = RegAddress()
         self.assertEqual(reg_addr.host, self.host)
-        self.assertEqual(reg_addr.port, 7771)
+        self.assertEqual(reg_addr.port, int(constants.REGISTRAR_PORT))
         self.assertEqual(reg_addr.address, self.key1)
         self.assertIsInstance(reg_addr, RegAddress)
 
     def test_RegAddress_constructor_only_with_hostname(self):
         reg_addr = RegAddress("localhost")
         self.assertEqual(reg_addr.host, self.host)
-        self.assertEqual(reg_addr.port, 7771)
+        self.assertEqual(reg_addr.port, int(constants.REGISTRAR_PORT))
         self.assertEqual(reg_addr.address, self.key1)
         self.assertIsInstance(reg_addr, RegAddress)
 
