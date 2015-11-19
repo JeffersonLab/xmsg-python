@@ -26,9 +26,10 @@ from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.data import xMsgData_pb2
+from xmsg.net.xMsgAddress import RegAddress
 
 
-def main(array_size):
+def main():
     """Publisher usage:
     ::
         "Usage: python xmsg/examples/Publisher <array_size>
@@ -41,12 +42,15 @@ def main(array_size):
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
-    publisher.register_as_publisher(topic)
+
+    # Register at xMsg Registrar
+    reg_address = RegAddress()
+    publisher.register_as_publisher(reg_address, topic)
 
     # Publish data for ever...
     while True:
         try:
-            data = [float(randint(1, 10)) for _ in range(int(array_size))]
+            data = [float(randint(1, 10)) for _ in range(int(5))]
 
             # Create transient data
             t_msg_data = xMsgData_pb2.xMsgData()
@@ -62,6 +66,10 @@ def main(array_size):
         except KeyboardInterrupt:
             print ""
             xMsgUtil.log("Removing Registration and terminating thread pool")
-            publisher.remove_as_publisher(topic)
+            publisher.remove_as_publisher(reg_address, topic)
             publisher.destroy()
             return
+
+
+if __name__ == '__main__':
+    main()
