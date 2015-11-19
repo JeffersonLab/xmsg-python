@@ -24,23 +24,28 @@ import zmq
 
 class xMsgConnection:
 
-    def __init__(self, address, setup, pub_socket, sub_socket):
+    def __init__(self, address, pub_socket, sub_socket):
         self.address = address
-        self.setup = setup
         self.pub = pub_socket
         self.sub = sub_socket
 
-    def connect(self):
-        self.setup.pre_connection(self.pub)
-        self.setup.pre_connection(self.sub)
+    def get_address(self):
+        return self.address
 
-        pub_port = str(self.address.pub_port)
-        sub_port = str(self.address.sub_port)
+    def set_address(self, address):
+        self.address = address
 
-        self.pub.connect("tcp://%s:%s" % (self.address.host, pub_port))
-        self.sub.connect("tcp://%s:%s" % (self.address.host, sub_port))
+    def get_sub_socket(self):
+        return self.sub
 
-        self.setup.post_connection()
+    def set_sub_socket(self, subcriber_socket):
+        self.sub = subcriber_socket
+
+    def get_pub_socket(self):
+        return self.pub
+
+    def set_pub_socket(self, publisher_socket):
+        self.pub = publisher_socket
 
     def send(self, message):
         topic = str(message.get_topic())
@@ -59,6 +64,3 @@ class xMsgConnection:
 
     def unsubscribe(self, topic):
         self.sub.setsockopt(zmq.UNSUBSCRIBE, topic)
-
-    def address(self):
-        pass

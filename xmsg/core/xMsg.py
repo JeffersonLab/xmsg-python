@@ -24,6 +24,7 @@ import zmq
 from random import randint
 from multiprocessing import Pool
 
+from xmsg.core.ConnectionManager import ConnectionManager
 from xmsg.core.xMsgExceptions import NullConnection, NullMessage
 from xmsg.core.xMsgSubscription import xMsgSubscription
 from xmsg.core.xMsgConstants import xMsgConstants
@@ -89,15 +90,12 @@ class xMsg(object):
         self.default_registrar_address = registrar_address
 
         # Initialize registration driver
-        self.driver = xMsgRegDriver(self.context, registrar_address)
+        self.connection_manager = ConnectionManager(self.context)
 
         # create fixed size thread pool
         self._thread_pool = Pool(self.pool_size, self.__init_worker)
 
-        # Private db of stored connections
-        self._connections = dict()
-
-    def connect(self, address=None):
+    def connect(self, address="localhost"):
         """Connects to the node by creating two sockets for publishing and
         subscribing/receiving messages.
 
@@ -105,33 +103,18 @@ class xMsg(object):
         created xMsgConnection object.
 
         Args:
-            address (ProxyAddress): xmsg proxy address object
+            address (String): xmsg proxy address
 
         Returns:
-            xMsgConnection: xmsg connection object
+            ConnectionManager: Connection manager
         """
-        p_address = address or ProxyAddress()
-        return self.__create_connection(self.context, p_address)
+        p_address = ProxyAddress(address)
+        connection_setup = xMsgConnectionSetup()
+        return self.connection_manager.get_proxy_connection(p_address,
+                                                            connection_setup)
 
-    def get_new_connection(self, address):
-        """Returns a new xMsgConnection object to the xMsg proxy, using
-        new zmq context
-
-        Args:
-            address (xMsgAddress): xMsg address object
-
-        Returns:
-            connection (xMsgConnection): xMsg connection object
-        """
-        context = zmq.Context.instance()
-        return self.__create_connection(context, address)
-
-    def __create_connection(self, context, p_address):
-        connection = xMsgConnection(p_address, xMsgConnectionSetup(),
-                                    context.socket(zmq.PUB),
-                                    context.socket(zmq.SUB))
-        connection.connect()
-        return connection
+    def release(self, connection):
+        self.connection_manager.release_proxy_connection(connection)
 
     def destroy(self, linger=-1):
         """ Destroys the created context and terminates the thread pool.
@@ -144,7 +127,7 @@ class xMsg(object):
         self.context.destroy(linger)
         self.__terminate_threadpool()
 
-    def register_as_publisher(self, topic,
+    def register_as_publisher(self, address, topic,
                               description=str(xMsgConstants.UNDEFINED)):
         """Registers xMsg publisher actor in the publishers database
 
@@ -159,11 +142,9 @@ class xMsg(object):
                 (topic, sender, data)
             description (String): publisher description string
         """
-        r_data = self._registration_builder(topic, description, True)
+        self._register(address, topic, description, True)
 
-        self.driver.add(r_data, True)
-
-    def register_as_subscriber(self, topic,
+    def register_as_subscriber(self, address, topic,
                                description=str(xMsgConstants.UNDEFINED)):
         """Subscribers xMsg publisher actor in the subscribers database
 
@@ -181,11 +162,9 @@ class xMsg(object):
                 (topic, sender, data)
             description (String): subscriber description string
         """
-        r_data = self._registration_builder(topic, description, False)
+        self._register(address, topic, description, False)
 
-        self.driver.add(r_data, False)
-
-    def remove_as_publisher(self, topic):
+    def remove_as_publisher(self, address, topic):
         """Removes publisher registration both from the local and then from the
         global registration databases
 
@@ -194,12 +173,9 @@ class xMsg(object):
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
         """
-        r_data = self._registration_builder(topic,
-                                            str(xMsgConstants.UNDEFINED), True)
+        self._remove_registration(address, topic, "None", True)
 
-        self.driver.remove(r_data, True)
-
-    def remove_as_subscriber(self, topic):
+    def remove_as_subscriber(self, address, topic):
         """Removes subscriber registration both from the local and then from the
         global registration database
 
@@ -208,11 +184,10 @@ class xMsg(object):
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
         """
-        r_data = self._registration_builder(topic, "None", False)
 
-        self.driver.remove(r_data, False)
+        self._remove_registration(address, topic, "None", False)
 
-    def find_publisher(self, topic,
+    def find_publisher(self, address, topic,
                        description=str(xMsgConstants.UNDEFINED)):
         """
         Finds all publishers, publishing  to a specified topic
@@ -228,11 +203,9 @@ class xMsg(object):
         Returns:
             list: list of xMsgRegistration objects
         """
-        r_data = self._registration_builder(topic, description, True)
+        return self._find_registration(address, topic, True)
 
-        return self.driver.find(r_data, True)
-
-    def find_subscriber(self, topic,
+    def find_subscriber(self, topic, address,
                         description=str(xMsgConstants.UNDEFINED)):
         """
         Finds all subscribers, subscribing  to a specified topic
@@ -248,9 +221,7 @@ class xMsg(object):
         Returns:
             list: list of xMsgRegistration objects
         """
-        r_data = self._registration_builder(topic, description, False)
-
-        return self.find(r_data, False)
+        return self._find_registration(address, topic, False)
 
     def publish(self, connection, transient_message):
         """Publishes data to a specified xMsg topic.
@@ -371,6 +342,22 @@ class xMsg(object):
 
     def unsubscribe(self, subscription):
         subscription.stop()
+
+    def _register(self, address, topic, description, publisher):
+        registration_driver = self.connection_manager.get_registrar_connection(address)
+        reg_data = self._registration_builder(topic, description, publisher)
+        registration_driver.add(reg_data, publisher)
+
+    def _remove_registration(self, address, topic, description, publisher):
+        registration_driver = self.connection_manager.get_registrar_connection(address)
+        reg_data = self._registration_builder(topic, description, publisher)
+        registration_driver.remove(reg_data, publisher)
+
+    def _find_registration(self, address, topic, publisher):
+        registration_driver = self.connection_manager.get_registrar_connection(address)
+        reg_data = self._registration_builder(topic, str(xMsgConstants.UNDEFINED),
+                                              publisher)
+        return registration_driver.find(reg_data, publisher)
 
     def _registration_builder(self, topic, description, publisher=True):
         """Creates a xMsgRegistration object
