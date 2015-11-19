@@ -33,9 +33,7 @@ from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.data import xMsgRegistration_pb2
 from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
-from xmsg.net.xMsgConnection import xMsgConnection
 from xmsg.net.xMsgAddress import ProxyAddress, RegAddress
-from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 
 
 class xMsg(object):
