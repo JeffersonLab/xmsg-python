@@ -48,12 +48,20 @@ class xMsgMessage:
 
         if(isinstance(serialized_data, basestring) or
            isinstance(serialized_data, bytearray) or
-           isinstance(serialized_data, bytes)):
+           isinstance(serialized_data, bytes) or
+           isinstance(serialized_data, basestring)):
             self.data = serialized_data
             self.metadata = xMsgMeta_pb2.xMsgMeta()
 
         elif not serialized_data:
             self.metadata = xMsgMeta_pb2.xMsgMeta()
+
+    @classmethod
+    def create_with_string(cls, topic, data_string):
+        msg = cls()
+        msg.topic = topic
+        msg.set_data(data_string, "text/string")
+        return msg
 
     @classmethod
     def create_with_xmsg_data(cls, topic, xmsg_data_object):
@@ -115,7 +123,7 @@ class xMsgMessage:
         """
         return sys.getsizeof(self.get_data())
 
-    def set_data(self, serialized_data, mimetype="data/binary"):
+    def set_data(self, serialized_data, mimetype=None):
         """Sets the serialized data and the mimetype for the message
 
         Args:
@@ -123,7 +131,8 @@ class xMsgMessage:
             mimetype (string): mimetype for the data
         """
         self.data = serialized_data
-        self.metadata.dataType = mimetype
+        if mimetype:
+            self.metadata.dataType = mimetype
 
     def get_metadata(self):
         """Returns metadata object (xMsgMeta)
