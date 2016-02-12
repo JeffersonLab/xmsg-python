@@ -54,8 +54,8 @@ class xMsg(object):
         pool_size (int): fixed size thread pool
     """
 
-    def __init__(self, name, proxy_address=ProxyAddress(),
-                 registrar_address=RegAddress(), **kwargs):
+    def __init__(self, name, proxy_address=None,
+                 registrar_address=None, **kwargs):
         """xMsg Constructor
 
         Constructor, requires the name of the FrontEnd host that is used to
@@ -84,8 +84,21 @@ class xMsg(object):
         pool_size = kwargs.pop("pool_size", False)
         self.pool_size = pool_size or 2
 
-        self.default_proxy_address = proxy_address
-        self.default_registrar_address = registrar_address
+        if proxy_address:
+            if isinstance(proxy_address, basestring):
+                self.default_proxy_address = ProxyAddress(proxy_address)
+            elif isinstance(proxy_address, ProxyAddress):
+                self.default_proxy_address = proxy_address
+        else:
+            self.default_proxy_address = ProxyAddress()
+
+        if registrar_address:
+            if isinstance(registrar_address, basestring):
+                self.default_registrar_address = RegAddress(registrar_address)
+            elif isinstance(registrar_address, RegAddress):
+                self.default_registrar_address = registrar_address
+        else:
+            self.default_registrar_address = RegAddress()
 
         # Initialize registration driver
         self.connection_manager = ConnectionManager(self.context)
@@ -93,7 +106,7 @@ class xMsg(object):
         # create fixed size thread pool
         self._thread_pool = Pool(self.pool_size, self.__init_worker)
 
-    def connect(self, address="localhost"):
+    def connect(self, address=None):
         """Connects to the node by creating two sockets for publishing and
         subscribing/receiving messages.
 
@@ -106,7 +119,11 @@ class xMsg(object):
         Returns:
             ConnectionManager: Connection manager
         """
-        p_address = ProxyAddress(address)
+        if address:
+            p_address = ProxyAddress(address)
+        else:
+            p_address = ProxyAddress()
+
         connection_setup = xMsgConnectionSetup()
         return self.connection_manager.get_proxy_connection(p_address,
                                                             connection_setup)
