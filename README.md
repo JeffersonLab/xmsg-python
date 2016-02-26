@@ -1,10 +1,6 @@
-# xMsg 2.3 for python
+# xMsg 2.3.1 for python
 
 ### System Requirements
-
-So far tested in:
-*  Ubuntu 15.10
-*  OSX El Capitan
 
 ```sh
 $ # Ubuntu:
@@ -15,24 +11,14 @@ $ brew install zmq
 
 ### Installing xMsg
 
-To install xMsg in your system run:
+To install xmsg-python in your system run:
 
 ```sh
 $ ./setup.py install
 ```
 
-This will install the xMsg package in the system libraries, and will copy the
-xmsg scripts in the /usr/bin/ directory.
-
-For development use:
-
-```sh
-$ python setup.py develop
-```
-
-this command installs the package (in the xmsg source folder) in a way that allows you to conveniently
-edit your code after its installed to the (virtual) environment and have the changes take effect
-immediately.
+### Quick Start
+TODO: Quick Start section
 
 
 ### Examples
