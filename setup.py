@@ -65,7 +65,7 @@ class xMsgInstall(install):
 
 if __name__ == '__main__':
     setup(name='xmsg',
-          version='2.3',
+          version='2.3.1',
           description='xMsg a lightweight, publish/subscribe messaging system',
           long_description='xMsg is a lightweight, yet full featured ' +
                            'publish/subscribe messaging system, presenting ' +
