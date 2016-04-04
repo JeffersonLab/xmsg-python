@@ -1,12 +1,15 @@
+.cache
 .DS_Store
+.eggs
+.idea
+.project
+.pydevproject
+
 *.pyc
 *.pyd
 *.egg
+*egg-info/
+
 build/
 dist/
-*egg-info/
-.project
-.pydevproject
-.cache
-.eggs
 
