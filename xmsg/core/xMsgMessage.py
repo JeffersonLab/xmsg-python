@@ -1,4 +1,4 @@
-#
+# coding=utf-8
 # Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
 # Permission to use, copy, modify, and distribute this software and its
 # documentation for educational, research, and not-for-profit purposes,
@@ -19,12 +19,11 @@
 # SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #
 
-import sys
+from xmsg.data.xMsgData_pb2 import xMsgData
+from xmsg.data.xMsgMeta_pb2 import xMsgMeta
 
-from xmsg.data import xMsgMeta_pb2, xMsgData_pb2
 
-
-class xMsgMessage:
+class xMsgMessage(object):
     """Defines a message to be serialized and passed through 0MQ.
 
     Uses xMsgData class generated as a result of the proto-buffer
@@ -44,23 +43,25 @@ class xMsgMessage:
     """
 
     def __init__(self, topic=None, serialized_data=None):
-        self.topic = topic
+        self._topic = topic
 
         if(isinstance(serialized_data, basestring) or
            isinstance(serialized_data, bytearray) or
            isinstance(serialized_data, bytes) or
            isinstance(serialized_data, basestring)):
-            self.data = serialized_data
-            self.metadata = xMsgMeta_pb2.xMsgMeta()
+            self._data = serialized_data
+            self._metadata = xMsgMeta()
 
         elif not serialized_data:
-            self.metadata = xMsgMeta_pb2.xMsgMeta()
+            self._metadata = xMsgMeta()
 
     @classmethod
     def create_with_string(cls, topic, data_string):
+        """Constructs a message object with simple string data"""
         msg = cls()
         msg.topic = topic
-        msg.set_data(data_string, "text/string")
+        msg.data = data_string
+        msg.mimetype = "text/string"
         return msg
 
     @classmethod
@@ -78,7 +79,7 @@ class xMsgMessage:
         Raises:
             TypeError: if the xmsg_data_object is not an xMsgData instance
         """
-        if isinstance(xmsg_data_object, xMsgData_pb2.xMsgData):
+        if isinstance(xmsg_data_object, xMsgData):
             return cls(topic, xmsg_data_object.SerializeToString())
         else:
             raise TypeError("xMsgMessage: Invalid type of data object")
@@ -97,52 +98,45 @@ class xMsgMessage:
         msg = xMsgMessage()
 
         try:
-            msg.set_topic(serialized_data[0])
-            metadata = xMsgMeta_pb2.xMsgMeta()
+            msg.topic = serialized_data[0]
+            metadata = xMsgMeta()
             metadata.ParseFromString(serialized_data[1])
-            msg.set_metadata(metadata)
-            msg.set_data(serialized_data[2])
+            msg.metadata = metadata
+            msg.data = serialized_data[2]
             return msg
 
-        except IndexError as ie:
-            raise Exception("xMsgMessage : %s" % ie)
+        except IndexError as index_error:
+            raise Exception("xMsgMessage : %s" % index_error)
 
-    def get_data(self):
+    @property
+    def data(self):
         """Returns the message data
 
         Returns:
             bytes: data field as python bytes
         """
-        return self.data
+        return self._data
 
-    def get_data_size(self):
-        """Returns the size of the message data.
-
-        Returns:
-            int: message size in *bytes*
-        """
-        return sys.getsizeof(self.get_data())
-
-    def set_data(self, serialized_data, mimetype=None):
+    @data.setter
+    def data(self, serialized_data):
         """Sets the serialized data and the mimetype for the message
 
         Args:
             serialized_data (bytes[]): serialized data
-            mimetype (string): mimetype for the data
         """
-        self.data = serialized_data
-        if mimetype:
-            self.metadata.dataType = mimetype
+        self._data = serialized_data
 
-    def get_metadata(self):
+    @property
+    def metadata(self):
         """Returns metadata object (xMsgMeta)
 
         Returns:
             xMsgMeta: message metadata object
         """
-        return self.metadata
+        return self._metadata
 
-    def set_metadata(self, metadata):
+    @metadata.setter
+    def metadata(self, metadata):
         """Sets the metadata of this message.
 
         This will overwrite any mime-type already set.
@@ -150,23 +144,43 @@ class xMsgMessage:
         Args:
             metadata (xMsgMeta): the metadata for message
         """
-        self.metadata.MergeFrom(metadata)
+        self._metadata.MergeFrom(metadata)
 
-    def get_mimetype(self):
+    @property
+    def mimetype(self):
         """Returns the mime-type of the message data.
 
         Returns:
             String: mimetype for message data
         """
-        return self.metadata.dataType
+        return self._metadata.dataType
 
-    def set_mimetype(self, mimetype):
+    @mimetype.setter
+    def mimetype(self, mimetype):
         """Sets the message mimetype
 
         Args:
-            mimetype (String): data mimtype
+            mimetype (String): data mimetype
         """
-        self.metadata.dataType = mimetype
+        self._metadata.dataType = mimetype
+
+    @property
+    def topic(self):
+        """Returns the topic string
+
+        Returns:
+            String: message topic
+        """
+        return str(self._topic)
+
+    @topic.setter
+    def topic(self, topic):
+        """Sets the topic for xMsgMessage instance
+
+        Args:
+            topic (String): message
+        """
+        self._topic = topic
 
     def serialize(self):
         """Serializes this message into a ZMQ compatible message.
@@ -174,21 +188,5 @@ class xMsgMessage:
         Returns:
             list: the ZMQ raw multi-part message
         """
-        return [str(self.get_topic()), self.get_metadata().SerializeToString(),
-                self.get_data()]
-
-    def get_topic(self):
-        """Returns the topic string
-
-        Returns:
-            String: message topic
-        """
-        return self.topic
-
-    def set_topic(self, topic):
-        """Sets the topic for xMsgMessage instance
-
-        Args:
-            topic (String): message
-        """
-        self.topic = topic
+        return [self.topic, self._metadata.SerializeToString(),
+                self._data]
