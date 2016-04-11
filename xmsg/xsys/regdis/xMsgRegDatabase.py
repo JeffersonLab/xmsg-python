@@ -1,32 +1,13 @@
-#
-# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for educational, research, and not-for-profit purposes,
-# without fee and without a signed licensing agreement.
-#
-# Author Vardan Gyurjyan
-# Department of Experimental Nuclear Physics, Jefferson Lab.
-#
-# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
-# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
-# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
-# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
-# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
+# coding=utf-8
 
 import re
-from sets import Set
 
+from sets import Set
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.data import xMsgRegistration_pb2
 
 
-class xMsgRegDatabase():
+class xMsgRegDatabase(object):
     """A registration database of xMsg actors.
 
     Actors are grouped by topic, i.e., actors registered with the same topic
@@ -39,6 +20,12 @@ class xMsgRegDatabase():
 
     def __init__(self):
         self.db = dict()
+
+    def __str__(self):
+        return str(self.db)
+
+    def __repr__(self):
+        return "<xMsgRegDatabase : %d items>" % len(self.db)
 
     def get(self, topic):
         """returns all data for specific topic
@@ -107,9 +94,9 @@ class xMsgRegDatabase():
 
         The method will find registration from the following way
 
-        * domain:\*:\* -> all registration for specific domain
-        * domain:somesubject:* -> all registration for specific domain and subject
-        * domain:somesubject:sometype -> all registration for specific topic
+        - domain:*:* -> all registration for specific domain
+        - domain:somesubject:* -> all registration for specific domain and subject
+        - domain:somesubject:sometype -> all registration for specific topic
 
         Args:
             domain (string): registration domain
@@ -138,6 +125,7 @@ class xMsgRegDatabase():
         for k in self.all():
             if t_validator.match(k):
                 result.union_update(self.db[k])
+                #result.intersection_update(self.db[k])
 
         if len(result) is 0:
             return None
@@ -158,10 +146,8 @@ class xMsgRegDatabase():
         self.db.clear()
         self.db = dict()
 
-    def __str__(self):
-        return str(self.db)
-
-    def _generate_key(self, registration_data):
+    @staticmethod
+    def _generate_key(registration_data):
         key = registration_data.domain
         if(registration_data.subject != str(xMsgConstants.UNDEFINED) and
            registration_data.subject != str(xMsgConstants.ANY)):
