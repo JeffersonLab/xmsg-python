@@ -1,26 +1,8 @@
-'''
- Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
- Permission to use, copy, modify, and distribute this software and its
- documentation for educational, research, and not-for-profit purposes,
- without fee and without a signed licensing agreement.
+# coding=utf-8
 
- Author Vardan Gyurjyan
- Department of Experimental Nuclear Physics, Jefferson Lab.
-
- IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
- INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
- THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
- OF THE POSSIBILITY OF SUCH DAMAGE.
-
- JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
- HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
- SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-'''
 import unittest
-from sets import Set
 
+from sets import Set
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
 from xmsg.data import xMsgRegistration_pb2
@@ -43,19 +25,15 @@ class TestXMsgRegDatabase(unittest.TestCase):
     topic1 = xMsgTopic.build("test_domain_1", "test_subject_1", "test_type_1")
     topic2 = xMsgTopic.build("test_domain_2", "test_subject_2", "test_type_2")
     topic3 = xMsgTopic.build("test_domain_3", "test_subject_3", "test_type_3")
-    # First case
-    reg1 = new_registration(topic0, "name0", "10.2.2.1")
 
+    reg1 = new_registration(topic0, "name0", "10.2.2.1")
     asimov1 = new_registration(topic0, "asimov", "10.2.2.1")
     asimov2 = new_registration(topic0, "asimov", "10.2.2.2")
     bradbury1 = new_registration(topic0, "bradbury", "10.2.2.1")
     bradbury2 = new_registration(topic0, "bradbury", "10.2.2.2")
-
     twain1 = new_registration(topic1, "twain", "10.2.2.1")
     twain2 = new_registration(topic1, "twain", "10.2.2.2")
-
     brando = new_registration(topic2, "brando", "10.2.2.2")
-
     tolkien = new_registration(topic3, "tolkien", "10.2.2.1")
 
     topic = "test_domain:test_subject:test_type"
@@ -165,6 +143,7 @@ class TestXMsgRegDatabase(unittest.TestCase):
         self.assertEqual(self.db.get("test_domain_1:test_subject_1:test_type_1"),
                          Set([self.twain1.SerializeToString(),
                               self.twain2.SerializeToString()]))
+
     def test_remove_missing_registration_does_nothing(self):
         self.db.clear()
         self.db.register(self.asimov1)
@@ -207,7 +186,7 @@ class TestXMsgRegDatabase(unittest.TestCase):
         test_case = self.db.find(self.reg1.domain, self.reg1.subject)
         self.assertEqual(test_case, Set([self.reg1.SerializeToString()]))
 
-    def test_find_set_by_topic(self):
+    def test_find_Set_by_topic(self):
         self.db.clear()
         self.db.register(self.reg1)
 
