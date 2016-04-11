@@ -188,5 +188,4 @@ class xMsgMessage(object):
         Returns:
             list: the ZMQ raw multi-part message
         """
-        return [self.topic, self._metadata.SerializeToString(),
-                self._data]
+        return [self._topic, self._metadata.SerializeToString(), self._data]
