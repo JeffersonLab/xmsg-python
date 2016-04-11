@@ -1,23 +1,4 @@
 # coding=utf-8
-# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for educational, research, and not-for-profit purposes,
-# without fee and without a signed licensing agreement.
-#
-# Author Vardan Gyurjyan
-# Department of Experimental Nuclear Physics, Jefferson Lab.
-#
-# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
-# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
-# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
-# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
-# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
 
 from xmsg.data.xMsgData_pb2 import xMsgData
 from xmsg.data.xMsgMeta_pb2 import xMsgMeta
@@ -43,7 +24,9 @@ class xMsgMessage(object):
     """
 
     def __init__(self, topic=None, serialized_data=None):
-        self._topic = topic
+        # topic get stored as a basestring in case of xMsgTopic object str()
+        # will convert it
+        self._topic = str(topic)
 
         if(isinstance(serialized_data, basestring) or
            isinstance(serialized_data, bytearray) or
