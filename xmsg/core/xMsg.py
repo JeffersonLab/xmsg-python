@@ -1,39 +1,20 @@
-#
-# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for educational, research, and not-for-profit purposes,
-# without fee and without a signed licensing agreement.
-#
-# Author Vardan Gyurjyan
-# Department of Experimental Nuclear Physics, Jefferson Lab.
-#
-# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
-# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
-# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
-# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
-# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
+# coding=utf-8
 
-import signal
-import zmq
 from random import randint
-from multiprocessing import Pool
+import zmq
+import signal
+import threading
 
 from xmsg.core.ConnectionManager import ConnectionManager
+from xmsg.core.xMsgCallBack import xMsgCallBack
+from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgExceptions import NullConnection, NullMessage
 from xmsg.core.xMsgSubscription import xMsgSubscription
-from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.core.xMsgCallBack import xMsgCallBack
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgUtil import xMsgUtil
-from xmsg.data import xMsgRegistration_pb2
-from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
+from xmsg.data.xMsgRegistration_pb2 import xMsgRegistration
 from xmsg.net.xMsgAddress import ProxyAddress, RegAddress
+from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
 
 
 class xMsg(object):
@@ -78,11 +59,14 @@ class xMsg(object):
         # Name of xMsg Actor
         self.myname = name
 
+        if threading.current_thread().name == "MainThread":
+            signal.signal(signal.SIGINT, self._signal_handler)
+
+        # Set of subscriptions
+        self.my_subscriptions = []
+
         context = kwargs.pop("context", False)
         self.context = context or zmq.Context.instance()
-
-        pool_size = kwargs.pop("pool_size", False)
-        self.pool_size = pool_size or 2
 
         if proxy_address:
             if isinstance(proxy_address, basestring):
@@ -103,8 +87,15 @@ class xMsg(object):
         # Initialize registration driver
         self.connection_manager = ConnectionManager(self.context)
 
-        # create fixed size thread pool
-        self._thread_pool = Pool(self.pool_size, self.__init_worker)
+    def __repr__(self):
+        return str("<xMsg : %s>" % self.myname)
+
+    def _signal_handler(self, signal, frame):
+        for sub in self.my_subscriptions:
+            sub.stop()
+            self.unsubscribe(sub)
+        self.destroy(5)
+        raise SystemExit
 
     def connect(self, address=None):
         """Connects to the node by creating two sockets for publishing and
@@ -129,6 +120,11 @@ class xMsg(object):
                                                             connection_setup)
 
     def release(self, connection):
+        """ Returns the given connection into the pool of available connections
+
+        Args:
+            connection (xMsgConnection): connection object
+        """
         self.connection_manager.release_proxy_connection(connection)
 
     def destroy(self, linger=-1):
@@ -140,7 +136,6 @@ class xMsg(object):
                 is -1, which in ZMQ means to linger forever.
         """
         self.context.destroy(linger)
-        self.__terminate_threadpool()
 
     def register_as_publisher(self, address, topic,
                               description=str(xMsgConstants.UNDEFINED)):
@@ -202,8 +197,7 @@ class xMsg(object):
 
         self._remove_registration(address, topic, "None", False)
 
-    def find_publisher(self, address, topic,
-                       description=str(xMsgConstants.UNDEFINED)):
+    def find_publisher(self, address, topic):
         """
         Finds all publishers, publishing  to a specified topic
         defined within the input registration data object: xMsgRegistration
@@ -213,15 +207,13 @@ class xMsg(object):
             topic (xMsgTopic): the name of the requester/sender. Required
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
-            description (String): subscriber description string
 
         Returns:
             list: list of xMsgRegistration objects
         """
         return self._find_registration(address, topic, True)
 
-    def find_subscriber(self, topic, address,
-                        description=str(xMsgConstants.UNDEFINED)):
+    def find_subscriber(self, topic, address):
         """
         Finds all subscribers, subscribing  to a specified topic
         defined within the input registration data object: xMsgRegistration
@@ -231,7 +223,6 @@ class xMsg(object):
             topic (xMsgTopic): the name of the requester/sender. Required
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
-            description (String): subscriber description string
 
         Returns:
             list: list of xMsgRegistration objects
@@ -263,42 +254,59 @@ class xMsg(object):
         """
 
         # Check connection
-        if not connection.pub:
+        if not connection.pub_socket:
             raise NullConnection("xMsg: Null connection object")
         # Check msg
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
-
-        connection.send(transient_message)
+        try:
+            connection.send(transient_message)
+        except zmq.error.ZMQError:
+            return
+        except Exception as e:
+            raise e
 
     def sync_publish(self, connection, transient_message, timeout):
+        """Publishes a message through the specified proxy connection and
+        blocks waiting for a response.
+
+        The subscriber must publish the response to the topic given by the
+        reply_to metadata field, through the same proxy.
+
+        This method will throw if a response is not received before the timeout
+        expires.
+        """
+
         # set the return address as replyTo in the xMsgMessage
         return_address = "return: %d" % randint(0, 100)
         return_topic = xMsgTopic.wrap(return_address)
-        transient_message.get_metadata().replyTo = return_address
+        transient_message.metadata.replyTo = return_address
 
         # subscribe to the return_address
-        cb = SyncSendCallBack()
-        sh = self.subscribe(return_topic, connection, cb)
-        cb.set_handler(sh)
+        sync_callback = _SyncSendCallBack()
+        subscription_handler = self.subscribe(return_topic,
+                                              connection,
+                                              sync_callback)
+        sync_callback.set_handler(subscription_handler)
+
         xMsgUtil.sleep(0.01)
         self.publish(connection, transient_message)
         # wait for the response
-        t = 0
+        time_counter = 0
 
-        while not cb.received_message:
+        while not sync_callback.received_message:
             xMsgUtil.sleep(0.001)
-            if t >= timeout * 1000:
-                self.unsubscribe(sh)
-                raise Exception("Error: time_out reached - %d" % t)
+            if time_counter >= timeout * 1000:
+                self.unsubscribe(subscription_handler)
+                raise Exception("Error: time_out reached - %d" % time_counter)
 
             else:
-                t += 1
+                time_counter += 1
 
-        self.unsubscribe(sh)
-        cb.received_message.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
+        self.unsubscribe(subscription_handler)
+        sync_callback.received_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
 
-        return cb.received_message
+        return sync_callback.received_message
 
     def subscribe(self, topic, connection, callback):
         """Subscribes to a specified xMsg topic.
@@ -328,34 +336,37 @@ class xMsg(object):
         """
         subscription_handler = xMsgSubscription(str(topic), connection)
 
-        def handle(msg):
+        def _callback(msg):
             self._call_user_callback(connection, callback, msg)
 
-        subscription_handler.set_handle(handle)
+        subscription_handler.set_callback_func(_callback)
+        self.my_subscriptions.append(subscription_handler)
         subscription_handler.start()
-
         return subscription_handler
 
-    def _call_user_callback(self, connection, callback, callback_message):
-        requester = callback_message.get_metadata().replyTo
+    def _call_user_callback(self, connection, callback, t_message):
+        requester = t_message.metadata.replyTo
         if requester != str(xMsgConstants.UNDEFINED):
             # Sync request
             try:
-                message = callback.callback(callback_message)
-                message.set_topic(xMsgTopic.wrap(requester))
-                message.get_metadata().replyTo = str(xMsgConstants.UNDEFINED)
+                r_message = callback.callback(t_message)
+                r_message.topic = xMsgTopic.wrap(requester)
+                r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
 
-                self.publish(connection, message)
+                self.publish(connection, r_message)
 
-            except Exception as e:
-                # TODO: proper exception
-                raise Exception(e)
+            except zmq.error.ZMQError as zmq_error:
+                raise Exception(zmq_error)
 
         else:
-            # now i add the callback execution into the thread pool
-            callback.callback(callback_message)
+            callback.callback(t_message)
 
     def unsubscribe(self, subscription):
+        """Stops the given subscription
+
+        Args:
+            subscription (xMsgSubscription): given subscription to unsubscribe
+        """
         subscription.stop()
 
     def _register(self, address, topic, description, publisher):
@@ -386,7 +397,7 @@ class xMsg(object):
                 registration object generated corresponds to a publisher,
                 otherwise corresponds to a subscriber.
         """
-        r_data = xMsgRegistration_pb2.xMsgRegistration()
+        r_data = xMsgRegistration()
         r_data.name = self.myname
         if description:
             r_data.description = description
@@ -397,42 +408,31 @@ class xMsg(object):
         r_data.type = topic.type()
 
         if publisher:
-            r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.PUBLISHER
+            r_data.ownerType = xMsgRegistration.PUBLISHER
         else:
-            r_data.ownerType = xMsgRegistration_pb2.xMsgRegistration.SUBSCRIBER
+            r_data.ownerType = xMsgRegistration.SUBSCRIBER
 
         return r_data
 
-    def get_pool_size(self):
-        """Returns internal thread pool size
 
-        Returns:
-            pool_size (int): Size of the thread pool
-        """
-        return self.pool_size
+class _SyncSendCallBack(xMsgCallBack):
 
-    def __init_worker(self):
-        signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-    def __terminate_threadpool(self):
-        """Terminates the xMsg threadpool"""
-        self._thread_pool.terminate()
-        self._thread_pool.join()
-
-
-class SyncSendCallBack(xMsgCallBack):
-    handler = None
-    received_message = None
+    def __init__(self):
+        self.received_message = None
+        self.handler = None
 
     def get_message(self):
+        """Returns the response message if this one has been received"""
         return self.received_message
 
     def set_handler(self, handler):
+        """Sets the subscription handler for the sync callback
+        Args
+            handler (xMsgSubscription): sync subscription handler
+        """
         self.handler = handler
 
     def callback(self, msg):
         self.received_message = msg
-        if self.handler is not None:
+        if self.handler:
             self.handler.stop()
-
-        return self.received_message
