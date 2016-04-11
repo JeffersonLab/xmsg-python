@@ -1,24 +1,6 @@
 #!/usr/bin/env python
-#
-# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for educational, research, and not-for-profit purposes,
-# without fee and without a signed licensing agreement.
-#
-# Author Vardan Gyurjyan
-# Department of Experimental Nuclear Physics, Jefferson Lab.
-#
-# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
-# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
-# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
-# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
-# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
+# coding=utf-8
+
 import os
 
 from distutils.core import setup, Command
@@ -26,9 +8,10 @@ from distutils.command.clean import clean
 from distutils.command.install import install
 from setuptools.command.test import test as TestCommand
 from setuptools import find_packages
+import xmsg
 
 
-class xMsgTest(TestCommand):
+class XMsgTest(TestCommand):
 
     def finalize_options(self):
         TestCommand.finalize_options(self)
@@ -40,7 +23,7 @@ class xMsgTest(TestCommand):
         pytest.main(self.test_args)
 
 
-class xMsgClean(Command):
+class XMsgClean(Command):
     user_options = []
 
     def initialize_options(self):
@@ -53,7 +36,7 @@ class xMsgClean(Command):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
 
-class xMsgInstall(install):
+class XMsgInstall(install):
 
     def run(self):
         install.run(self)
@@ -62,25 +45,27 @@ class xMsgInstall(install):
         c.finalize_options()
         c.run()
 
+with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme_file:
+    README = readme_file.read()
+
+with open(os.path.join(os.path.dirname(__file__), 'LICENSE')) as license_file:
+    LICENSE = license_file.read()
 
 if __name__ == '__main__':
     setup(name='xmsg',
-          version='2.3.1',
+          version=xmsg.__version__,
           description='xMsg a lightweight, publish/subscribe messaging system',
-          long_description='xMsg is a lightweight, yet full featured ' +
-                           'publish/subscribe messaging system, presenting ' +
-                           'asynchronous publish/subscribe inter-process ' +
-                           'communication protocol: an API layer in Java, ' +
-                           'Python and C++.',
+          long_description=README,
+          license=LICENSE,
           author='Vardan Gyurgyan, Ricardo Oyarzun',
           author_email='vardan@jlab.org',
+          platforms=['OSX', 'Linux'],
           url='https://claraweb.jlab.org',
           test_suite="tests",
           cmdclass={
-            'test': xMsgTest,
-            'clean': xMsgClean,
+            'test': XMsgTest,
+            'clean': XMsgClean,
           },
-
           packages=find_packages(exclude=["tests.*", "tests"]),
           install_requires=['setuptools',
                             'pyzmq>=14.5.0',
@@ -93,5 +78,10 @@ if __name__ == '__main__':
                    'bin/unix/px_proxy',
                    'bin/unix/px_publisher',
                    'bin/unix/px_subscriber',
-                   'bin/unix/px_sync_publisher']
+                   'bin/unix/px_sync_publisher'],
+          classifiers=[
+              'Intended Audience :: Developers',
+              'Programming Language :: Python',
+              'Programming Language :: Python :: 2.6',
+              'Programming Language :: Python :: 2.7'],
           )
