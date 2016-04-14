@@ -1,4 +1,4 @@
-# xMsg 2.3.1 for python
+# xMsg for python
 
 ### System Requirements
 
