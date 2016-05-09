@@ -15,7 +15,7 @@ class ConnectionManager:
     def __init__(self, context):
         self.context = context
 
-    def get_proxy_connection(self, address, connection_setup):
+    def get_proxy_connection(self, address, connection_setup=None):
         """
         Args:
             address (ProxyAddress): Proxy address object
@@ -24,8 +24,9 @@ class ConnectionManager:
         pub_socket = self.context.socket(zmq.PUB)
         sub_socket = self.context.socket(zmq.SUB)
 
-        connection_setup.pre_connection(pub_socket)
-        connection_setup.pre_connection(sub_socket)
+        if connection_setup:
+            connection_setup.pre_connection(pub_socket)
+            connection_setup.pre_connection(sub_socket)
 
         pub_port = address.pub_port
         sub_port = address.sub_port
@@ -33,7 +34,8 @@ class ConnectionManager:
         pub_socket.connect("tcp://%s:%d" % (address.host, pub_port))
         sub_socket.connect("tcp://%s:%d" % (address.host, sub_port))
 
-        connection_setup.post_connection()
+        if connection_setup:
+            connection_setup.post_connection()
 
         return xMsgConnection(address, pub_socket, sub_socket)
 
