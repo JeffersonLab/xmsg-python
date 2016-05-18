@@ -5,6 +5,7 @@
 ```sh
 $ # Ubuntu:
 $ sudo aptitude install libzmq3-dev
+$ sudo aptitude install python-dev
 $ # OSX
 $ brew install zmq
 ```
