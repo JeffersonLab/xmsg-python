@@ -97,7 +97,7 @@ class xMsg(object):
         self.destroy(5)
         raise SystemExit
 
-    def connect(self, address=None):
+    def connect(self, address):
         """Connects to the node by creating two sockets for publishing and
         subscribing/receiving messages.
 
@@ -105,18 +105,13 @@ class xMsg(object):
         created xMsgConnection object.
 
         Args:
-            address (String): xmsg proxy address
+            address (ProxyAddress): xmsg proxy address
 
         Returns:
             ConnectionManager: Connection manager
         """
-        if address:
-            p_address = ProxyAddress(address)
-        else:
-            p_address = ProxyAddress()
-
         connection_setup = xMsgConnectionSetup()
-        return self.connection_manager.get_proxy_connection(p_address,
+        return self.connection_manager.get_proxy_connection(address,
                                                             connection_setup)
 
     def release(self, connection):
