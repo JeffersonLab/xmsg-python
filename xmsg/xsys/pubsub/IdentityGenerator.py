@@ -8,7 +8,7 @@ from xmsg.core.xMsgUtil import xMsgUtil
 class IdentityGenerator(object):
 
     @staticmethod
-    def get_ctrl_id_prefix():
+    def _get_ctrl_id_prefix():
         python_id = 3
         localhost = xMsgUtil.host_to_ip("localhost")
         ip_hash = int(hash(localhost)) & sys.maxint
@@ -16,4 +16,4 @@ class IdentityGenerator(object):
 
     @staticmethod
     def get_ctrl_id():
-        return IdentityGenerator.get_ctrl_id_prefix() + randint(0, 100000)
+        return IdentityGenerator._get_ctrl_id_prefix() + randint(0, 100000)
