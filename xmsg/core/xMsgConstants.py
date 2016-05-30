@@ -78,6 +78,11 @@ class xMsgConstants(Enum):
     BIND = (17, "bind")
     CONNECT = (18, "connect")
 
+    CTRL_TOPIC = (19, "xmsg:control")
+    CTRL_CONNECT = (20, "pub")
+    CTRL_SUBSCRIBE = (21, "sub")
+    CTRL_REPLY = (22, "rep")
+
     DEFAULT_PORT = (7771, "defaultPort")
     REGISTRAR_PORT = (8888, "registrarPort")
 
