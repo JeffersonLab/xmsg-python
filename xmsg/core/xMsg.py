@@ -14,7 +14,7 @@ from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.data.xMsgRegistration_pb2 import xMsgRegistration
 from xmsg.net.xMsgAddress import ProxyAddress, RegAddress
-from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
+from xmsg.net.xMsgConnection import xMsgConnection
 
 
 class xMsg(object):
@@ -110,9 +110,8 @@ class xMsg(object):
         Returns:
             ConnectionManager: Connection manager
         """
-        connection_setup = xMsgConnectionSetup()
-        return self.connection_manager.get_proxy_connection(address,
-                                                            connection_setup)
+        return xMsgConnection(self.connection_manager,
+                              self.connection_manager.get_proxy_connection(address))
 
     def release(self, connection):
         """ Returns the given connection into the pool of available connections
@@ -249,13 +248,13 @@ class xMsg(object):
         """
 
         # Check connection
-        if not connection.pub_socket:
+        if not connection:
             raise NullConnection("xMsg: Null connection object")
         # Check msg
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
         try:
-            connection.send(transient_message)
+            connection.publish(transient_message)
         except zmq.error.ZMQError:
             return
         except Exception as e:
@@ -303,7 +302,7 @@ class xMsg(object):
 
         return sync_callback.received_message
 
-    def subscribe(self, topic, connection, callback):
+    def subscribe(self, address, topic, callback):
         """Subscribes to a specified xMsg topic.
 
         3 elements are defining xMsg topic: domain:subject:tip
@@ -322,13 +321,14 @@ class xMsg(object):
         be obtained by reading the replyTo field at the message metadata
 
         Args:
-            connection (xMsgConnection):  connection object
+            address (ProxyAddress):  connection object
             topic (xMsgTopic): subscription topic
-            callback: user supplied callback function
+            callback (xMsgCallBack): user supplied callback function
 
         Returns:
             xMsgSubscription: xMsg Subscription object, it allows thread handling
         """
+        connection = self.connection_manager.get_proxy_connection(address)
         subscription_handler = xMsgSubscription(str(topic), connection)
 
         def _callback(msg):

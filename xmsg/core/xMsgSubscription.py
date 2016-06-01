@@ -22,6 +22,12 @@ class xMsgSubscription(object):
     """
 
     def __init__(self, topic, connection):
+        """ xMsgSubscription constructor
+
+        Args:
+            topic (xMsgTopic): topic to subscribe xMsg actor
+            connection (xMsgProxyDriver): driver to communicate with proxy
+        """
         self.topic = str(topic)
         self.connection = connection
         self.connection.subscribe(self.topic)
@@ -56,6 +62,13 @@ class _Handler(Thread):
     """ Thread handler class"""
 
     def __init__(self, topic, connection, eval_func):
+        """ Handler constructor
+
+        Args:
+            topic (str):
+            connection (xMsgProxyDriver):
+            eval_func (CallBack):
+        """
         super(_Handler, self).__init__(name=topic)
         self.__connection = connection
         self.__is_running = Event()
@@ -64,18 +77,20 @@ class _Handler(Thread):
     def run(self):
         """ Starts the thread"""
         conn_poller = zmq.Poller()
-        conn_poller.register(self.__connection.sub_socket, zmq.POLLIN)
+        conn_poller.register(self.__connection.get_sub_socket(), zmq.POLLIN)
 
         while not self.stopped():
             try:
                 socks = dict(conn_poller.poll(100))
-                if socks.get(self.__connection.sub_socket) == zmq.POLLIN:
+                if socks.get(self.__connection.get_sub_socket()) == zmq.POLLIN:
                     t_data = self.__connection.recv()
+                    if len(t_data) == 2:
+                        continue
                     msg = xMsgMessage.create_with_serialized_data(t_data)
                     self.eval_func(msg)
-            except zmq.error.ZMQError:
+            except zmq.error.ZMQError as e:
                 self.stop()
-                return
+                raise e
 
     def stop(self):
         """ Stops the thread"""
