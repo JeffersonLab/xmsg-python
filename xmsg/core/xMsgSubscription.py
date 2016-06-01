@@ -1,7 +1,9 @@
 # coding=utf-8
 
 import zmq
+
 from threading import Thread, Event
+
 from xmsg.core.xMsgMessage import xMsgMessage
 
 
@@ -30,7 +32,6 @@ class xMsgSubscription(object):
         """
         self.topic = str(topic)
         self.connection = connection
-        self.connection.subscribe(self.topic)
         self.handle_thread = None
 
     def __repr__(self):
@@ -55,7 +56,6 @@ class xMsgSubscription(object):
     def stop(self):
         """ Stops the subscription thread"""
         self.handle_thread.stop()
-        self.connection.unsubscribe(self.topic)
 
 
 class _Handler(Thread):
@@ -71,6 +71,7 @@ class _Handler(Thread):
         """
         super(_Handler, self).__init__(name=topic)
         self.__connection = connection
+        self.__connection.subscribe(topic)
         self.__is_running = Event()
         self.eval_func = eval_func
 
@@ -90,6 +91,7 @@ class _Handler(Thread):
                     self.eval_func(msg)
             except zmq.error.ZMQError as e:
                 self.stop()
+                self.__connection.unsubscribe(self.name)
                 raise e
 
     def stop(self):
