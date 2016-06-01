@@ -97,7 +97,7 @@ class xMsg(object):
         self.destroy(5)
         raise SystemExit
 
-    def connect(self, address):
+    def get_connection(self, address):
         """Connects to the node by creating two sockets for publishing and
         subscribing/receiving messages.
 
@@ -108,7 +108,7 @@ class xMsg(object):
             address (ProxyAddress): xmsg proxy address
 
         Returns:
-            ConnectionManager: Connection manager
+            xMsgConnection: xMsg connection handler
         """
         return xMsgConnection(self.connection_manager,
                               self.connection_manager.get_proxy_connection(address))
@@ -239,7 +239,7 @@ class xMsg(object):
         serialization.
 
         Args:
-            connection (xMsgProxyDriver): proxy communication driver
+            connection (xMsgConnection): proxy communication driver
             transient_message (xMsgMessage): transient data object
 
         Raises:
@@ -254,7 +254,7 @@ class xMsg(object):
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
         try:
-            connection.send(transient_message)
+            connection.publish(transient_message)
         except zmq.error.ZMQError:
             return
         except Exception as e:

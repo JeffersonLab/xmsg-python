@@ -19,7 +19,7 @@ def main(array_size):
     publisher = xMsg("test_publisher")
 
     # Create a socket connections to the xMsg node
-    connection = publisher.connect(ProxyAddress())
+    connection = publisher.get_connection(ProxyAddress())
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
