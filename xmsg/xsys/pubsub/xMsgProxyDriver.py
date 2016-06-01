@@ -9,6 +9,10 @@ from xmsg.xsys.pubsub.IdentityGenerator import IdentityGenerator
 class xMsgProxyDriver(object):
 
     def __init__(self, proxy_address):
+        """ xMsgProxyDriver constructor
+        Args:
+            proxy_address (ProxyAddress):
+        """
         self._address = proxy_address
         self._identity = str(IdentityGenerator.get_ctrl_id())
         self._context = zmq.Context()
@@ -26,15 +30,32 @@ class xMsgProxyDriver(object):
         self._ctl_socket.identity = self._identity
 
     def get_address(self):
+        """ returns proxy address
+
+        Returns:
+            ProxyAddress: proxy address object
+        """
         return self._address
 
     def get_pub_socket(self):
+        """ returns publisher socket
+
+        Returns:
+            zmq.Socket
+        """
         return self._pub_socket
 
     def get_sub_socket(self):
+        """ returns subscriber socket
+
+        Returns:
+            zmq.Socket
+        """
         return self._sub_socket
 
     def connect(self):
+        """ Connects the publisher, subscriber and ctrl sockets to start messaging
+        """
         ctrl_port = self._address.sub_port + 1
         self._pub_socket.connect("tcp://%s:%d" % (self._address.host,
                                                   self._address.pub_port))
@@ -111,8 +132,7 @@ class xMsgProxyDriver(object):
 
     def send(self, message):
         self._pub_socket.send(message.topic, zmq.SNDMORE)
-        self._pub_socket.send(message.metadata.SerializeToString(),
-                              zmq.SNDMORE)
+        self._pub_socket.send(message.metadata.SerializeToString(), zmq.SNDMORE)
         self._pub_socket.send(message.data)
 
     def _send(self, serialized_message):

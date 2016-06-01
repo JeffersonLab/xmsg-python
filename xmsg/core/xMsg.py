@@ -239,7 +239,7 @@ class xMsg(object):
         serialization.
 
         Args:
-            connection (xMsgConnection): object
+            connection (xMsgProxyDriver): proxy communication driver
             transient_message (xMsgMessage): transient data object
 
         Raises:
@@ -254,7 +254,7 @@ class xMsg(object):
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
         try:
-            connection.publish(transient_message)
+            connection.send(transient_message)
         except zmq.error.ZMQError:
             return
         except Exception as e:

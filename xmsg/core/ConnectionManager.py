@@ -1,5 +1,5 @@
 # coding=utf-8
-
+from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
 from xmsg.xsys.pubsub.xMsgProxyDriver import xMsgProxyDriver
 
@@ -12,7 +12,8 @@ class ConnectionManager(object):
         self._reg_connections = _ConnectionPool()
 
     def create_registrar_connection(self, registration_address):
-        """
+        """ Creates a new registrar connection from given registration address
+        object
 
         Args:
             registration_address (RegAddress):
@@ -23,19 +24,18 @@ class ConnectionManager(object):
         return xMsgRegDriver(self.context, registration_address)
 
     def get_registrar_connection(self, registration_address):
-        """
+        """ Returns registrar connection from given registration address object
 
         Args:
-            registration_address:
+            registration_address (RegAddress): registrar address object
 
         Returns:
-
+            xMsgRegDriver
         """
         cached_conn = self._reg_connections.get_connection(registration_address)
         if cached_conn:
             return cached_conn
-        conn = xMsgProxyDriver(registration_address)
-        conn.connect()
+        conn = xMsgRegDriver(self.context, registration_address)
         return conn
 
     def release_registrar_connection(self, registrar_connection):
@@ -54,21 +54,38 @@ class ConnectionManager(object):
             proxy_address (ProxyAddress):
 
         Returns:
-
+            xMsgProxyDriver
         """
-        return xMsgProxyDriver(proxy_address)
+        conn = xMsgProxyDriver(proxy_address)
+        conn.connect()
+        xMsgUtil.sleep(0.01)
+        return conn
 
     def get_proxy_connection(self, proxy_address):
-        cached_conn = self._proxy_connections.get_connection(proxy_address)
+        """ Returns proxy connection object from connection pool
+
+        Args:
+            proxy_address (ProxyAddress): proxy address object
+
+        Returns:
+            xMsgProxyDriver
+        """
+        cached_conn = self._proxy_connections.get_connection(proxy_address.host)
         if cached_conn:
             return cached_conn
         conn = xMsgProxyDriver(proxy_address)
         conn.connect()
+        xMsgUtil.sleep(0.01)
         return conn
 
-    def release_proxy_connection(self, proxy_address):
-        self._proxy_connections.set_connection(proxy_address.get_address(),
-                                               proxy_address)
+    def release_proxy_connection(self, connection):
+        """ Release proxy connection and caches it in the connection pool
+
+        Args:
+            connection (xMsgProxyDriver):
+        """
+        self._proxy_connections.set_connection(connection.get_address().host,
+                                               connection)
 
     def destroy(self):
         # TODO: proper liberation of connection resources
@@ -82,12 +99,12 @@ class _ConnectionPool(object):
 
     def get_connection(self, address):
         try:
-            return self._queue[address.host]
+            return self._queue[address]
         except KeyError:
             return None
 
     def set_connection(self, address, connection):
-        if not self._queue.has_key(address):
+        if not address in self._queue:
             self._queue[address] = connection
 
     def destroy_all(self):

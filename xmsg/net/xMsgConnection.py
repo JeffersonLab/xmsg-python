@@ -6,11 +6,11 @@ import zmq
 class xMsgConnection(object):
 
     def __init__(self, connection_manager, proxy_driver):
-        """
+        """ xMsg Connection constructor
 
         Args:
-            connection_manager (ConnectionManager):
-            proxy_driver (xMsgProxyDriver):
+            connection_manager (ConnectionManager): connection manager object
+            proxy_driver (xMsgProxyDriver): proxy connection driver
         """
         self._pool = connection_manager
         self._connection = proxy_driver
