@@ -10,7 +10,7 @@ class xMsgProxyDriver(object):
 
     def __init__(self, proxy_address):
         self._address = proxy_address
-        self._identity = IdentityGenerator.get_ctrl_id()
+        self._identity = str(IdentityGenerator.get_ctrl_id())
         self._context = zmq.Context()
         self._pub_socket = self._sub_socket = self._ctl_socket = None
         try:
@@ -27,6 +27,12 @@ class xMsgProxyDriver(object):
 
     def get_address(self):
         return self._address
+
+    def get_pub_socket(self):
+        return self._pub_socket
+
+    def get_sub_socket(self):
+        return self._sub_socket
 
     def connect(self):
         ctrl_port = self._address.sub_port + 1
@@ -105,7 +111,8 @@ class xMsgProxyDriver(object):
 
     def send(self, message):
         self._pub_socket.send(message.topic, zmq.SNDMORE)
-        self._pub_socket.send(message.metadata, zmq.SNDMORE)
+        self._pub_socket.send(message.metadata.SerializeToString(),
+                              zmq.SNDMORE)
         self._pub_socket.send(message.data)
 
     def _send(self, serialized_message):
