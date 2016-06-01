@@ -7,6 +7,7 @@ from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.data import xMsgData_pb2
+from xmsg.net.xMsgAddress import ProxyAddress
 
 
 def main(array_size):
@@ -18,7 +19,7 @@ def main(array_size):
     publisher = xMsg("test_publisher")
 
     # Create a socket connections to the xMsg node
-    connection = publisher.connect()
+    connection = publisher.connect(ProxyAddress())
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
