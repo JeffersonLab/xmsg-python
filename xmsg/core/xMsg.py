@@ -425,10 +425,6 @@ class _SyncSendCallBack(xMsgCallBack):
         self.received_message = None
         self.handler = None
 
-    def get_message(self):
-        """Returns the response message if this one has been received"""
-        return self.received_message
-
     def set_handler(self, handler):
         """Sets the subscription handler for the sync callback
         Args
