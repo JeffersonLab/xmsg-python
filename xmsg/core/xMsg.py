@@ -1,5 +1,5 @@
 # coding=utf-8
-
+from contextlib import contextmanager
 from random import randint
 import zmq
 import signal
@@ -253,14 +253,11 @@ class xMsg(object):
         # Check msg
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
-        try:
-            assert isinstance(connection, xMsgConnection)
-            connection.publish(transient_message)
 
-        except zmq.error.ZMQError:
-            return
-        except Exception as e:
-            raise e
+        assert isinstance(connection, xMsgConnection)
+
+        with self._closing(connection):
+            connection.publish(transient_message)
 
     def sync_publish(self, connection, transient_message, timeout):
         """Publishes a message through the specified proxy connection and
@@ -410,6 +407,17 @@ class xMsg(object):
             r_data.ownerType = xMsgRegistration.SUBSCRIBER
 
         return r_data
+
+    @contextmanager
+    def _closing(self, conn):
+        try:
+            yield conn
+
+        except Exception as e:
+            print e.message
+            raise e
+        finally:
+            conn.close()
 
 
 class _SyncSendCallBack(xMsgCallBack):
