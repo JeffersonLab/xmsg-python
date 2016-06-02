@@ -21,7 +21,6 @@ class xMsgConnection(object):
     def close(self):
         if self._connection:
             self._pool.release_proxy_connection(self._connection)
-            self._connection = None
 
     def destroy(self):
         if self._connection:

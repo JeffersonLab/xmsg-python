@@ -15,6 +15,7 @@ class ExampleSubscriberCallback(xMsgCallBack):
         ds_msg = xMsgData()
         ds_msg.ParseFromString(msg.data)
         print "Subscriber received data : %s" % ds_msg
+        return msg
 
 
 def main():

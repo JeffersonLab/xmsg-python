@@ -277,12 +277,11 @@ class xMsg(object):
 
         # subscribe to the return_address
         sync_callback = _SyncSendCallBack()
-        subscription_handler = self.subscribe(return_topic,
-                                              connection,
+        subscription_handler = self.subscribe(connection.get_address(),
+                                              return_topic,
                                               sync_callback)
         sync_callback.set_handler(subscription_handler)
 
-        xMsgUtil.sleep(0.01)
         self.publish(connection, transient_message)
         # wait for the response
         time_counter = 0
@@ -327,8 +326,9 @@ class xMsg(object):
         Returns:
             xMsgSubscription: xMsg Subscription object, it allows thread handling
         """
-        connection = self.connection_manager.get_proxy_connection(address)
-        subscription_handler = xMsgSubscription(str(topic), connection)
+        connection = self.get_connection(address)
+        driver = self.connection_manager.get_proxy_connection(address)
+        subscription_handler = xMsgSubscription(str(topic), driver)
 
         def _callback(msg):
             self._call_user_callback(connection, callback, msg)
@@ -339,12 +339,11 @@ class xMsg(object):
         return subscription_handler
 
     def _call_user_callback(self, connection, callback, t_message):
-        requester = t_message.metadata.replyTo
-        if requester != str(xMsgConstants.UNDEFINED):
+        if t_message.metadata.replyTo:
             # Sync request
             try:
                 r_message = callback.callback(t_message)
-                r_message.topic = xMsgTopic.wrap(requester)
+                r_message.topic = xMsgTopic.wrap(t_message.metadata.replyTo)
                 r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
 
                 self.publish(connection, r_message)
@@ -441,3 +440,4 @@ class _SyncSendCallBack(xMsgCallBack):
         self.received_message = msg
         if self.handler:
             self.handler.stop()
+        return msg
