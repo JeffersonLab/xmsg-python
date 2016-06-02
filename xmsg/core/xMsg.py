@@ -117,7 +117,7 @@ class xMsg(object):
         """ Returns the given connection into the pool of available connections
 
         Args:
-            connection (xMsgConnection): connection object
+            connection (xMsgProxyDriver): connection object
         """
         self.connection_manager.release_proxy_connection(connection)
 
@@ -254,7 +254,9 @@ class xMsg(object):
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
         try:
+            assert isinstance(connection, xMsgConnection)
             connection.publish(transient_message)
+
         except zmq.error.ZMQError:
             return
         except Exception as e:
