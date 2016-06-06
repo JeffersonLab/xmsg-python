@@ -58,7 +58,8 @@ class ConnectionManager(object):
         """
         conn = xMsgProxyDriver(proxy_address)
         conn.connect()
-        xMsgUtil.sleep(0.01)
+        if not conn.check_connection():
+            raise Exception("Connection Manager: Could not connect...")
         return conn
 
     def get_proxy_connection(self, proxy_address):
