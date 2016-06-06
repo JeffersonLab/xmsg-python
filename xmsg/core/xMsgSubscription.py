@@ -51,6 +51,9 @@ class xMsgSubscription(object):
 
     def start(self):
         """ Starts the subscription thread"""
+        self.connection.subscribe(self.topic)
+        if not self.connection.check_subscription(self.topic):
+            self.connection.unsubscribe(self.topic)
         self.handle_thread.start()
 
     def stop(self):

@@ -136,7 +136,9 @@ class xMsgProxyDriver(object):
         self._pub_socket.send(message.data)
 
     def _send(self, serialized_message):
-        self._pub_socket.send(serialized_message)
+        self._pub_socket.send(serialized_message[0], zmq.SNDMORE)
+        self._pub_socket.send(serialized_message[1], zmq.SNDMORE)
+        self._pub_socket.send(serialized_message[2])
 
     def recv(self):
         return self._sub_socket.recv_multipart()
