@@ -1,23 +1,4 @@
-#
-# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for educational, research, and not-for-profit purposes,
-# without fee and without a signed licensing agreement.
-#
-# Author Vardan Gyurjyan
-# Department of Experimental Nuclear Physics, Jefferson Lab.
-#
-# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
-# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
-# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
-# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
-# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
+# coding=utf-8
 
 import zmq
 
@@ -28,7 +9,7 @@ from xmsg.xsys.regdis.xMsgRegResponse import xMsgRegResponse
 from xmsg.xsys.regdis.xMsgRegRequest import xMsgRegRequest
 
 
-class xMsgRegDriver:
+class xMsgRegDriver(object):
     """Methods for registration and discovery of xMsg actors, i.e. publishers
     and subscribers.
 
@@ -45,10 +26,20 @@ class xMsgRegDriver:
     def __init__(self, context, reg_address):
         # 0MQ context
         self.context = context
+
+        self._reg_address = reg_address
         # Connection settings
         self._connection = self.zmq_socket(self.context, zmq.REQ,
                                            reg_address.address,
                                            str(xMsgConstants.CONNECT))
+
+    def get_address(self):
+        """Returns the Registration address object
+
+        Returns:
+            RegAddress: Registration Address
+        """
+        return self._reg_address
 
     def get_context(self):
         """Returns the main zmq socket context
@@ -66,7 +57,7 @@ class xMsgRegDriver:
         Data is the object of the xMsgRegistration
 
         Args:
-            data (xMsgRegistration): registration information object
+            registration_data (xMsgRegistration): registration information obj.
             is_publisher (bool): if set to be true then this is a request
                 to register a publisher, otherwise this is a subscriber
                 registration request
@@ -191,7 +182,8 @@ class xMsgRegDriver:
                 raise TimeoutReached("Timeout processing registration request")
 
         except KeyboardInterrupt:
-            raise RegistrationException("Keyboard Interrupt while trying to register")
+            raise RegistrationException("Keyboard Interrupt while trying to \
+                                        register")
 
     def zmq_socket(self, context, socket_type, reg_address, boc):
         """Creates and returns zmq socket object

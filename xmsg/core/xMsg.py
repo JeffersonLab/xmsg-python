@@ -1,5 +1,5 @@
 # coding=utf-8
-
+from contextlib import contextmanager
 from random import randint
 import zmq
 import signal
@@ -14,7 +14,7 @@ from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.data.xMsgRegistration_pb2 import xMsgRegistration
 from xmsg.net.xMsgAddress import ProxyAddress, RegAddress
-from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
+from xmsg.net.xMsgConnection import xMsgConnection
 
 
 class xMsg(object):
@@ -97,7 +97,7 @@ class xMsg(object):
         self.destroy(5)
         raise SystemExit
 
-    def connect(self, address=None):
+    def get_connection(self, address):
         """Connects to the node by creating two sockets for publishing and
         subscribing/receiving messages.
 
@@ -105,25 +105,19 @@ class xMsg(object):
         created xMsgConnection object.
 
         Args:
-            address (String): xmsg proxy address
+            address (ProxyAddress): xmsg proxy address
 
         Returns:
-            ConnectionManager: Connection manager
+            xMsgConnection: xMsg connection handler
         """
-        if address:
-            p_address = ProxyAddress(address)
-        else:
-            p_address = ProxyAddress()
-
-        connection_setup = xMsgConnectionSetup()
-        return self.connection_manager.get_proxy_connection(p_address,
-                                                            connection_setup)
+        return xMsgConnection(self.connection_manager,
+                              self.connection_manager.get_proxy_connection(address))
 
     def release(self, connection):
         """ Returns the given connection into the pool of available connections
 
         Args:
-            connection (xMsgConnection): connection object
+            connection (xMsgProxyDriver): connection object
         """
         self.connection_manager.release_proxy_connection(connection)
 
@@ -245,7 +239,7 @@ class xMsg(object):
         serialization.
 
         Args:
-            connection (xMsgConnection): object
+            connection (xMsgConnection): proxy communication driver
             transient_message (xMsgMessage): transient data object
 
         Raises:
@@ -254,17 +248,16 @@ class xMsg(object):
         """
 
         # Check connection
-        if not connection.pub_socket:
+        if not connection:
             raise NullConnection("xMsg: Null connection object")
         # Check msg
         if not transient_message:
             raise NullMessage("xMsg: Null message object")
-        try:
-            connection.send(transient_message)
-        except zmq.error.ZMQError:
-            return
-        except Exception as e:
-            raise e
+
+        assert isinstance(connection, xMsgConnection)
+
+        with self._closing(connection):
+            connection.publish(transient_message)
 
     def sync_publish(self, connection, transient_message, timeout):
         """Publishes a message through the specified proxy connection and
@@ -284,12 +277,11 @@ class xMsg(object):
 
         # subscribe to the return_address
         sync_callback = _SyncSendCallBack()
-        subscription_handler = self.subscribe(return_topic,
-                                              connection,
+        subscription_handler = self.subscribe(connection.get_address(),
+                                              return_topic,
                                               sync_callback)
         sync_callback.set_handler(subscription_handler)
 
-        xMsgUtil.sleep(0.01)
         self.publish(connection, transient_message)
         # wait for the response
         time_counter = 0
@@ -308,7 +300,7 @@ class xMsg(object):
 
         return sync_callback.received_message
 
-    def subscribe(self, topic, connection, callback):
+    def subscribe(self, address, topic, callback):
         """Subscribes to a specified xMsg topic.
 
         3 elements are defining xMsg topic: domain:subject:tip
@@ -327,14 +319,16 @@ class xMsg(object):
         be obtained by reading the replyTo field at the message metadata
 
         Args:
-            connection (xMsgConnection):  connection object
+            address (ProxyAddress):  connection object
             topic (xMsgTopic): subscription topic
-            callback: user supplied callback function
+            callback (xMsgCallBack): user supplied callback function
 
         Returns:
             xMsgSubscription: xMsg Subscription object, it allows thread handling
         """
-        subscription_handler = xMsgSubscription(str(topic), connection)
+        connection = self.get_connection(address)
+        driver = self.connection_manager.get_proxy_connection(address)
+        subscription_handler = xMsgSubscription(str(topic), driver)
 
         def _callback(msg):
             self._call_user_callback(connection, callback, msg)
@@ -345,12 +339,11 @@ class xMsg(object):
         return subscription_handler
 
     def _call_user_callback(self, connection, callback, t_message):
-        requester = t_message.metadata.replyTo
-        if requester != str(xMsgConstants.UNDEFINED):
+        if t_message.metadata.replyTo:
             # Sync request
             try:
                 r_message = callback.callback(t_message)
-                r_message.topic = xMsgTopic.wrap(requester)
+                r_message.topic = xMsgTopic.wrap(t_message.metadata.replyTo)
                 r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
 
                 self.publish(connection, r_message)
@@ -414,16 +407,23 @@ class xMsg(object):
 
         return r_data
 
+    @contextmanager
+    def _closing(self, conn):
+        try:
+            yield conn
+
+        except Exception as e:
+            print e.message
+            raise e
+        finally:
+            conn.close()
+
 
 class _SyncSendCallBack(xMsgCallBack):
 
     def __init__(self):
         self.received_message = None
         self.handler = None
-
-    def get_message(self):
-        """Returns the response message if this one has been received"""
-        return self.received_message
 
     def set_handler(self, handler):
         """Sets the subscription handler for the sync callback
@@ -436,3 +436,4 @@ class _SyncSendCallBack(xMsgCallBack):
         self.received_message = msg
         if self.handler:
             self.handler.stop()
+        return msg

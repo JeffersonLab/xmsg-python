@@ -10,16 +10,16 @@ from xmsg.data.xMsgData_pb2 import xMsgData
 from xmsg.net.xMsgAddress import ProxyAddress
 
 
-def main(array_size, fe_host="localhost"):
+def main(array_size):
     """Publisher usage:
     ::
         Usage: python xmsg/examples/Publisher <array_size> <fe_host>
     """
 
-    sync_publisher = xMsg("test_publisher", "localhost", fe_host)
+    sync_publisher = xMsg("test_publisher")
 
     # Create a socket connections to the xMsg node
-    connection = sync_publisher.connect(ProxyAddress(fe_host))
+    connection = sync_publisher.get_connection(ProxyAddress())
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
@@ -34,7 +34,8 @@ def main(array_size, fe_host="localhost"):
             # Create transient data
 
             t_msg_data.FLOATA.extend(data)
-            transient_message = xMsgMessage.create_with_xmsg_data(topic, t_msg_data)
+            transient_message = xMsgMessage.create_with_xmsg_data(topic,
+                                                                  t_msg_data)
 
             # Publishing
             sync_publisher.sync_publish(connection, transient_message, 10)
@@ -45,3 +46,7 @@ def main(array_size, fe_host="localhost"):
             xMsgUtil.log("Removing Registration and terminating thread pool.")
             sync_publisher.destroy()
             return
+
+
+if __name__ == "__main__":
+    main(10)

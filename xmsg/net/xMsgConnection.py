@@ -5,45 +5,35 @@ import zmq
 
 class xMsgConnection(object):
 
-    def __init__(self, address, pub_socket, sub_socket):
-        self._address = address
-        self._pub = pub_socket
-        self._sub = sub_socket
+    def __init__(self, connection_manager, proxy_driver):
+        """ xMsg Connection constructor
 
-    @property
-    def address(self):
-        return self._address
+        Args:
+            connection_manager (ConnectionManager): connection manager object
+            proxy_driver (xMsgProxyDriver): proxy connection driver
+        """
+        self._pool = connection_manager
+        self._connection = proxy_driver
 
-    @address.setter
-    def address(self, address):
-        self._address = address
+    def get_address(self):
+        return self._connection.get_address()
 
-    @property
-    def sub_socket(self):
-        return self._sub
+    def close(self):
+        if self._connection:
+            self._pool.release_proxy_connection(self._connection)
 
-    @sub_socket.setter
-    def sub_socket(self, subscriber_socket):
-        self._sub = subscriber_socket
+    def destroy(self):
+        if self._connection:
+            self._connection.close()
+            self._connection = None
 
-    @property
-    def pub_socket(self):
-        return self._pub
+    def publish(self, msg):
+        if not self._connection:
+            raise Exception("Connection is closed")
 
-    @pub_socket.setter
-    def pub_socket(self, publisher_socket):
-        self._pub = publisher_socket
+        try:
+            self._connection.send(msg)
 
-    def send(self, message):
-        self._pub.send(message.topic, zmq.SNDMORE)
-        self._pub.send(message.metadata.SerializeToString(), zmq.SNDMORE)
-        self._pub.send(message.data)
-
-    def recv(self):
-        return self._sub.recv_multipart()
-
-    def subscribe(self, topic):
-        self._sub.setsockopt(zmq.SUBSCRIBE, topic)
-
-    def unsubscribe(self, topic):
-        self._sub.setsockopt(zmq.UNSUBSCRIBE, topic)
+        except zmq.ZMQError as e:
+            self.destroy()
+            raise e
