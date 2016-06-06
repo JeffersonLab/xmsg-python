@@ -68,9 +68,10 @@ class xMsgProxyDriver(object):
         retries = 0
         max_retries = 10
 
+        connection_poller = zmq.Poller()
+        connection_poller.register(self._ctl_socket, zmq.POLLIN)
+
         while retries < max_retries:
-            connection_poller = zmq.Poller()
-            connection_poller.register(self._ctl_socket, zmq.POLLIN)
 
             try:
                 serialized_msg = [str(xMsgConstants.CTRL_TOPIC) + ":con",
@@ -83,15 +84,14 @@ class xMsgProxyDriver(object):
                     t_data = self._ctl_socket.recv_multipart()
 
                     if len(t_data) == 1:
-                        m_type = t_data[0]
-
-                        if m_type == str(xMsgConstants.CTRL_CONNECT):
+                        if t_data[0] == str(xMsgConstants.CTRL_CONNECT):
                             return True
+                retries += 1
 
             except zmq.ZMQError as e:
                 print e.message
-                raise e
-            return False
+                return False
+        return False
 
     def subscribe(self, topic):
         self._sub_socket.setsockopt(zmq.SUBSCRIBE, topic)
@@ -103,9 +103,10 @@ class xMsgProxyDriver(object):
         retries = 0
         max_retries = 10
 
+        connection_poller = zmq.Poller()
+        connection_poller.register(self._sub_socket)
+
         while retries < max_retries:
-            connection_poller = zmq.Poller()
-            connection_poller.register(self._sub_socket)
 
             try:
                 serialized_msg = [str(xMsgConstants.CTRL_TOPIC) + ":sub",
@@ -124,11 +125,11 @@ class xMsgProxyDriver(object):
                         if m_type == str(xMsgConstants.CTRL_SUBSCRIBE) and\
                             m_id == topic:
                             return True
-
+                retries += 1
             except zmq.ZMQError as e:
                 print e.message
-                raise e
-            return False
+                return False
+        return False
 
     def send(self, message):
         self._pub_socket.send(message.topic, zmq.SNDMORE)
