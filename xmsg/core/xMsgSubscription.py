@@ -96,6 +96,7 @@ class _Handler(Thread):
                 self.stop()
                 self.__connection.unsubscribe(self.name)
                 raise e
+        self.__connection.unsubscribe(self.name)
 
     def stop(self):
         """ Stops the thread"""
