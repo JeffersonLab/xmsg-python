@@ -1,9 +1,8 @@
 # coding=utf-8
 from contextlib import contextmanager
 from random import randint
+
 import zmq
-import signal
-import threading
 
 from xmsg.core.ConnectionManager import ConnectionManager
 from xmsg.core.xMsgCallBack import xMsgCallBack
@@ -59,9 +58,6 @@ class xMsg(object):
         # Name of xMsg Actor
         self.myname = name
 
-        if threading.current_thread().name == "MainThread":
-            signal.signal(signal.SIGINT, self._signal_handler)
-
         # Set of subscriptions
         self.my_subscriptions = []
 
@@ -89,13 +85,6 @@ class xMsg(object):
 
     def __repr__(self):
         return str("<xMsg : %s>" % self.myname)
-
-    def _signal_handler(self, signal, frame):
-        for sub in self.my_subscriptions:
-            sub.stop()
-            self.unsubscribe(sub)
-        self.destroy(5)
-        raise SystemExit
 
     def get_connection(self, address):
         """Connects to the node by creating two sockets for publishing and
