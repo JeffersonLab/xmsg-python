@@ -104,13 +104,13 @@ class xMsgProxyDriver(object):
         max_retries = 10
 
         connection_poller = zmq.Poller()
-        connection_poller.register(self._sub_socket)
+        connection_poller.register(self._sub_socket, zmq.POLLIN)
 
         while retries < max_retries:
 
             try:
                 serialized_msg = [str(xMsgConstants.CTRL_TOPIC) + ":sub",
-                                  str(xMsgConstants.CTRL_CONNECT),
+                                  str(xMsgConstants.CTRL_SUBSCRIBE),
                                   str(topic)]
                 self._send(serialized_msg)
 
@@ -121,9 +121,7 @@ class xMsgProxyDriver(object):
                     if len(t_data) == 2:
                         m_id = t_data[0]
                         m_type = t_data[1]
-
-                        if m_type == str(xMsgConstants.CTRL_SUBSCRIBE) and\
-                            m_id == topic:
+                        if m_type == str(xMsgConstants.CTRL_SUBSCRIBE) and m_id == topic:
                             return True
                 retries += 1
             except zmq.ZMQError as e:
