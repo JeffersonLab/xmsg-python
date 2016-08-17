@@ -3,9 +3,7 @@
 
 import os
 
-from distutils.core import setup, Command
-from distutils.command.clean import clean
-from distutils.command.install import install
+from setuptools import setup, Command
 from setuptools.command.test import test as TestCommand
 from setuptools import find_packages
 import xmsg
@@ -35,15 +33,6 @@ class XMsgClean(Command):
     def run(self):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
-
-class XMsgInstall(install):
-
-    def run(self):
-        install.run(self)
-        c = clean(self.distribution)
-        c.all = True
-        c.finalize_options()
-        c.run()
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme_file:
     README = readme_file.read()
