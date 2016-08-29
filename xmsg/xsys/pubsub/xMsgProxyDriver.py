@@ -66,7 +66,7 @@ class xMsgProxyDriver(object):
 
     def check_connection(self):
         retries = 0
-        max_retries = 10
+        max_retries = 20
 
         connection_poller = zmq.Poller()
         connection_poller.register(self._ctl_socket, zmq.POLLIN)
@@ -101,7 +101,7 @@ class xMsgProxyDriver(object):
 
     def check_subscription(self, topic):
         retries = 0
-        max_retries = 10
+        max_retries = 20
 
         connection_poller = zmq.Poller()
         connection_poller.register(self._sub_socket, zmq.POLLIN)

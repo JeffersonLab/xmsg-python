@@ -32,7 +32,8 @@ class ConnectionManager(object):
         Returns:
             xMsgRegDriver
         """
-        cached_conn = self._reg_connections.get_connection(registration_address)
+        cached_conn = self._reg_connections.get_connection(registration_address.host,
+                                                           registration_address.pub_port)
         if cached_conn:
             return cached_conn
         conn = xMsgRegDriver(self.context, registration_address)
@@ -44,7 +45,8 @@ class ConnectionManager(object):
         Args:
             registrar_connection (xMsgRegDriver): connection to registrar
         """
-        self._reg_connections.set_connection(registrar_connection.get_address(),
+        address = registrar_connection.get_address()
+        self._reg_connections.set_connection(address.host, address.port,
                                              registrar_connection)
 
     def create_proxy_connection(self, proxy_address):
@@ -71,7 +73,8 @@ class ConnectionManager(object):
         Returns:
             xMsgProxyDriver
         """
-        cached_conn = self._proxy_connections.get_connection(proxy_address.host)
+        cached_conn = self._proxy_connections.get_connection(proxy_address.host,
+                                                             proxy_address.pub_port)
         if cached_conn:
             return cached_conn
         conn = xMsgProxyDriver(proxy_address)
@@ -87,6 +90,7 @@ class ConnectionManager(object):
             connection (xMsgProxyDriver):
         """
         self._proxy_connections.set_connection(connection.get_address().host,
+                                               connection.get_address().pub_port,
                                                connection)
 
     def destroy(self):
@@ -99,15 +103,15 @@ class _ConnectionPool(object):
     def __init__(self):
         self._queue = {}
 
-    def get_connection(self, address):
+    def get_connection(self, address, port):
         try:
-            return self._queue[address]
+            return self._queue[address + "-" + str(port)]
         except KeyError:
             return None
 
-    def set_connection(self, address, connection):
+    def set_connection(self, address, port, connection):
         if not address in self._queue:
-            self._queue[address] = connection
+            self._queue[address + "-" + str(port)] = connection
 
     def destroy_all(self):
         for connection in self._queue:

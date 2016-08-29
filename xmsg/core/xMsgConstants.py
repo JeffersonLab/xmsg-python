@@ -83,7 +83,7 @@ class xMsgConstants(Enum):
     CTRL_SUBSCRIBE = (21, "sub")
     CTRL_REPLY = (22, "rep")
 
-    DEFAULT_PORT = (7771, "defaultPort")
+    DEFAULT_PORT = (7791, "defaultPort")
     REGISTRAR_PORT = (8888, "registrarPort")
 
     def __init__(self, int_value, label):
