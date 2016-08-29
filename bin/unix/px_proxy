@@ -2,19 +2,8 @@
 # author royarzun
 # date 12.16.14
 
-if [ "$1" = "-h" -o "$1" = "-help" ]
-then
-    echo ""
-    echo "Starts xMsgProxy (python binding)"
-    echo "---------------------------------"
-    echo "synopsis: px_proxy"
-    echo ""
+if ! $(python -c 'from xmsg.xsys.xMsgProxy import main' &> /dev/null); then
+    echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
 else
-    if ! $(python -c 'from xmsg.xsys.xMsgProxy import main' &> /dev/null);
-	then
-		echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
-	else
-		python -c 'from xmsg.xsys.xMsgProxy import main; main()'
-	fi
-
+    python -m 'xmsg.xsys.xMsgProxy' ${@}
 fi
