@@ -93,8 +93,7 @@ class xMsgMessage(object):
 
     @staticmethod
     def create_response(cls, msg):
-        response_topic = xMsgTopic.wrap(msg.metadata.replyTo)
-        return cls(response_topic, msg.metadata, msg.data)
+        return cls(msg.get_reply_topic(), msg.metadata, msg.data)
 
     def has_reply_topic(self):
         return self._metadata.HasField("replyTo")

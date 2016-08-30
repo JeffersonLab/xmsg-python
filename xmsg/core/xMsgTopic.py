@@ -72,7 +72,7 @@ class xMsgTopic(object):
         return "<xMsgTopic: %s>" % self.topic
 
     def __str__(self):
-        return self.topic
+        return str(self.topic)
 
     @classmethod
     def build(cls, domain, subject=ANY, xtype=ANY):
