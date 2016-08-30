@@ -17,8 +17,8 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='xMsgMeta.proto',
-  package='',
-  serialized_pb=_b('\n\x0exMsgMeta.proto\"\xe3\x04\n\x08xMsgMeta\x12\x0f\n\x07version\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x03 \x01(\t\x12 \n\x06status\x18\x04 \x01(\x0e\x32\x10.xMsgMeta.Status\x12\x12\n\nseverityId\x18\x05 \x01(\x0f\x12\x0e\n\x06sender\x18\x06 \x01(\t\x12\x13\n\x0bsenderState\x18\x07 \x01(\t\x12\x17\n\x0f\x63ommunicationId\x18\x08 \x01(\x07\x12\x13\n\x0b\x63omposition\x18\n \x01(\t\x12\x15\n\rexecutionTime\x18\x0b \x01(\x10\x12\'\n\x06\x61\x63tion\x18\x0c \x01(\x0e\x32\x17.xMsgMeta.ControlAction\x12+\n\x07\x63ontrol\x18\r \x01(\x0e\x32\x1a.xMsgMeta.SubControlAction\x12\x18\n\x08\x64\x61taType\x18\x0e \x01(\t:\x06native\x12\x1a\n\x12\x64\x61tTypeDescription\x18\x0f \x01(\t\x12\x1e\n\x10isDataSerialized\x18\x10 \x01(\x08:\x04true\x12\x1a\n\x07replyTo\x18\x11 \x01(\t:\tundefined\x12#\n\tbyteOrder\x18\x12 \x01(\x0e\x32\x10.xMsgMeta.Endian\"*\n\x06Status\x12\x08\n\x04INFO\x10\x01\x12\x0b\n\x07WARNING\x10\x02\x12\t\n\x05\x45RROR\x10\x03\"\x1d\n\x06\x45ndian\x12\n\n\x06Little\x10\x01\x12\x07\n\x03\x42ig\x10\x02\"+\n\rControlAction\x12\x0b\n\x07\x45XECUTE\x10\x00\x12\r\n\tCONFIGURE\x10\x01\"\x1c\n\x10SubControlAction\x12\x08\n\x04SKIP\x10\x00\x42\tB\x05xMsgMH\x01')
+  package='org.jlab.coda.xmsg.data',
+  serialized_pb=_b('\n\x0exMsgMeta.proto\x12\x17org.jlab.coda.xmsg.data\"\x90\x05\n\x08xMsgMeta\x12\x0f\n\x07version\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x03 \x01(\t\x12\x38\n\x06status\x18\x04 \x01(\x0e\x32(.org.jlab.coda.xmsg.data.xMsgMeta.Status\x12\x12\n\nseverityId\x18\x05 \x01(\x0f\x12\x0e\n\x06sender\x18\x06 \x01(\t\x12\x13\n\x0bsenderState\x18\x07 \x01(\t\x12\x17\n\x0f\x63ommunicationId\x18\x08 \x01(\x07\x12\x13\n\x0b\x63omposition\x18\n \x01(\t\x12\x15\n\rexecutionTime\x18\x0b \x01(\x10\x12?\n\x06\x61\x63tion\x18\x0c \x01(\x0e\x32/.org.jlab.coda.xmsg.data.xMsgMeta.ControlAction\x12\x43\n\x07\x63ontrol\x18\r \x01(\x0e\x32\x32.org.jlab.coda.xmsg.data.xMsgMeta.SubControlAction\x12\x10\n\x08\x64\x61taType\x18\x0e \x02(\t\x12\x1a\n\x12\x64\x61tTypeDescription\x18\x0f \x01(\t\x12\x0f\n\x07replyTo\x18\x10 \x01(\t\x12;\n\tbyteOrder\x18\x11 \x01(\x0e\x32(.org.jlab.coda.xmsg.data.xMsgMeta.Endian\"*\n\x06Status\x12\x08\n\x04INFO\x10\x01\x12\x0b\n\x07WARNING\x10\x02\x12\t\n\x05\x45RROR\x10\x03\"\x1d\n\x06\x45ndian\x12\n\n\x06Little\x10\x01\x12\x07\n\x03\x42ig\x10\x02\"+\n\rControlAction\x12\x0b\n\x07\x45XECUTE\x10\x00\x12\r\n\tCONFIGURE\x10\x01\"\x1c\n\x10SubControlAction\x12\x08\n\x04SKIP\x10\x00\x42\tB\x05xMsgMH\x01')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -26,7 +26,7 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 _XMSGMETA_STATUS = _descriptor.EnumDescriptor(
   name='Status',
-  full_name='xMsgMeta.Status',
+  full_name='org.jlab.coda.xmsg.data.xMsgMeta.Status',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -45,14 +45,14 @@ _XMSGMETA_STATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=482,
-  serialized_end=524,
+  serialized_start=552,
+  serialized_end=594,
 )
 _sym_db.RegisterEnumDescriptor(_XMSGMETA_STATUS)
 
 _XMSGMETA_ENDIAN = _descriptor.EnumDescriptor(
   name='Endian',
-  full_name='xMsgMeta.Endian',
+  full_name='org.jlab.coda.xmsg.data.xMsgMeta.Endian',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -67,14 +67,14 @@ _XMSGMETA_ENDIAN = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=526,
-  serialized_end=555,
+  serialized_start=596,
+  serialized_end=625,
 )
 _sym_db.RegisterEnumDescriptor(_XMSGMETA_ENDIAN)
 
 _XMSGMETA_CONTROLACTION = _descriptor.EnumDescriptor(
   name='ControlAction',
-  full_name='xMsgMeta.ControlAction',
+  full_name='org.jlab.coda.xmsg.data.xMsgMeta.ControlAction',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -89,14 +89,14 @@ _XMSGMETA_CONTROLACTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=557,
-  serialized_end=600,
+  serialized_start=627,
+  serialized_end=670,
 )
 _sym_db.RegisterEnumDescriptor(_XMSGMETA_CONTROLACTION)
 
 _XMSGMETA_SUBCONTROLACTION = _descriptor.EnumDescriptor(
   name='SubControlAction',
-  full_name='xMsgMeta.SubControlAction',
+  full_name='org.jlab.coda.xmsg.data.xMsgMeta.SubControlAction',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -107,134 +107,127 @@ _XMSGMETA_SUBCONTROLACTION = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=602,
-  serialized_end=630,
+  serialized_start=672,
+  serialized_end=700,
 )
 _sym_db.RegisterEnumDescriptor(_XMSGMETA_SUBCONTROLACTION)
 
 
 _XMSGMETA = _descriptor.Descriptor(
   name='xMsgMeta',
-  full_name='xMsgMeta',
+  full_name='org.jlab.coda.xmsg.data.xMsgMeta',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='version', full_name='xMsgMeta.version', index=0,
+      name='version', full_name='org.jlab.coda.xmsg.data.xMsgMeta.version', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='description', full_name='xMsgMeta.description', index=1,
+      name='description', full_name='org.jlab.coda.xmsg.data.xMsgMeta.description', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='author', full_name='xMsgMeta.author', index=2,
+      name='author', full_name='org.jlab.coda.xmsg.data.xMsgMeta.author', index=2,
       number=3, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='status', full_name='xMsgMeta.status', index=3,
+      name='status', full_name='org.jlab.coda.xmsg.data.xMsgMeta.status', index=3,
       number=4, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=1,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='severityId', full_name='xMsgMeta.severityId', index=4,
+      name='severityId', full_name='org.jlab.coda.xmsg.data.xMsgMeta.severityId', index=4,
       number=5, type=15, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='sender', full_name='xMsgMeta.sender', index=5,
+      name='sender', full_name='org.jlab.coda.xmsg.data.xMsgMeta.sender', index=5,
       number=6, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='senderState', full_name='xMsgMeta.senderState', index=6,
+      name='senderState', full_name='org.jlab.coda.xmsg.data.xMsgMeta.senderState', index=6,
       number=7, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='communicationId', full_name='xMsgMeta.communicationId', index=7,
+      name='communicationId', full_name='org.jlab.coda.xmsg.data.xMsgMeta.communicationId', index=7,
       number=8, type=7, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='composition', full_name='xMsgMeta.composition', index=8,
+      name='composition', full_name='org.jlab.coda.xmsg.data.xMsgMeta.composition', index=8,
       number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='executionTime', full_name='xMsgMeta.executionTime', index=9,
+      name='executionTime', full_name='org.jlab.coda.xmsg.data.xMsgMeta.executionTime', index=9,
       number=11, type=16, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='action', full_name='xMsgMeta.action', index=10,
+      name='action', full_name='org.jlab.coda.xmsg.data.xMsgMeta.action', index=10,
       number=12, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='control', full_name='xMsgMeta.control', index=11,
+      name='control', full_name='org.jlab.coda.xmsg.data.xMsgMeta.control', index=11,
       number=13, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='dataType', full_name='xMsgMeta.dataType', index=12,
-      number=14, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=_b("native").decode('utf-8'),
+      name='dataType', full_name='org.jlab.coda.xmsg.data.xMsgMeta.dataType', index=12,
+      number=14, type=9, cpp_type=9, label=2,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='datTypeDescription', full_name='xMsgMeta.datTypeDescription', index=13,
+      name='datTypeDescription', full_name='org.jlab.coda.xmsg.data.xMsgMeta.datTypeDescription', index=13,
       number=15, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='isDataSerialized', full_name='xMsgMeta.isDataSerialized', index=14,
-      number=16, type=8, cpp_type=7, label=1,
-      has_default_value=True, default_value=True,
+      name='replyTo', full_name='org.jlab.coda.xmsg.data.xMsgMeta.replyTo', index=14,
+      number=16, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='replyTo', full_name='xMsgMeta.replyTo', index=15,
-      number=17, type=9, cpp_type=9, label=1,
-      has_default_value=True, default_value=_b("undefined").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None),
-    _descriptor.FieldDescriptor(
-      name='byteOrder', full_name='xMsgMeta.byteOrder', index=16,
-      number=18, type=14, cpp_type=8, label=1,
+      name='byteOrder', full_name='org.jlab.coda.xmsg.data.xMsgMeta.byteOrder', index=15,
+      number=17, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=1,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -254,8 +247,8 @@ _XMSGMETA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=19,
-  serialized_end=630,
+  serialized_start=44,
+  serialized_end=700,
 )
 
 _XMSGMETA.fields_by_name['status'].enum_type = _XMSGMETA_STATUS
@@ -271,7 +264,7 @@ DESCRIPTOR.message_types_by_name['xMsgMeta'] = _XMSGMETA
 xMsgMeta = _reflection.GeneratedProtocolMessageType('xMsgMeta', (_message.Message,), dict(
   DESCRIPTOR = _XMSGMETA,
   __module__ = 'xMsgMeta_pb2'
-  # @@protoc_insertion_point(class_scope:xMsgMeta)
+  # @@protoc_insertion_point(class_scope:org.jlab.coda.xmsg.data.xMsgMeta)
   ))
 _sym_db.RegisterMessage(xMsgMeta)
 

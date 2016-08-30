@@ -4,6 +4,7 @@ import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgUtil import xMsgUtil
+from xmsg.net.xMsgAddress import ProxyAddress
 
 
 class xMsgProxy(object):
@@ -26,7 +27,9 @@ class xMsgProxy(object):
         px_proxy
     """
 
-    def __init__(self, context):
+    def __init__(self, context,
+                 host="localhost",
+                 port=int(xMsgConstants.DEFAULT_PORT)):
         """
         xMsgProxy Constructor
 
@@ -37,6 +40,9 @@ class xMsgProxy(object):
             xMsgProxy object
         """
         self.context = context
+        self.proxy_address = ProxyAddress(host, port)
+        self._xsub_socket = ""
+        self._xpub_socket = ""
 
     def start(self):
         """Starts the proxy server of the xMsgNode on a local host.
@@ -50,13 +56,12 @@ class xMsgProxy(object):
         try:
             self._xsub_socket = self.context.socket(zmq.XSUB)
             self._xsub_socket.set_hwm(0)
-            default_port = int(xMsgConstants.DEFAULT_PORT)
-            self._xsub_socket.bind("tcp://*:%d" % default_port)
+            self._xsub_socket.bind("tcp://*:%d" % self.proxy_address.sub_port)
 
             # socket where clients subscribe data/messages
             self._xpub_socket = self.context.socket(zmq.XPUB)
             self._xpub_socket.set_hwm(0)
-            self._xpub_socket.bind("tcp://*:%d" % (default_port + 1))
+            self._xpub_socket.bind("tcp://*:%d" % self.proxy_address.pub_port)
 
             xMsgUtil.log("Info: Running xMsg proxy server on the localhost...")
 
@@ -68,8 +73,20 @@ class xMsgProxy(object):
 
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--host", help="Proxy address", type=str,
+                        default="localhost")
+    parser.add_argument("--port", help="Proxy port", type=int,
+                        default=int(xMsgConstants.DEFAULT_PORT))
+
+    args = parser.parse_args()
+    host = args.host
+    port = args.port
+
     try:
-        proxy = xMsgProxy(zmq.Context())
+        proxy = xMsgProxy(zmq.Context(), host, port)
         proxy.start()
 
     except KeyboardInterrupt:

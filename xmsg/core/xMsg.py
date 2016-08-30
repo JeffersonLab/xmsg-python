@@ -328,11 +328,11 @@ class xMsg(object):
         return subscription_handler
 
     def _call_user_callback(self, connection, callback, t_message):
-        if t_message.metadata.replyTo:
+        if t_message.has_reply_topic():
             # Sync request
             try:
                 r_message = callback.callback(t_message)
-                r_message.topic = xMsgTopic.wrap(t_message.metadata.replyTo)
+                r_message.topic = xMsgTopic.wrap(t_message.get_reply_topic())
                 r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
 
                 self.publish(connection, r_message)

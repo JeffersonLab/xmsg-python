@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.data.xMsgData_pb2 import xMsgData
 from xmsg.data.xMsgMeta_pb2 import xMsgMeta
 
@@ -72,8 +73,7 @@ class xMsgMessage(object):
         """Constructs a message with serialized data and the default metadata
 
         Args:
-            topic (xMsgTopic): the topic of the message
-            serialized (bytes): serialized data object
+            serialized_data (bytes): serialized data object
 
         Returns:
             xMsgMessage: xMsg message object
@@ -90,6 +90,19 @@ class xMsgMessage(object):
 
         except IndexError as index_error:
             raise Exception("xMsgMessage : %s" % index_error)
+
+    @staticmethod
+    def create_response(cls, msg):
+        return cls(msg.get_reply_topic(), msg.metadata, msg.data)
+
+    def has_reply_topic(self):
+        return self._metadata.HasField("replyTo")
+
+    def get_mimetype(self):
+        return self._metadata.dataType
+
+    def get_reply_topic(self):
+        return xMsgTopic.wrap(self._metadata.replyTo)
 
     @property
     def data(self):
