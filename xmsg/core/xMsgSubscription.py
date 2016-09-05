@@ -104,6 +104,7 @@ class _Handler(Thread):
 
     def stopped(self):
         """ Verify if thread as been stopped
+
         Returns:
             Bool: True if the thread has been ordered to stop
         """

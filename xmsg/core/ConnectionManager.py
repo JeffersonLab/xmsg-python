@@ -1,5 +1,5 @@
 # coding=utf-8
-from xmsg.core.xMsgUtil import xMsgUtil
+
 from xmsg.sys.regdis.xMsgRegDriver import xMsgRegDriver
 from xmsg.sys.pubsub.xMsgProxyDriver import xMsgProxyDriver
 
@@ -80,7 +80,8 @@ class ConnectionManager(object):
         conn = xMsgProxyDriver(proxy_address)
         conn.connect()
         if not conn.check_connection():
-            raise Exception("Connection Manager: Could not Connect...")
+            raise Exception("Connection Manager: Could not Connect to %s:%d"
+                            % (proxy_address.host, proxy_address.pub_port))
         return conn
 
     def release_proxy_connection(self, connection):

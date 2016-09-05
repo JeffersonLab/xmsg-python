@@ -32,7 +32,7 @@ class RegAddress(object):
         port. If port is not defined uses default port
 
         Args:
-            hostname (String): The registrar service hostname
+            host (String): The registrar service hostname
             port (int): The registrar port number
         """
         self.host = xMsgUtil.host_to_ip(host)
