@@ -3,7 +3,7 @@
 import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.xsys.pubsub.IdentityGenerator import IdentityGenerator
+from xmsg.sys.pubsub.IdentityGenerator import IdentityGenerator
 
 
 class xMsgProxyDriver(object):

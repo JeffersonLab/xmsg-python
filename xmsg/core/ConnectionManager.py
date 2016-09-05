@@ -1,7 +1,7 @@
 # coding=utf-8
 from xmsg.core.xMsgUtil import xMsgUtil
-from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
-from xmsg.xsys.pubsub.xMsgProxyDriver import xMsgProxyDriver
+from xmsg.sys.regdis.xMsgRegDriver import xMsgRegDriver
+from xmsg.sys.pubsub.xMsgProxyDriver import xMsgProxyDriver
 
 
 class ConnectionManager(object):

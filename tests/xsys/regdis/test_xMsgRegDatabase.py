@@ -4,7 +4,7 @@ import unittest
 
 from sets import Set
 from xmsg.core.xMsgTopic import xMsgTopic
-from xmsg.xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
+from xmsg.sys.regdis.xMsgRegDatabase import xMsgRegDatabase
 from xmsg.data import xMsgRegistration_pb2
 
 

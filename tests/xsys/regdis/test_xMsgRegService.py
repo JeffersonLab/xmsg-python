@@ -5,7 +5,7 @@ import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgUtil import xMsgUtil
-from xmsg.xsys.regdis.xMsgRegService import xMsgRegService
+from xmsg.sys.regdis.xMsgRegService import xMsgRegService
 from xmsg.net.xMsgAddress import RegAddress
 
 

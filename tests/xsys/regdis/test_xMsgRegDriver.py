@@ -7,9 +7,9 @@ from mockito import any, when, verify, spy
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.net.xMsgAddress import RegAddress
-from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
-from xmsg.xsys.regdis.xMsgRegRequest import xMsgRegRequest
-from xmsg.xsys.regdis.xMsgRegResponse import xMsgRegResponse
+from xmsg.sys.regdis.xMsgRegDriver import xMsgRegDriver
+from xmsg.sys.regdis.xMsgRegRequest import xMsgRegRequest
+from xmsg.sys.regdis.xMsgRegResponse import xMsgRegResponse
 
 
 class TestxMsgRegDriver(unittest.TestCase):

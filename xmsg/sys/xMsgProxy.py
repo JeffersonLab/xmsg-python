@@ -20,7 +20,7 @@ class xMsgProxy(object):
 
     *How to launch*
     ::
-        python xmsg/xsys/xMsgProxy.py
+        python xmsg/sys/xMsgProxy.py
 
     *or*
     ::
@@ -51,7 +51,7 @@ class xMsgProxy(object):
 
         Usage:
         ::
-            python xmsg/xsys/xMsgProxy.py
+            python xmsg/sys/xMsgProxy.py
         """
         try:
             self._xsub_socket = self.context.socket(zmq.XSUB)

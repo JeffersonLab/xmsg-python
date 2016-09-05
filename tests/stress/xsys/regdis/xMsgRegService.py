@@ -22,7 +22,7 @@
 import time
 from random import randint
 
-from xmsg.xsys.regdis.xMsgRegDatabase import xMsgRegDatabase
+from xmsg.sys.regdis.xMsgRegDatabase import xMsgRegDatabase
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.data import xMsgRegistration_pb2

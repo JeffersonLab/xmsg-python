@@ -68,9 +68,9 @@ class _Handler(Thread):
         """ Handler constructor
 
         Args:
-            topic (str):
-            connection (xMsgProxyDriver):
-            eval_func (CallBack):
+            topic (str): topic for subscription
+            connection (xMsgProxyDriver): driver for proxy connection
+            eval_func (CallBack): callaback function
         """
         super(_Handler, self).__init__(name=topic)
         self.__connection = connection
