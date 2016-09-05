@@ -3,10 +3,10 @@
 # date 12.16.14
 
 
-if ! $(python -c 'from xmsg.xsys.xMsgRegistrar import main' &> /dev/null);
+if ! $(python -c 'from xmsg.sys.xMsgRegistrar import main' &> /dev/null);
 then
     echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
 else
-    python -m 'from xmsg.xsys.xMsgRegistrar' ${@}
+    python -m 'from xmsg.sys.xMsgRegistrar' ${@}
 fi
 
