@@ -69,7 +69,6 @@ class xMsgSubscription(object):
             self._connection = connection
             self._connection.subscribe(topic)
             self._is_running = Event()
-            self.daemon = True
             self.eval_func = eval_func
 
         def is_alive(self):
