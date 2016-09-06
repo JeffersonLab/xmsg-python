@@ -322,9 +322,8 @@ class xMsg(object):
         def _callback(msg):
             self._call_user_callback(connection, callback, msg)
 
-        subscription_handler.set_callback_func(_callback)
+        subscription_handler.start(_callback)
         self.my_subscriptions.append(subscription_handler)
-        subscription_handler.start()
         return subscription_handler
 
     def _call_user_callback(self, connection, callback, t_message):
