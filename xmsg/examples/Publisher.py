@@ -10,7 +10,7 @@ from xmsg.data import xMsgData_pb2
 from xmsg.net.xMsgAddress import ProxyAddress
 
 
-def main(array_size):
+def main(array_size, proxy_host):
     """Publisher usage:
     ::
         "Usage: python xmsg/examples/Publisher
@@ -19,7 +19,7 @@ def main(array_size):
     publisher = xMsg("test_publisher")
 
     # Create a socket connections to the xMsg node
-    connection = publisher.get_connection(ProxyAddress())
+    connection = publisher.get_connection(ProxyAddress(proxy_host))
 
     # Build Topic
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
@@ -41,4 +41,13 @@ def main(array_size):
         xMsgUtil.sleep(1)
 
 if __name__ == "__main__":
-    main(10)
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    parser.description = "Example publisher for xMsg"
+    parser.add_argument("--array-size", help="size of array to publish",
+                        type=int, default=10)
+    parser.add_argument("--proxy-host", help="proxy host", type=str,
+                        default="localhost")
+    args = parser.parse_args()
+    main(args.array_size, args.proxy_host)
