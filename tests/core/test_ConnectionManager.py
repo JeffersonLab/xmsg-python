@@ -7,7 +7,7 @@ from xmsg.core.ConnectionManager import ConnectionManager as CM
 from xmsg.net.xMsgConnectionSetup import xMsgConnectionSetup
 from xmsg.net.xMsgAddress import ProxyAddress, RegAddress
 from xmsg.net.xMsgConnection import xMsgConnection
-from xmsg.xsys.regdis.xMsgRegDriver import xMsgRegDriver
+from xmsg.sys.regdis.xMsgRegDriver import xMsgRegDriver
 
 
 class TestConnectionManager(unittest.TestCase):

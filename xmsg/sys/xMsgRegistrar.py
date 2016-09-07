@@ -2,8 +2,8 @@
 
 import zmq
 
-from xmsg.xsys.regdis.xMsgRegService import xMsgRegService
-from xmsg.xsys.xMsgProxy import xMsgProxy
+from xmsg.sys.regdis.xMsgRegService import xMsgRegService
+from xmsg.sys.xMsgProxy import xMsgProxy
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.net.xMsgAddress import RegAddress
 
@@ -80,7 +80,7 @@ def main():
 
     Usage:
     ::
-        python xmsg/xsys/xMsgRegistrar.py
+        python xmsg/sys/xMsgRegistrar.py
     """
     try:
         registrar = xMsgRegistrar()

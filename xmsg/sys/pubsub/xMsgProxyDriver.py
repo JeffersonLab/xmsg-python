@@ -3,7 +3,7 @@
 import zmq
 
 from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.xsys.pubsub.IdentityGenerator import IdentityGenerator
+from xmsg.sys.pubsub.IdentityGenerator import IdentityGenerator
 
 
 class xMsgProxyDriver(object):
@@ -54,8 +54,7 @@ class xMsgProxyDriver(object):
         return self._sub_socket
 
     def connect(self):
-        """ Connects the publisher, subscriber and ctrl sockets to start messaging
-        """
+        """ Connects the pub, sub and ctrl sockets to start messaging"""
         ctrl_port = self._address.sub_port + 1
         self._pub_socket.connect("tcp://%s:%d" % (self._address.host,
                                                   self._address.pub_port))
@@ -66,7 +65,7 @@ class xMsgProxyDriver(object):
 
     def check_connection(self):
         retries = 0
-        max_retries = 20
+        max_retries = 40
 
         connection_poller = zmq.Poller()
         connection_poller.register(self._ctl_socket, zmq.POLLIN)
@@ -101,7 +100,7 @@ class xMsgProxyDriver(object):
 
     def check_subscription(self, topic):
         retries = 0
-        max_retries = 20
+        max_retries = 40
 
         connection_poller = zmq.Poller()
         connection_poller.register(self._sub_socket, zmq.POLLIN)

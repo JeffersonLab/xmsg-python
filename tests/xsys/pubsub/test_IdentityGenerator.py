@@ -2,7 +2,7 @@
 
 import unittest
 
-from xmsg.xsys.pubsub.IdentityGenerator import IdentityGenerator
+from xmsg.sys.pubsub.IdentityGenerator import IdentityGenerator
 
 
 class TestIdentityGenerator(unittest.TestCase):

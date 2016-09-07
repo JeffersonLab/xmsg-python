@@ -2,8 +2,8 @@
 # author royarzun
 # date 12.16.14
 
-if ! $(python -c 'from xmsg.xsys.xMsgProxy import main' &> /dev/null); then
+if ! $(python -c 'from xmsg.sys.xMsgProxy import main' &> /dev/null); then
     echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
 else
-    python -m 'xmsg.xsys.xMsgProxy' ${@}
+    python -m 'xmsg.sys.xMsgProxy' ${@}
 fi

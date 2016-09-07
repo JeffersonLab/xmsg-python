@@ -2,7 +2,7 @@
 
 import unittest
 
-from xmsg.xsys.regdis.xMsgRegRequest import xMsgRegRequest
+from xmsg.sys.regdis.xMsgRegRequest import xMsgRegRequest
 from xmsg.core.xMsgExceptions import BadRequest
 from xmsg.data.xMsgRegistration_pb2 import xMsgRegistration
 

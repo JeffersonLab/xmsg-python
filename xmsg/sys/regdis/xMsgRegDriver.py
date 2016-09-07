@@ -5,8 +5,8 @@ import zmq
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgExceptions import TimeoutReached, RegistrationException
-from xmsg.xsys.regdis.xMsgRegResponse import xMsgRegResponse
-from xmsg.xsys.regdis.xMsgRegRequest import xMsgRegRequest
+from xmsg.sys.regdis.xMsgRegResponse import xMsgRegResponse
+from xmsg.sys.regdis.xMsgRegRequest import xMsgRegRequest
 
 
 class xMsgRegDriver(object):

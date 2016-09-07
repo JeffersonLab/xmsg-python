@@ -6,6 +6,7 @@ import os
 from setuptools import setup, Command
 from setuptools.command.test import test as TestCommand
 from setuptools import find_packages
+
 import xmsg
 
 
@@ -31,7 +32,10 @@ class XMsgClean(Command):
         pass
 
     def run(self):
-        os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
+        os.system('rm -vrf ./.cache ./.eggs ./build ./dist')
+        os.system('rm -vrf ./*.tgz ./*.egg-info')
+        os.system('find . -name "*.pyc" -exec rm -vrf {} \;')
+        os.system('find . -name "__pycache__" -exec rm -rf {} \;')
 
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md')) as readme_file:
@@ -56,11 +60,11 @@ if __name__ == '__main__':
             'clean': XMsgClean,
           },
           packages=find_packages(exclude=["tests.*", "tests"]),
-          scripts=['bin/unix/px_node',
-                   'bin/unix/px_proxy',
-                   'bin/unix/px_publisher',
-                   'bin/unix/px_subscriber',
-                   'bin/unix/px_sync_publisher'],
+          scripts=['xmsg/scripts/unix/px_node',
+                   'xmsg/scripts/unix/px_proxy',
+                   'xmsg/scripts/unix/px_publisher',
+                   'xmsg/scripts/unix/px_subscriber',
+                   'xmsg/scripts/unix/px_sync_publisher'],
           classifiers=[
               'Intended Audience :: Developers',
               'Programming Language :: Python',
