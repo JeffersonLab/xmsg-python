@@ -45,7 +45,7 @@ class xMsgMessage(object):
         msg = cls()
         msg.topic = topic
         msg.data = data_string
-        msg.mimetype = "text/string"
+        msg.mimetype = u"text/string"
         return msg
 
     @classmethod
@@ -64,7 +64,9 @@ class xMsgMessage(object):
             TypeError: if the xmsg_data_object is not an xMsgData instance
         """
         if isinstance(xmsg_data_object, xMsgData):
-            return cls(topic, xmsg_data_object.SerializeToString())
+            msg = cls(topic, xmsg_data_object.SerializeToString())
+            msg.metadata.dataType = u"binary/array-float"
+            return msg
         else:
             raise TypeError("xMsgMessage: Invalid type of data object")
 
