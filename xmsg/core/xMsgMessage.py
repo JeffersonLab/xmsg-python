@@ -106,6 +106,9 @@ class xMsgMessage(object):
     def get_reply_topic(self):
         return xMsgTopic.wrap(self._metadata.replyTo)
 
+    def set_reply_topic(self, topic):
+        self._metadata.replyTo = topic
+
     @property
     def data(self):
         """Returns the message data

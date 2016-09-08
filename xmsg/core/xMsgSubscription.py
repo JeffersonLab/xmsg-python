@@ -57,19 +57,19 @@ class xMsgSubscription(object):
     class _Handler(Thread):
         """Thread handler class"""
 
-        def __init__(self, topic, connection, eval_func):
+        def __init__(self, topic, connection, handle):
             """ Handler constructor
 
             Args:
                 topic (str): topic for subscription
                 connection (xMsgProxyDriver): driver for proxy connection
-                eval_func (CallBack): callaback function
+                handle (func): callback function
             """
             super(xMsgSubscription._Handler, self).__init__(name=topic)
             self._connection = connection
             self._connection.subscribe(topic)
             self._is_running = Event()
-            self.eval_func = eval_func
+            self.handle = handle
 
         def is_alive(self):
             return not self._is_running.isSet()
@@ -78,19 +78,25 @@ class xMsgSubscription(object):
             poller = zmq.Poller()
             poller.register(self._connection.get_sub_socket(), zmq.POLLIN)
 
-            while not self._is_running.isSet():
+            while not self._is_running.is_set():
                 try:
                     socks = dict(poller.poll(100))
                     if socks.get(self._connection.get_sub_socket()) == zmq.POLLIN:
-                        t_data = self._connection.recv()
-                        if len(t_data) == 2:
+                        try:
+                            t_data = self._connection.recv()
+                            if len(t_data) == 2:
+                                continue
+
+                            msg = xMsgMessage.create_with_serialized_data(t_data)
+                            self.handle(msg)
+                        except Exception as e:
+                            print e.message
                             continue
-                        msg = xMsgMessage.create_with_serialized_data(t_data)
-                        self.eval_func(msg)
                 except zmq.error.ZMQError as e:
-                    self.stop()
-                    self._connection.unsubscribe(self.name)
-                    raise e
+                    if e.errno == zmq.ETERM:
+                        break
+                    print e.message
+
             self._connection.unsubscribe(self.name)
 
         def stop(self):

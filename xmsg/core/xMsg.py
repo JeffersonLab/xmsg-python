@@ -1,7 +1,10 @@
 # coding=utf-8
+
 from contextlib import contextmanager
+from multiprocessing import Pool
 from random import randint
 
+import signal
 import zmq
 
 from xmsg.core.ConnectionManager import ConnectionManager
@@ -50,7 +53,6 @@ class xMsg(object):
 
         Keyword arguments:
             pool_size (int): size of the actors thread pool
-            context (zmq.Context): communication context
 
         Returns:
             xMsg: xmsg object
@@ -61,8 +63,10 @@ class xMsg(object):
         # Set of subscriptions
         self.my_subscriptions = []
 
-        context = kwargs.pop("context", False)
-        self.context = context or zmq.Context.instance()
+        self.context = zmq.Context.instance()
+
+        self.pool_size = kwargs.pop("pool_size", False) or 2
+        # self.pool = Pool()
 
         if proxy_address:
             if isinstance(proxy_address, basestring):
@@ -118,6 +122,7 @@ class xMsg(object):
                 messages after the socket has been closed.Default value
                 is -1, which in ZMQ means to linger forever.
         """
+        # self.pool.terminate()
         self.context.destroy(linger)
 
     def register_as_publisher(self, address, topic,
@@ -257,36 +262,42 @@ class xMsg(object):
 
         This method will throw if a response is not received before the timeout
         expires.
+
+        Args:
+            connection (xMsgProxyDriver): proxy connection driver
+            transient_message (xMsgMessage): transient message
+            timeout (int): timeout for reply in seconds
         """
 
         # set the return address as replyTo in the xMsgMessage
-        return_address = "return: %d" % randint(0, 100)
-        return_topic = xMsgTopic.wrap(return_address)
-        transient_message.metadata.replyTo = return_address
+        return_address = "return: %d" % randint(0, 10000)
+        transient_message.set_reply_topic(return_address)
 
         # subscribe to the return_address
         sync_callback = _SyncSendCallBack()
-        subscription_handler = self.subscribe(connection.get_address(),
-                                              return_topic,
-                                              sync_callback)
-        sync_callback.set_handler(subscription_handler)
+        subscription = self.subscribe(connection.get_address(),
+                                      xMsgTopic.wrap(return_address),
+                                      sync_callback)
+        sync_callback.set_handler(subscription)
 
         self.publish(connection, transient_message)
         # wait for the response
         time_counter = 0
 
         while not sync_callback.received_message:
-            xMsgUtil.sleep(0.001)
-            if time_counter >= timeout * 1000:
-                self.unsubscribe(subscription_handler)
-                raise Exception("Error: time_out reached - %d" % time_counter)
+            try:
+                if time_counter >= timeout * 1000:
+                    self.unsubscribe(subscription)
+                    raise Exception("Error: time_out reached - %d" % time_counter)
 
-            else:
-                time_counter += 1
+                else:
+                    time_counter += 1
+                xMsgUtil.sleep(0.001)
+            except zmq.error.ZMQError as e:
+                self.unsubscribe(subscription)
+                print e.message
 
-        self.unsubscribe(subscription_handler)
-        sync_callback.received_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
-
+        self.unsubscribe(subscription)
         return sync_callback.received_message
 
     def subscribe(self, address, topic, callback):
@@ -329,18 +340,23 @@ class xMsg(object):
     def _call_user_callback(self, connection, callback, t_message):
         if t_message.has_reply_topic():
             # Sync request
-            try:
-                r_message = callback.callback(t_message)
-                r_message.topic = xMsgTopic.wrap(t_message.get_reply_topic())
-                r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
+            r_message = callback.callback(t_message)
+            r_message.topic = xMsgTopic.wrap(t_message.get_reply_topic())
+            r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
 
-                self.publish(connection, r_message)
-
-            except zmq.error.ZMQError as zmq_error:
-                raise Exception(zmq_error)
+            self.publish(connection, r_message)
 
         else:
-            callback.callback(t_message)
+            def _init_worker():
+                signal.signal(signal.SIGINT, signal.SIG_IGN)
+            pool = None
+            try:
+                pool = Pool(self.pool_size, _init_worker())
+                # with self.pool as pool:
+                pool.apply_async(callback.callback, t_message)
+            except KeyboardInterrupt:
+                pool.terminate()
+                pool.close()
 
     def unsubscribe(self, subscription):
         """Stops the given subscription
@@ -362,7 +378,8 @@ class xMsg(object):
 
     def _find_registration(self, address, topic, publisher):
         registration_driver = self.connection_manager.get_registrar_connection(address)
-        reg_data = self._registration_builder(topic, str(xMsgConstants.UNDEFINED),
+        reg_data = self._registration_builder(topic,
+                                              str(xMsgConstants.UNDEFINED),
                                               publisher)
         return registration_driver.find(reg_data, publisher)
 
@@ -424,4 +441,5 @@ class _SyncSendCallBack(xMsgCallBack):
         self.received_message = msg
         if self.handler:
             self.handler.stop()
+        msg.metadata.replyTo = str(xMsgConstants.UNDEFINED)
         return msg
