@@ -1,10 +1,8 @@
 # coding=utf-8
 
 from contextlib import contextmanager
-from multiprocessing import Pool
 from random import randint
 
-import signal
 import zmq
 
 from xmsg.core.ConnectionManager import ConnectionManager
@@ -66,7 +64,6 @@ class xMsg(object):
         self.context = zmq.Context.instance()
 
         self.pool_size = kwargs.pop("pool_size", False) or 2
-        # self.pool = Pool()
 
         if proxy_address:
             if isinstance(proxy_address, basestring):
@@ -277,7 +274,7 @@ class xMsg(object):
         sync_callback = _SyncSendCallBack()
         subscription = self.subscribe(connection.get_address(),
                                       xMsgTopic.wrap(return_address),
-                                      sync_callback)
+                                      sync_callback, 1)
         sync_callback.set_handler(subscription)
 
         self.publish(connection, transient_message)
@@ -288,7 +285,8 @@ class xMsg(object):
             try:
                 if time_counter >= timeout * 1000:
                     self.unsubscribe(subscription)
-                    raise Exception("Error: time_out reached - %d" % time_counter)
+                    raise Exception("Error: time_out reached - %d" %
+                                    time_counter)
 
                 else:
                     time_counter += 1
@@ -300,7 +298,7 @@ class xMsg(object):
         self.unsubscribe(subscription)
         return sync_callback.received_message
 
-    def subscribe(self, address, topic, callback):
+    def subscribe(self, address, topic, callback, pool_size=None):
         """Subscribes to a specified xMsg topic.
 
         3 elements are defining xMsg topic: domain:subject:tip
@@ -328,35 +326,17 @@ class xMsg(object):
         """
         connection = self.get_connection(address)
         driver = self.connection_manager.get_proxy_connection(address)
-        subscription_handler = xMsgSubscription(str(topic), driver)
+        if pool_size:
+            subscription_handler = xMsgSubscription(topic, driver, pool_size)
+        else:
+            subscription_handler = xMsgSubscription(topic, driver, self.pool_size)
 
-        def _callback(msg):
-            self._call_user_callback(connection, callback, msg)
+        def _publisher(msg):
+            self.publish(connection, msg)
 
-        subscription_handler.start(_callback)
+        subscription_handler.start(callback, _publisher)
         self.my_subscriptions.append(subscription_handler)
         return subscription_handler
-
-    def _call_user_callback(self, connection, callback, t_message):
-        if t_message.has_reply_topic():
-            # Sync request
-            r_message = callback.callback(t_message)
-            r_message.topic = xMsgTopic.wrap(t_message.get_reply_topic())
-            r_message.metadata.replyTo = str(xMsgConstants.UNDEFINED)
-
-            self.publish(connection, r_message)
-
-        else:
-            def _init_worker():
-                signal.signal(signal.SIGINT, signal.SIG_IGN)
-            pool = None
-            try:
-                pool = Pool(self.pool_size, _init_worker())
-                # with self.pool as pool:
-                pool.apply_async(callback.callback, t_message)
-            except KeyboardInterrupt:
-                pool.terminate()
-                pool.close()
 
     def unsubscribe(self, subscription):
         """Stops the given subscription
@@ -418,7 +398,7 @@ class xMsg(object):
             yield conn
 
         except Exception as e:
-            print e.message
+            xMsgUtil.log(e.message)
             raise e
         finally:
             conn.close()
