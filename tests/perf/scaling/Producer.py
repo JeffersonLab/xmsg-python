@@ -26,13 +26,13 @@ class Producer(xMsg):
             def callback(self, msg):
                 if self.count == 0:
                     self.start_time = time.time()
-
-                if self.count % self.alert_count == 0:
-                    now = time.time()
-                    elapsed = now - self.start_time
-                    xMsgUtil.log("With %d messages: %s" % (n_messages,
-                                                           elapsed))
-                    self.start_time = time.time()
+                else:
+                    if self.count % self.alert_count == 0:
+                        now = time.time()
+                        elapsed = now - self.start_time
+                        xMsgUtil.log("With %d messages: %s" % (n_messages,
+                                                               elapsed))
+                        self.start_time = time.time()
 
                 self.count += 1
         subscription = self.subscribe(ProxyAddress(),
