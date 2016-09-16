@@ -123,7 +123,7 @@ class xMsg(object):
         self.context.destroy(linger)
 
     def register_as_publisher(self, address, topic,
-                              description=str(xMsgConstants.UNDEFINED)):
+                              description=xMsgConstants.UNDEFINED):
         """Registers xMsg publisher actor in the publishers database
 
         If you are periodically publishing data, use this method to
@@ -140,7 +140,7 @@ class xMsg(object):
         self._register(address, topic, description, True)
 
     def register_as_subscriber(self, address, topic,
-                               description=str(xMsgConstants.UNDEFINED)):
+                               description=xMsgConstants.UNDEFINED):
         """Subscribers xMsg publisher actor in the subscribers database
 
         If you are a subscriber and want to listen messages on a specific
@@ -358,8 +358,7 @@ class xMsg(object):
 
     def _find_registration(self, address, topic, publisher):
         registration_driver = self.connection_manager.get_registrar_connection(address)
-        reg_data = self._registration_builder(topic,
-                                              str(xMsgConstants.UNDEFINED),
+        reg_data = self._registration_builder(topic, xMsgConstants.UNDEFINED,
                                               publisher)
         return registration_driver.find(reg_data, publisher)
 
@@ -380,7 +379,7 @@ class xMsg(object):
         if description:
             r_data.description = description
         r_data.host = topic.domain()
-        r_data.port = int(xMsgConstants.DEFAULT_PORT)
+        r_data.port = xMsgConstants.DEFAULT_PORT
         r_data.domain = topic.domain()
         r_data.subject = topic.subject()
         r_data.type = topic.type()
@@ -421,5 +420,5 @@ class _SyncSendCallBack(xMsgCallBack):
         self.received_message = msg
         if self.handler:
             self.handler.stop()
-        msg.metadata.replyTo = str(xMsgConstants.UNDEFINED)
+        msg.metadata.replyTo = xMsgConstants.UNDEFINED
         return msg

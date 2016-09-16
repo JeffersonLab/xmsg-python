@@ -17,5 +17,5 @@ class Executor(mp.Process):
             s_msg = self._queue.get()
             if s_msg == "STOP":
                 return
-            msg = xMsgMessage.create_with_serialized_data(s_msg)
+            msg = xMsgMessage.from_serialized_data(s_msg)
             self._callback.callback(msg)
