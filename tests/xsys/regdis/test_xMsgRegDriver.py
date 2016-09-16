@@ -15,7 +15,8 @@ from xmsg.sys.regdis.xMsgRegResponse import xMsgRegResponse
 class TestxMsgRegDriver(unittest.TestCase):
     publisher = xMsgUtil.build_registration("bradbury_pub", "bradbury books",
                                             "writer", "scifi", "books", True)
-    subscriber = xMsgUtil.build_registration("bradbury_sub", "bradbury description",
+    subscriber = xMsgUtil.build_registration("bradbury_sub",
+                                             "bradbury description",
                                              "writer", "scifi", "books", False)
 
     def setUp(self):
@@ -30,56 +31,56 @@ class TestxMsgRegDriver(unittest.TestCase):
 
         self.assert_request(self.ln_connection,
                             self.publisher,
-                            str(xMsgConstants.REGISTER_PUBLISHER),
-                            str(xMsgConstants.REGISTER_REQUEST_TIMEOUT))
+                            xMsgConstants.REGISTER_PUBLISHER,
+                            xMsgConstants.REGISTER_REQUEST_TIMEOUT)
 
     def test_send_local_subscriber_registration(self):
         self.driver.add(self.subscriber, False)
 
         self.assert_request(self.ln_connection,
                             self.subscriber,
-                            str(xMsgConstants.REGISTER_SUBSCRIBER),
-                            str(xMsgConstants.REGISTER_REQUEST_TIMEOUT))
+                            xMsgConstants.REGISTER_SUBSCRIBER,
+                            xMsgConstants.REGISTER_REQUEST_TIMEOUT)
 
     def test_send_local_publisher_removal(self):
         self.driver.remove(self.publisher, True)
 
         self.assert_request(self.ln_connection,
                             self.publisher,
-                            str(xMsgConstants.REMOVE_PUBLISHER),
-                            str(xMsgConstants.REMOVE_REQUEST_TIMEOUT))
+                            xMsgConstants.REMOVE_PUBLISHER,
+                            xMsgConstants.REMOVE_REQUEST_TIMEOUT)
 
     def test_send_local_subscriber_removal(self):
         self.driver.remove(self.subscriber, False)
 
         self.assert_request(self.ln_connection,
                             self.subscriber,
-                            str(xMsgConstants.REMOVE_SUBSCRIBER),
-                            str(xMsgConstants.REMOVE_REQUEST_TIMEOUT))
+                            xMsgConstants.REMOVE_SUBSCRIBER,
+                            xMsgConstants.REMOVE_REQUEST_TIMEOUT)
 
     def test_send_local_publisher_find(self):
         self.driver.find(self.publisher, True)
 
         self.assert_request(self.ln_connection,
                             self.publisher,
-                            str(xMsgConstants.FIND_PUBLISHER),
-                            str(xMsgConstants.FIND_REQUEST_TIMEOUT))
+                            xMsgConstants.FIND_PUBLISHER,
+                            xMsgConstants.FIND_REQUEST_TIMEOUT)
 
     def test_send_local_subscriber_find(self):
         self.driver.find(self.subscriber, False)
 
         self.assert_request(self.ln_connection,
                             self.subscriber,
-                            str(xMsgConstants.FIND_SUBSCRIBER),
-                            str(xMsgConstants.FIND_REQUEST_TIMEOUT))
+                            xMsgConstants.FIND_SUBSCRIBER,
+                            xMsgConstants.FIND_REQUEST_TIMEOUT)
 
     def test_remove_all(self):
         self.driver.remove_all("10.2.9.1")
 
         self.assert_remove_request(self.ln_connection,
                                    "self.subscriber",
-                                   str(xMsgConstants.REMOVE_ALL_REGISTRATION),
-                                   str(xMsgConstants.FIND_REQUEST_TIMEOUT))
+                                   xMsgConstants.REMOVE_ALL_REGISTRATION,
+                                   xMsgConstants.FIND_REQUEST_TIMEOUT)
 
     def test_get_registration_from_local(self):
         self.set_response(xMsgRegResponse("", "", [self.publisher]))

@@ -1,23 +1,4 @@
-#
-# Copyright (C) 2015. Jefferson Lab, xMsg framework (JLAB). All Rights Reserved.
-# Permission to use, copy, modify, and distribute this software and its
-# documentation for educational, research, and not-for-profit purposes,
-# without fee and without a signed licensing agreement.
-#
-# Author Vardan Gyurjyan
-# Department of Experimental Nuclear Physics, Jefferson Lab.
-#
-# IN NO EVENT SHALL JLAB BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,
-# INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS, ARISING OUT OF
-# THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF JLAB HAS BEEN ADVISED
-# OF THE POSSIBILITY OF SUCH DAMAGE.
-#
-# JLAB SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-# THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-# PURPOSE. THE CLARA SOFTWARE AND ACCOMPANYING DOCUMENTATION, IF ANY, PROVIDED
-# HEREUNDER IS PROVIDED "AS IS". JLAB HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
-# SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
-#
+# coding=utf-8
 
 import threading
 import zmq
@@ -144,40 +125,40 @@ class xMsgRegService(threading.Thread):
         try:
             request = xMsgRegRequest.create_from_multipart(registration_request)
             sender = "%s:%s" % (xMsgUtil.get_local_ip(),
-                                str(xMsgConstants.REGISTRAR))
+                                xMsgConstants.REGISTRAR)
             registration = Set([])
-            s_host = str(xMsgConstants.UNDEFINED)
+            s_host = xMsgConstants.UNDEFINED
 
             msg = "Received a request from %s to %s" % (request.sender,
                                                         request.topic)
             xMsgUtil.log(msg)
 
-            if request.topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
+            if request.topic == xMsgConstants.REMOVE_ALL_REGISTRATION:
                 s_host = request.get_data().domain
 
-            if request.topic == str(xMsgConstants.REGISTER_PUBLISHER):
+            if request.topic == xMsgConstants.REGISTER_PUBLISHER:
                 self.publishers_db.register(request.get_data())
 
-            elif request.topic == str(xMsgConstants.REGISTER_SUBSCRIBER):
+            elif request.topic == xMsgConstants.REGISTER_SUBSCRIBER:
                 self.subscribers_db.register(request.get_data())
 
-            elif request.topic == str(xMsgConstants.REMOVE_PUBLISHER):
+            elif request.topic == xMsgConstants.REMOVE_PUBLISHER:
                 self.publishers_db.remove(request.get_data())
 
-            elif request.topic == str(xMsgConstants.REMOVE_SUBSCRIBER):
+            elif request.topic == xMsgConstants.REMOVE_SUBSCRIBER:
                 self.subscribers_db.remove(request.get_data())
 
-            elif request.topic == str(xMsgConstants.REMOVE_ALL_REGISTRATION):
+            elif request.topic == xMsgConstants.REMOVE_ALL_REGISTRATION:
                 self.subscribers_db.remove_by_host(s_host)
                 self.publishers_db.remove_by_host(s_host)
 
-            elif request.topic == str(xMsgConstants.FIND_PUBLISHER):
+            elif request.topic == xMsgConstants.FIND_PUBLISHER:
                 register = request.get_data()
                 registration = self.publishers_db.find(register.domain,
                                                        register.subject,
                                                        register.type)
 
-            elif request.topic == str(xMsgConstants.FIND_SUBSCRIBER):
+            elif request.topic == xMsgConstants.FIND_SUBSCRIBER:
                 register = request.get_data()
                 registration = self.subscribers_db.find(register.domain,
                                                         register.subject,
@@ -186,7 +167,7 @@ class xMsgRegService(threading.Thread):
             else:
                 xMsgUtil.log("Warning: unknown registration request type...")
                 xMsgUtil.log("Warning: got message %s" % request.topic)
-                registration = str(xMsgConstants.ERROR)
+                registration = xMsgConstants.ERROR
             # send a response to request
             return xMsgRegResponse(request.topic, sender, registration)
 

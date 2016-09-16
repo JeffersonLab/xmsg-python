@@ -105,11 +105,11 @@ class xMsgSubscription(object):
                             t_data = self._driver.recv()
                             if len(t_data) == 2:
                                 continue
-                            msg = xMsgMessage.create_with_serialized_data(t_data)
+                            msg = xMsgMessage.from_serialized_data(t_data)
                             if msg.has_reply_topic():
                                 r_msg = self._callback.callback(msg)
                                 r_msg.topic = str(msg.get_reply_topic())
-                                r_msg.set_reply_topic(str(xMsgConstants.UNDEFINED))
+                                r_msg.set_reply_topic(xMsgConstants.UNDEFINED)
                                 self._publisher(r_msg)
 
                             else:

@@ -40,7 +40,7 @@ class xMsgMessage(object):
             self._metadata = xMsgMeta()
 
     @classmethod
-    def create_with_string(cls, topic, data_string):
+    def from_string(cls, topic, data_string):
         """Constructs a message object with simple string data"""
         msg = cls()
         msg.topic = topic
@@ -49,7 +49,7 @@ class xMsgMessage(object):
         return msg
 
     @classmethod
-    def create_with_xmsg_data(cls, topic, xmsg_data_object):
+    def from_xmsg_data(cls, topic, xmsg_data_object):
         """Constructs a message with an unserialized xMsgData object and
         the default metadata
 
@@ -71,7 +71,7 @@ class xMsgMessage(object):
             raise TypeError("xMsgMessage: Invalid type of data object")
 
     @classmethod
-    def create_with_serialized_data(cls, serialized_data):
+    def from_serialized_data(cls, serialized_data):
         """Constructs a message with serialized data and the default metadata
 
         Args:
