@@ -2,12 +2,12 @@
 
 import multiprocessing as mp
 import zmq
+
 from threading import Thread, Event
 
-from xmsg.core.xMsgConstants import xMsgConstants
-from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.core.xMsgSubscriptionExecutor import Executor
 from xmsg.core.xMsgTopic import xMsgTopic
+from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class xMsgSubscription(object):
@@ -63,6 +63,7 @@ class xMsgSubscription(object):
     def stop(self):
         """Stops the subscription thread"""
         self._handle_thread.stop()
+        self._handle_thread.join()
 
     class _Handler(Thread):
         """Thread handler class"""
@@ -84,51 +85,39 @@ class xMsgSubscription(object):
             self._is_running = Event()
             self._pool_size = pool_size
             self._publisher = publisher
-            self.todo_queue = mp.Queue()
-            executor = Executor(self.todo_queue, self._callback)
-            self.pool = mp.Pool(processes=pool_size,
-                                initializer=executor.run)
 
         def is_alive(self):
             return not self._is_running.isSet()
 
         def run(self):
+            queue = mp.JoinableQueue()
+            interruption_queue = mp.Queue()
+
+            executor = Executor(queue, interruption_queue, self._callback)
+            pool = mp.Pool(processes=self._pool_size, initializer=executor.run)
+
             poller = zmq.Poller()
             poller.register(self._driver.get_sub_socket(), zmq.POLLIN)
-
-            while not self._is_running.is_set():
+            while interruption_queue.empty() and not self._is_running.is_set():
                 try:
                     socks = dict(poller.poll(100))
                     if socks.get(self._driver.get_sub_socket()) == zmq.POLLIN:
-                        try:
-                            # serialized data received in the subscription
-                            t_data = self._driver.recv()
-                            if len(t_data) == 2:
-                                continue
-                            msg = xMsgMessage.from_serialized_data(t_data)
-                            if msg.has_reply_topic():
-                                r_msg = self._callback.callback(msg)
-                                r_msg.topic = str(msg.get_reply_topic())
-                                r_msg.set_reply_topic(xMsgConstants.UNDEFINED)
-                                self._publisher(r_msg)
-
-                            else:
-                                self.todo_queue.put(t_data)
-
-                        except Exception as e:
-                            print e.message
+                        # serialized data received in the subscription
+                        t_data = self._driver.recv()
+                        if len(t_data) == 2:
                             continue
+                        queue.put(t_data)
+
+                except KeyboardInterrupt:
+                    break
+
                 except zmq.error.ZMQError as e:
                     if e.errno == zmq.ETERM:
-                        break
-                    print e.message
-
+                        self.stop()
+            xMsgUtil.log("Cleaning up the Queue...")
+            xMsgUtil.sleep(5)
             self._driver.unsubscribe(self.name)
-            for _ in xrange(self._pool_size):
-                self.todo_queue.put("STOP")
-            self.todo_queue.close()
-            del self.todo_queue
-            self.pool.close()
+            pool.terminate()
 
         def stop(self):
             self._is_running.set()
