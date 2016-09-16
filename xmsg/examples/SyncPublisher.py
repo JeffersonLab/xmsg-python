@@ -36,8 +36,7 @@ def main(array_size, proxy_host, alert_every_n):
             # Create transient data
 
             t_msg_data.FLOATA.extend(data)
-            transient_message = xMsgMessage.create_with_xmsg_data(topic,
-                                                                  t_msg_data)
+            transient_message = xMsgMessage.from_xmsg_data(topic, t_msg_data)
 
             # Publishing
             sync_publisher.sync_publish(connection, transient_message, 10)

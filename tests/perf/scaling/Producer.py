@@ -1,4 +1,5 @@
 # coding=utf-8
+
 import random
 import time
 
@@ -12,9 +13,11 @@ from xmsg.net.xMsgAddress import ProxyAddress
 
 class Producer(xMsg):
 
-    def __init__(self, n_messages):
-        super(Producer, self).__init__(name="the_producer")
-        connection = self.get_connection(ProxyAddress())
+    def __init__(self, n_messages, proxy_port):
+        proxy_address = ProxyAddress("localhost", proxy_port)
+        super(Producer, self).__init__(name="the_producer",
+                                       proxy_address=proxy_address)
+        connection = self.get_connection(proxy_address)
 
         class _CallBack(xMsgCallBack):
             def __init__(self):
@@ -35,20 +38,17 @@ class Producer(xMsg):
                         self.start_time = time.time()
 
                 self.count += 1
-        subscription = self.subscribe(ProxyAddress(),
-                                      "the_reply",
-                                      _CallBack(), 1)
+        subscription = self.subscribe(proxy_address, "the_reply", _CallBack(),
+                                      1)
         while True:
             try:
                 t_msg_data = xMsgData()
                 t_msg_data.type = xMsgData.T_FLOATA
-                data = [float(random.randint(1, 10)) for _ in
-                        range(int(10))]
+                data = [float(random.randint(1, 10)) for _ in range(int(10))]
 
                 # Create transient data
                 t_msg_data.FLOATA.extend(data)
-                t_msg = xMsgMessage.create_with_xmsg_data(self.myname,
-                                                          t_msg_data)
+                t_msg = xMsgMessage.from_xmsg_data(self.myname, t_msg_data)
                 self.publish(connection, t_msg)
             except KeyboardInterrupt:
                 self.unsubscribe(subscription)
@@ -61,5 +61,7 @@ if __name__ == "__main__":
     parser.description = "Publisher for scaling tests"
     parser.add_argument("message_count", help="report after N given messages",
                         type=int)
+    parser.add_argument("--proxy-port", help="proxy port", type=int,
+                        default=7791)
     args = parser.parse_args()
-    P = Producer(args.message_count)
+    P = Producer(args.message_count, args.proxy_port)

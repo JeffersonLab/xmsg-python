@@ -36,7 +36,7 @@ def main():
         t_msg_data = xMsgData_pb2.xMsgData()
         t_msg_data.type = xMsgData_pb2.xMsgData.T_FLOATA
         t_msg_data.FLOATA.extend(data)
-        t_msg = xMsgMessage.create_with_xmsg_data(topic, t_msg_data)
+        t_msg = xMsgMessage.from_xmsg_data(topic, t_msg_data)
 
         # Publishing
         publisher.publish(connection, t_msg)

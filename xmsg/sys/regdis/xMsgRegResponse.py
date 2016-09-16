@@ -1,4 +1,4 @@
-# coding=ut-8
+# coding=utf-8
 
 from xmsg.core.xMsgConstants import xMsgConstants
 

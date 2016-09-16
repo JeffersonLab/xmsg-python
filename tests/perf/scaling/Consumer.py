@@ -10,26 +10,29 @@ from xmsg.net.xMsgAddress import ProxyAddress
 
 class Publisher(xMsg):
 
-    def __init__(self):
+    def __init__(self, proxy_address):
         super(Publisher, self).__init__(name="publisher")
-        self.connection = self.get_connection(ProxyAddress())
+        self.connection = self.get_connection(proxy_address)
 
     def reply(self, msg):
         self.publish(self.connection, msg)
 
 
 class Consumer(xMsg):
-    def __init__(self, pool_size):
+    def __init__(self, pool_size, proxy_port):
+        proxy_address = ProxyAddress("localhost", proxy_port)
         super(Consumer, self).__init__(name="the_consumer",
+                                       proxy_address=proxy_address,
                                        pool_size=pool_size)
-        self.connection = self.get_connection(ProxyAddress())
+        self.connection = self.get_connection(proxy_address)
         self.queue = mp.Queue()
 
     class _CallBack(xMsgCallBack):
 
-        def __init__(self):
+        def __init__(self, proxy_address):
             self.flag = False
             self.publisher = None
+            self.proxy_address = proxy_address
 
         def _fact(self, n):
             fact = 0
@@ -42,7 +45,7 @@ class Consumer(xMsg):
 
         def callback(self, msg):
             if not self.flag:
-                self.publisher = Publisher()
+                self.publisher = Publisher(self.proxy_address)
                 self.flag = True
 
             # send back the message to producer
@@ -51,10 +54,11 @@ class Consumer(xMsg):
             self.publisher.reply(msg)
 
     def run(self):
+        subscription = None
         try:
-            subscription = self.subscribe(ProxyAddress(),
+            subscription = self.subscribe(self.default_proxy_address,
                                           "the_producer",
-                                          self._CallBack())
+                                          self._CallBack(self.default_proxy_address))
             xMsgUtil.keep_alive()
         except KeyboardInterrupt:
             self.destroy()
@@ -67,7 +71,9 @@ if __name__ == "__main__":
 
     parser.description = "Subscriber for scaling tests"
     parser.add_argument("pool_size", help="pool size for subscriber", type=int)
+    parser.add_argument("--proxy-port", help="proxy port",
+                        type=int, default=7791)
     args = parser.parse_args()
 
-    C = Consumer(args.pool_size)
+    C = Consumer(args.pool_size, args.proxy_port)
     C.run()
