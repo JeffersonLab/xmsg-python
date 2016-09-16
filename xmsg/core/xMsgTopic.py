@@ -6,7 +6,7 @@ from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.core.xMsgExceptions import UndefinedTopicDomain, MalformedCanonicalName
 
 
-ANY = str(xMsgConstants.ANY)
+ANY = xMsgConstants.ANY
 SEPARATOR = ":"
 TOPIC_PATTERN = "^([^: ]+)(:(\\w+)(:(\\w+))?)?$"
 TOPIC_VALIDATOR = re.compile(TOPIC_PATTERN)
@@ -86,7 +86,7 @@ class xMsgTopic(object):
         Returns:
             xMsgTopic: valid xmsg topic object
         """
-        if (not domain or domain == str(xMsgConstants.UNDEFINED) or
+        if (not domain or domain == xMsgConstants.UNDEFINED or
                 domain == ANY):
             raise UndefinedTopicDomain
         else:

@@ -1,10 +1,13 @@
 # coding=utf-8
 
+import multiprocessing as mp
 import zmq
 
 from threading import Thread, Event
 
-from xmsg.core.xMsgMessage import xMsgMessage
+from xmsg.core.xMsgSubscriptionExecutor import Executor
+from xmsg.core.xMsgTopic import xMsgTopic
+from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class xMsgSubscription(object):
@@ -23,28 +26,35 @@ class xMsgSubscription(object):
     Creation and destruction of subscriptions are controlled by the xMsg actor.
     """
 
-    def __init__(self, topic, connection):
+    def __init__(self, topic, connection, pool_size=1):
         """ xMsgSubscription constructor
 
         Args:
             topic (xMsgTopic): topic to subscribe xMsg actor
             connection (xMsgProxyDriver): driver to communicate with proxy
+            pool_size (int): size of processing pool
         """
         self.topic = str(topic)
         self._connection = connection
         self._handle_thread = None
+        self._pool_size = pool_size
 
     def __repr__(self):
         return str("<xMsgSubscription : %s>" % self.topic)
 
-    def start(self, callback):
+    def start(self, callback, publisher):
         """Starts the subscription thread
 
         Args:
             callback (xMsgCallback): callback function
+            publisher (func): publisher function
         """
-        self._handle_thread = self._Handler(self.topic, self._connection,
-                                            callback)
+        self._handle_thread = self._Handler(self.topic,
+                                            self._connection,
+                                            callback,
+                                            self._pool_size,
+                                            publisher)
+
         self._connection.subscribe(self.topic)
         if not self._connection.check_subscription(self.topic):
             self._connection.unsubscribe(self.topic)
@@ -53,51 +63,61 @@ class xMsgSubscription(object):
     def stop(self):
         """Stops the subscription thread"""
         self._handle_thread.stop()
+        self._handle_thread.join()
 
     class _Handler(Thread):
         """Thread handler class"""
 
-        def __init__(self, topic, connection, handle):
+        def __init__(self, topic, driver, callback, pool_size, publisher):
             """ Handler constructor
 
             Args:
                 topic (str): topic for subscription
-                connection (xMsgProxyDriver): driver for proxy connection
-                handle (func): callback function
+                driver (xMsgProxyDriver): driver for proxy connection
+                callback (func): callback function
+                pool_size (int): processing pool size
+                publisher (func): publisher function
             """
             super(xMsgSubscription._Handler, self).__init__(name=topic)
-            self._connection = connection
-            self._connection.subscribe(topic)
+            self._callback = callback
+            self._driver = driver
+            self._driver.subscribe(topic)
             self._is_running = Event()
-            self.handle = handle
+            self._pool_size = pool_size
+            self._publisher = publisher
 
         def is_alive(self):
             return not self._is_running.isSet()
 
         def run(self):
-            poller = zmq.Poller()
-            poller.register(self._connection.get_sub_socket(), zmq.POLLIN)
+            queue = mp.JoinableQueue()
+            interruption_queue = mp.Queue()
 
-            while not self._is_running.is_set():
+            executor = Executor(queue, interruption_queue, self._callback)
+            pool = mp.Pool(processes=self._pool_size, initializer=executor.run)
+
+            poller = zmq.Poller()
+            poller.register(self._driver.get_sub_socket(), zmq.POLLIN)
+            while interruption_queue.empty() and not self._is_running.is_set():
                 try:
                     socks = dict(poller.poll(100))
-                    if socks.get(self._connection.get_sub_socket()) == zmq.POLLIN:
-                        try:
-                            t_data = self._connection.recv()
-                            if len(t_data) == 2:
-                                continue
-
-                            msg = xMsgMessage.create_with_serialized_data(t_data)
-                            self.handle(msg)
-                        except Exception as e:
-                            print e.message
+                    if socks.get(self._driver.get_sub_socket()) == zmq.POLLIN:
+                        # serialized data received in the subscription
+                        t_data = self._driver.recv()
+                        if len(t_data) == 2:
                             continue
+                        queue.put(t_data)
+
+                except KeyboardInterrupt:
+                    break
+
                 except zmq.error.ZMQError as e:
                     if e.errno == zmq.ETERM:
-                        break
-                    print e.message
-
-            self._connection.unsubscribe(self.name)
+                        self.stop()
+            xMsgUtil.log("Cleaning up the Queue...")
+            xMsgUtil.sleep(5)
+            self._driver.unsubscribe(self.name)
+            pool.terminate()
 
         def stop(self):
             self._is_running.set()

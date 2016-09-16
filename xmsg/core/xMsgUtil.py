@@ -33,7 +33,7 @@ class xMsgUtil(object):
         r_data.name = name
         r_data.description = description
         r_data.host = xMsgUtil.get_local_ip()
-        r_data.port = int(xMsgConstants.DEFAULT_PORT)
+        r_data.port = xMsgConstants.DEFAULT_PORT
         r_data.domain = domain
         r_data.subject = subject
         r_data.type = xtype
