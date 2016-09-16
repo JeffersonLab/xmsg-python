@@ -6,7 +6,7 @@ from xmsg.core.xMsg import xMsg
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgTopic import xMsgTopic
 from xmsg.core.xMsgMessage import xMsgMessage
-from xmsg.data import xMsgData_pb2
+from xmsg.data.xMsgData_pb2 import xMsgData
 from xmsg.net.xMsgAddress import ProxyAddress
 
 
@@ -25,20 +25,24 @@ def main(array_size, proxy_host):
     topic = xMsgTopic.build("test_domain", "test_subject", "test_type")
 
     # Publish data for ever...
-    while True:
-        data = [float(randint(1, 10)) for _ in range(int(array_size))]
+    try:
+        while True:
+            data = [float(randint(1, 10)) for _ in range(int(array_size))]
 
-        # Create transient data
-        t_msg_data = xMsgData_pb2.xMsgData()
-        t_msg_data.type = xMsgData_pb2.xMsgData.T_FLOATA
-        t_msg_data.FLOATA.extend(data)
-        t_msg = xMsgMessage.from_xmsg_data(topic, t_msg_data)
+            # Create transient data
+            t_msg_data = xMsgData()
+            t_msg_data.type = xMsgData.T_FLOATA
+            t_msg_data.FLOATA.extend(data)
+            t_msg = xMsgMessage.from_xmsg_data(topic, t_msg_data)
 
-        # Publishing
-        publisher.publish(connection, t_msg)
+            # Publishing
+            publisher.publish(connection, t_msg)
 
-        print "publishing : T_FLOATA"
-        xMsgUtil.sleep(1)
+            print "publishing : T_FLOATA"
+            xMsgUtil.sleep(1)
+    except KeyboardInterrupt:
+        publisher.destroy()
+
 
 if __name__ == "__main__":
     import argparse

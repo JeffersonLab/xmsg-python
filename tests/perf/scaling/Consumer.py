@@ -61,8 +61,8 @@ class Consumer(xMsg):
                                           self._CallBack(self.default_proxy_address))
             xMsgUtil.keep_alive()
         except KeyboardInterrupt:
-            self.destroy()
             self.unsubscribe(subscription)
+            self.destroy()
 
 
 if __name__ == "__main__":

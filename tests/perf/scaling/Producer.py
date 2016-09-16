@@ -38,10 +38,11 @@ class Producer(xMsg):
                         self.start_time = time.time()
 
                 self.count += 1
+
         subscription = self.subscribe(proxy_address, "the_reply", _CallBack(),
                                       1)
-        while True:
-            try:
+        try:
+            while True:
                 t_msg_data = xMsgData()
                 t_msg_data.type = xMsgData.T_FLOATA
                 data = [float(random.randint(1, 10)) for _ in range(int(10))]
@@ -50,9 +51,9 @@ class Producer(xMsg):
                 t_msg_data.FLOATA.extend(data)
                 t_msg = xMsgMessage.from_xmsg_data(self.myname, t_msg_data)
                 self.publish(connection, t_msg)
-            except KeyboardInterrupt:
-                self.unsubscribe(subscription)
-                self.destroy()
+        except KeyboardInterrupt:
+            self.unsubscribe(subscription)
+            self.destroy()
 
 if __name__ == "__main__":
     import argparse
