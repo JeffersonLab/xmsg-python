@@ -111,7 +111,7 @@ class xMsg(object):
         """
         self.connection_manager.release_proxy_connection(connection)
 
-    def destroy(self, linger=-1):
+    def destroy(self, linger=0):
         """ Destroys the created context and terminates the thread pool.
 
         Args:
@@ -119,7 +119,6 @@ class xMsg(object):
                 messages after the socket has been closed.Default value
                 is -1, which in ZMQ means to linger forever.
         """
-        # self.pool.terminate()
         self.context.destroy(linger)
 
     def register_as_publisher(self, address, topic,
@@ -132,6 +131,7 @@ class xMsg(object):
         listen to your messages.
 
         Args:
+            address (RegAddress): registrar information object
             topic (xMsgTopic): the name of the requester/sender. Required
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
@@ -152,6 +152,7 @@ class xMsg(object):
         are active listeners/subscribers to their published topic.
 
         Args:
+            address (RegAddress): registrar information object
             topic (xMsgTopic): the name of the requester/sender. Required
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
@@ -164,6 +165,7 @@ class xMsg(object):
         global registration databases
 
         Args:
+            address (RegAddress): registrar information object
             topic (xMsgTopic): the name of the requester/sender. Required
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
@@ -175,6 +177,7 @@ class xMsg(object):
         global registration database
 
         Args:
+            address (RegAddress): registrar information object
             topic (xMsgTopic): the name of the requester/sender. Required
                 according to the xMsg zmq message structure definition
                 (topic, sender, data)
@@ -320,9 +323,11 @@ class xMsg(object):
             address (ProxyAddress):  connection object
             topic (xMsgTopic): subscription topic
             callback (xMsgCallBack): user supplied callback function
+            pool_size (int): size of the subscription pool
 
         Returns:
-            xMsgSubscription: xMsg Subscription object, it allows thread handling
+            xMsgSubscription: xMsg Subscription object, it allows thread
+            handling
         """
         connection = self.get_connection(address)
         driver = self.connection_manager.get_proxy_connection(address)
