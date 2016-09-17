@@ -66,7 +66,6 @@ class xMsgProxy(object):
     def stop(self):
         self._proxy.stop()
         self._controller.stop()
-        xMsgUtil.log("proxy process terminated.")
 
     class _Proxy(object):
 
@@ -76,9 +75,6 @@ class xMsgProxy(object):
             self._proxy = None
 
         def start(self):
-            xMsgUtil.log("running on host = %s port = %d"
-                         % (self._proxy_address.host,
-                            self._proxy_address.pub_port))
             self._proxy = ProcessProxy(zmq.XSUB, zmq.XPUB)
             self._proxy.bind_in("tcp://*:%d" % self._proxy_address.pub_port)
             self._proxy.bind_out("tcp://*:%d" % self._proxy_address.sub_port)
@@ -134,7 +130,6 @@ class xMsgProxy(object):
             return
 
         def process_request(self, msg):
-            print msg
             topic_frame, type_frame, id_frame = msg
 
             if type_frame == xMsgConstants.CTRL_CONNECT:
