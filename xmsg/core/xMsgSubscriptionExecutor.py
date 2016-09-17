@@ -1,4 +1,5 @@
 # coding=utf-8
+
 from multiprocessing.queues import Empty
 
 from xmsg.core.xMsgMessage import xMsgMessage
@@ -18,11 +19,6 @@ class Executor(object):
         except Empty:
             return None
 
-    def _tear_down(self):
-        while not self._queue.empty():
-            self._queue.get()
-            self._queue.task_done()
-
     def run(self):
         try:
             while True:
@@ -30,18 +26,18 @@ class Executor(object):
                     s_msg = self._interruptible_get()
                     if s_msg:
                         self._queue.task_done()
+
                         if s_msg == u"STOP":
                             xMsgUtil.log("Worker received stop message")
                             self._queue_interr.put("excp")
-                            self._tear_down()
                             return
+
                         msg = xMsgMessage.from_serialized_data(s_msg)
                         self._callback.callback(msg)
 
                 except KeyboardInterrupt:
                     # executor process catches ctrl-c from subscriber
                     self._queue_interr.put("excp")
-                    self._tear_down()
                     return
         except IOError:
             pass

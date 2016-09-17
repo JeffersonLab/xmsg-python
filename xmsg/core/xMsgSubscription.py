@@ -7,7 +7,6 @@ from threading import Thread, Event
 
 from xmsg.core.xMsgSubscriptionExecutor import Executor
 from xmsg.core.xMsgTopic import xMsgTopic
-from xmsg.core.xMsgUtil import xMsgUtil
 
 
 class xMsgSubscription(object):
@@ -114,10 +113,13 @@ class xMsgSubscription(object):
                 except zmq.error.ZMQError as e:
                     if e.errno == zmq.ETERM:
                         self.stop()
-            xMsgUtil.log("Cleaning up the Queue...")
-            xMsgUtil.sleep(5)
+
             self._driver.unsubscribe(self.name)
-            pool.terminate()
+            del queue
+            del interruption_queue
+            pool.close()
+            pool.join()
+            return
 
         def stop(self):
             self._is_running.set()
