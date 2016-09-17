@@ -31,7 +31,7 @@ class xMsgRegDriver(object):
         # Connection settings
         self._connection = self.zmq_socket(self.context, zmq.REQ,
                                            reg_address.address,
-                                           str(xMsgConstants.CONNECT))
+                                           xMsgConstants.CONNECT)
 
     def get_address(self):
         """Returns the Registration address object
@@ -68,12 +68,12 @@ class xMsgRegDriver(object):
             # Topic of the message is a string = "registerPublisher"
             # or "registerSubscriber"
             if is_publisher:
-                topic = str(xMsgConstants.REGISTER_PUBLISHER)
+                topic = xMsgConstants.REGISTER_PUBLISHER
 
             else:
-                topic = str(xMsgConstants.REGISTER_SUBSCRIBER)
+                topic = xMsgConstants.REGISTER_SUBSCRIBER
 
-            timeout = int(xMsgConstants.REGISTER_REQUEST_TIMEOUT)
+            timeout = xMsgConstants.REGISTER_REQUEST_TIMEOUT
             request = xMsgRegRequest(topic, registration_data.name,
                                      registration_data)
 
@@ -99,13 +99,14 @@ class xMsgRegDriver(object):
             # Topic of the message is a string = "removePublisher"
             # or "removeSubscriber"
             if is_publisher:
-                topic = str(xMsgConstants.REMOVE_PUBLISHER)
+                topic = xMsgConstants.REMOVE_PUBLISHER
 
             else:
-                topic = str(xMsgConstants.REMOVE_SUBSCRIBER)
+                topic = xMsgConstants.REMOVE_SUBSCRIBER
 
-            timeout = int(xMsgConstants.REGISTER_REQUEST_TIMEOUT)
-            request = xMsgRegRequest(topic, registration_data.name,
+            timeout = xMsgConstants.REGISTER_REQUEST_TIMEOUT
+            request = xMsgRegRequest(topic,
+                                     registration_data.name,
                                      registration_data)
 
             self.request(request, timeout)
@@ -136,13 +137,14 @@ class xMsgRegDriver(object):
             # Topic of the message is a string = "findPublisher"
             # or "findSubscriber"
             if is_publisher:
-                topic = str(xMsgConstants.FIND_PUBLISHER)
+                topic = xMsgConstants.FIND_PUBLISHER
 
             else:
-                topic = str(xMsgConstants.FIND_SUBSCRIBER)
+                topic = xMsgConstants.FIND_SUBSCRIBER
 
-            timeout = int(xMsgConstants.FIND_REQUEST_TIMEOUT)
-            request_message = xMsgRegRequest(topic, registration_data.name,
+            timeout = xMsgConstants.FIND_REQUEST_TIMEOUT
+            request_message = xMsgRegRequest(topic,
+                                             registration_data.name,
                                              registration_data)
 
             return self.request(request_message, timeout)
@@ -171,7 +173,7 @@ class xMsgRegDriver(object):
                 request = self._connection.recv_multipart()
                 response = xMsgRegResponse.create_from_multipart_request(request)
 
-                if response.get_status() != str(xMsgConstants.SUCCESS):
+                if response.get_status() != xMsgConstants.SUCCESS:
                     raise RegistrationException(response.get_status())
 
                 xMsgUtil.log("Info: xMsg actor has been registered in node")
@@ -203,11 +205,11 @@ class xMsgRegDriver(object):
         sb = context.socket(socket_type)
         sb.set_hwm(0)
 
-        if boc == str(xMsgConstants.BIND):
+        if boc == xMsgConstants.BIND:
             # Bind socket to the host and port
             sb.bind(reg_address)
 
-        elif boc == str(xMsgConstants.CONNECT):
+        elif boc == xMsgConstants.CONNECT:
             # Connect to the host and port
             sb.connect(reg_address)
 

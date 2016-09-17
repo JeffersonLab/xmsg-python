@@ -1,19 +1,9 @@
 #!/usr/bin/env bash
 # author royarzun
 
-if [ "$1" = "-h" -o "$1" = "-help" ]
-then
-    echo ""
-    echo "Starts xMsgPublisher"
-    echo "---------------------------------"
-    echo "synopsis: px_publisher <array_size>"
-    echo ""
-else
-    if ! $(python -c 'from xmsg.examples.Publisher import main' &> /dev/null);
-	then
-		echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
-	else
-		python -c 'from xmsg.examples.Publisher import main; main('$1')'
-	fi
 
+if ! $(python -c 'from xmsg.examples.Publisher import main' &> /dev/null); then
+    echo "Please check that you have xMsg and its dependencies installed in your system or virtual environment ";
+else
+    python -m 'xmsg.examples.Publisher' ${@}
 fi

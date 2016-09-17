@@ -22,9 +22,7 @@ class RegAddress(object):
         port (int): address port
         address (String): address dotted notation
     """
-    def __init__(self,
-                 host="localhost",
-                 port=int(xMsgConstants.REGISTRAR_PORT)):
+    def __init__(self, host="localhost", port=xMsgConstants.REGISTRAR_PORT):
         """Constructor that converts host name into a dotted notation
         of the IP address.
 
@@ -59,7 +57,7 @@ class ProxyAddress(object):
     """
     def __init__(self,
                  host="localhost",
-                 pub_port=int(xMsgConstants.DEFAULT_PORT),
+                 pub_port=xMsgConstants.DEFAULT_PORT,
                  sub_port=None):
         """"By default creates an address using localhost and default port if
         no parameters are given

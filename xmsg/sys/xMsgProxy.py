@@ -60,12 +60,12 @@ class xMsgProxy(object):
 
         except KeyboardInterrupt:
             self._controller.stop()
+            self._proxy.stop()
             return
 
     def stop(self):
-        self._proxy.terminate()
+        self._proxy.stop()
         self._controller.stop()
-        xMsgUtil.log("proxy process terminated.")
 
     class _Proxy(object):
 
@@ -75,14 +75,14 @@ class xMsgProxy(object):
             self._proxy = None
 
         def start(self):
-            xMsgUtil.log("running on host = %s port = %d"
-                         % (self._proxy_address.host,
-                            self._proxy_address.pub_port))
             self._proxy = ProcessProxy(zmq.XSUB, zmq.XPUB)
             self._proxy.bind_in("tcp://*:%d" % self._proxy_address.pub_port)
             self._proxy.bind_out("tcp://*:%d" % self._proxy_address.sub_port)
             self._proxy.start()
             self._proxy.join()
+
+        def stop(self):
+            zmq.Context.destroy(self._proxy.context_factory())
 
     class _Controller(threading.Thread):
 
@@ -100,7 +100,7 @@ class xMsgProxy(object):
                                      % (self._proxy_address.host,
                                         self._proxy_address.sub_port))
             self._ctl_socket.setsockopt(zmq.SUBSCRIBE,
-                                        str(xMsgConstants.CTRL_TOPIC))
+                                        xMsgConstants.CTRL_TOPIC)
             self._pub_socket.connect("tcp://%s:%d"
                                      % (self._proxy_address.host,
                                         self._proxy_address.pub_port))
@@ -132,13 +132,13 @@ class xMsgProxy(object):
         def process_request(self, msg):
             topic_frame, type_frame, id_frame = msg
 
-            if type_frame == str(xMsgConstants.CTRL_CONNECT):
+            if type_frame == xMsgConstants.CTRL_CONNECT:
                 self._router_socket.send_multipart([id_frame, type_frame])
 
-            elif type_frame == str(xMsgConstants.CTRL_SUBSCRIBE):
+            elif type_frame == xMsgConstants.CTRL_SUBSCRIBE:
                 self._pub_socket.send_multipart([id_frame, type_frame])
 
-            elif type_frame == str(xMsgConstants.CTRL_REPLY):
+            elif type_frame == xMsgConstants.CTRL_REPLY:
                 self._router_socket.send_multipart([id_frame, type_frame])
 
             else:
@@ -152,7 +152,7 @@ def main():
     parser.add_argument("--host", help="Proxy address", type=str,
                         default="localhost")
     parser.add_argument("--port", help="Proxy port", type=int,
-                        default=int(xMsgConstants.DEFAULT_PORT))
+                        default=xMsgConstants.DEFAULT_PORT)
 
     args = parser.parse_args()
     host = args.host

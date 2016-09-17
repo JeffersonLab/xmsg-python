@@ -88,8 +88,7 @@ class xMsgRegDatabase(object):
                     if len(self.db[key]) == 0:
                         del self.db[key]
 
-    def find(self, domain, subject=str(xMsgConstants.ANY),
-             xtype=str(xMsgConstants.ANY)):
+    def find(self, domain, subject=xMsgConstants.ANY, xtype=xMsgConstants.ANY):
         """Finds the registration information based on the topic composition
 
         The method will find registration from the following way
@@ -149,10 +148,10 @@ class xMsgRegDatabase(object):
     @staticmethod
     def _generate_key(registration_data):
         key = registration_data.domain
-        if(registration_data.subject != str(xMsgConstants.UNDEFINED) and
-           registration_data.subject != str(xMsgConstants.ANY)):
+        if(registration_data.subject != xMsgConstants.UNDEFINED and
+           registration_data.subject != xMsgConstants.ANY):
             key = key + ":" + registration_data.subject
-        if(registration_data.type != str(xMsgConstants.UNDEFINED) and
-           registration_data.type != str(xMsgConstants.ANY)):
+        if(registration_data.type != xMsgConstants.UNDEFINED and
+           registration_data.type != xMsgConstants.ANY):
             key = key + ":" + registration_data.type
         return key
