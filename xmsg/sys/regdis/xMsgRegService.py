@@ -4,6 +4,7 @@ import threading
 import zmq
 from sets import Set
 
+from xmsg.core.xMsgExceptions import AddressInUseException
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.sys.regdis.xMsgRegRequest import xMsgRegRequest
@@ -12,7 +13,7 @@ from xmsg.sys.regdis.xMsgRegDatabase import xMsgRegDatabase
 
 
 class xMsgRegService(threading.Thread):
-    '''The main registration service, that always runs in a separate thread.
+    """The main registration service, that always runs in a separate thread.
     Contains two separate databases to store publishers and subscribers
     registration data.
     The key for the data base is xMsg topic, constructed as:
@@ -36,7 +37,7 @@ class xMsgRegService(threading.Thread):
         port (int): registrar service port. By default is 8888
         subscribers_db (xMsgRegDatabase): subscribers database
         publishers_db (xMsgRegDatabase): publishers database
-    '''
+    """
 
     def __init__(self, context, reg_address):
         super(xMsgRegService, self).__init__()
@@ -70,29 +71,34 @@ class xMsgRegService(threading.Thread):
                 send_back(reg_service_response)
 
         """
-        reg_service_socket = self.context.socket(zmq.REP)
-        reg_service_socket.bind(self.address)
+        registrar_socket = None
+        try:
+            registrar_socket = self.context.socket(zmq.REP)
+            registrar_socket.bind(self.address)
+        except zmq.ZMQError:
+            raise AddressInUseException("Registrar address already being used")
 
-        while threading.currentThread().is_alive() and not self.stopped():
-            try:
-                registration_request = reg_service_socket.recv_multipart()
-                if not registration_request:
-                    continue
+        else:
+            while threading.currentThread().is_alive() and not self.stopped():
+                try:
+                    registrar_request = registrar_socket.recv_multipart()
+                    if not registrar_request:
+                        continue
 
-                reg_service_response = self.process_request(registration_request)
-                reg_service_socket.send_multipart(reg_service_response.msg())
+                    response = self.process_request(registrar_request)
+                    registrar_socket.send_multipart(response.msg())
 
-                del registration_request
-                del reg_service_response
+                except zmq.error.ContextTerminated:
+                    break
 
-            except zmq.error.ContextTerminated:
-                self.stop()
-                return
+                except KeyboardInterrupt:
+                    break
 
-            except Exception as e:
-                self.stop()
-                xMsgUtil.log("xMsgRegService received: %s" % e)
-                return
+                except Exception as e:
+                    xMsgUtil.log("xMsgRegService received: %s" % e.message)
+                    break
+        finally:
+            return
 
     def process_request(self, registration_request):
         """Method to process the registration request and interact with the

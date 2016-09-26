@@ -3,9 +3,9 @@
 import threading
 
 import zmq
-from zmq.devices.proxydevice import ProcessProxy
 
 from xmsg.core.xMsgConstants import xMsgConstants
+from xmsg.core.xMsgExceptions import AddressInUseException
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.net.xMsgAddress import ProxyAddress
 
@@ -53,15 +53,17 @@ class xMsgProxy(object):
         try:
             self._controller = self._Controller(self.context,
                                                 self.proxy_address)
-            self._proxy = self._Proxy(self.proxy_address)
+            self._proxy = self._Proxy(self.context, self.proxy_address)
 
             self._controller.start()
             self._proxy.start()
 
+        except zmq.error.ZMQError:
+            raise AddressInUseException("Proxy address already being used")
+
         except KeyboardInterrupt:
-            self._controller.stop()
-            self._proxy.stop()
-            return
+            xMsgUtil.log("Exiting proxy...")
+            self.stop()
 
     def stop(self):
         self._proxy.stop()
@@ -69,20 +71,21 @@ class xMsgProxy(object):
 
     class _Proxy(object):
 
-        def __init__(self, proxy_address):
+        def __init__(self, context, proxy_address):
             super(xMsgProxy._Proxy, self).__init__()
             self._proxy_address = proxy_address
+            self._context = context
             self._proxy = None
 
         def start(self):
-            self._proxy = ProcessProxy(zmq.XSUB, zmq.XPUB)
-            self._proxy.bind_in("tcp://*:%d" % self._proxy_address.pub_port)
-            self._proxy.bind_out("tcp://*:%d" % self._proxy_address.sub_port)
-            self._proxy.start()
-            self._proxy.join()
+            sub_socket = self._context.socket(zmq.XSUB)
+            pub_socket = self._context.socket(zmq.XPUB)
+            sub_socket.bind("tcp://*:%d" % self._proxy_address.pub_port)
+            pub_socket.bind("tcp://*:%d" % self._proxy_address.sub_port)
+            self._proxy = zmq.proxy(sub_socket, pub_socket)
 
         def stop(self):
-            zmq.Context.destroy(self._proxy.context_factory())
+            zmq.Context.destroy(self._context)
 
     class _Controller(threading.Thread):
 
@@ -122,12 +125,11 @@ class xMsgProxy(object):
                             break
                         self.process_request(msg)
 
-                except zmq.error.ZMQError as e:
-                    xMsgUtil.log(e.message)
+                except zmq.error.ZMQError:
+                    self.stop()
 
         def stop(self):
             self._is_running.set()
-            return
 
         def process_request(self, msg):
             topic_frame, type_frame, id_frame = msg
@@ -158,8 +160,14 @@ def main():
     host = args.host
     port = args.port
 
-    proxy = xMsgProxy(zmq.Context(), host, port)
-    proxy.start()
+    try:
+        proxy = xMsgProxy(zmq.Context(), host, port)
+        proxy.start()
+
+    except AddressInUseException as e:
+        xMsgUtil.log(e.message)
+        return
+
 
 if __name__ == '__main__':
     main()
