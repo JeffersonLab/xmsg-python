@@ -6,6 +6,7 @@ import zmq
 from zmq.devices.proxydevice import ProcessProxy
 
 from xmsg.core.xMsgConstants import xMsgConstants
+from xmsg.core.xMsgExceptions import AddressInUseException
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.net.xMsgAddress import ProxyAddress
 
@@ -58,10 +59,11 @@ class xMsgProxy(object):
             self._controller.start()
             self._proxy.start()
 
+        except zmq.error.ZMQError:
+            raise AddressInUseException("Proxy address already being used")
+
         except KeyboardInterrupt:
-            self._controller.stop()
-            self._proxy.stop()
-            return
+            self.stop()
 
     def stop(self):
         self._proxy.stop()
@@ -125,6 +127,10 @@ class xMsgProxy(object):
                 except zmq.error.ZMQError as e:
                     xMsgUtil.log(e.message)
 
+                except KeyboardInterrupt:
+                    self._context.destroy()
+                    return
+
         def stop(self):
             self._is_running.set()
             return
@@ -158,8 +164,13 @@ def main():
     host = args.host
     port = args.port
 
-    proxy = xMsgProxy(zmq.Context(), host, port)
-    proxy.start()
+    try:
+        proxy = xMsgProxy(zmq.Context(), host, port)
+        proxy.start()
+    except AddressInUseException as e:
+        xMsgUtil.log(e.message)
+        return
+
 
 if __name__ == '__main__':
     main()

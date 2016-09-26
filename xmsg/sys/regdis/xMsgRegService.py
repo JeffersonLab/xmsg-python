@@ -4,6 +4,7 @@ import threading
 import zmq
 from sets import Set
 
+from xmsg.core.xMsgExceptions import AddressInUseException
 from xmsg.core.xMsgUtil import xMsgUtil
 from xmsg.core.xMsgConstants import xMsgConstants
 from xmsg.sys.regdis.xMsgRegRequest import xMsgRegRequest
@@ -12,7 +13,7 @@ from xmsg.sys.regdis.xMsgRegDatabase import xMsgRegDatabase
 
 
 class xMsgRegService(threading.Thread):
-    '''The main registration service, that always runs in a separate thread.
+    """The main registration service, that always runs in a separate thread.
     Contains two separate databases to store publishers and subscribers
     registration data.
     The key for the data base is xMsg topic, constructed as:
@@ -36,7 +37,7 @@ class xMsgRegService(threading.Thread):
         port (int): registrar service port. By default is 8888
         subscribers_db (xMsgRegDatabase): subscribers database
         publishers_db (xMsgRegDatabase): publishers database
-    '''
+    """
 
     def __init__(self, context, reg_address):
         super(xMsgRegService, self).__init__()
@@ -74,10 +75,9 @@ class xMsgRegService(threading.Thread):
         try:
             registrar_socket = self.context.socket(zmq.REP)
             registrar_socket.bind(self.address)
-        except zmq.ZMQError as e:
-            if e.errno == 48:
-                xMsgUtil.log("Address already in use...")
-                return
+        except zmq.ZMQError:
+            raise AddressInUseException("Registrar address already being used")
+
         else:
             while threading.currentThread().is_alive() and not self.stopped():
                 try:

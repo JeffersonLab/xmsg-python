@@ -1,6 +1,10 @@
 # coding=utf-8
 
 
+class AddressInUseException(Exception):
+    pass
+
+
 class ConnectionException(Exception):
     pass
 
@@ -51,4 +55,3 @@ class BadRequest(MessageException):
 
 class SubscriptionException(Exception):
     pass
-

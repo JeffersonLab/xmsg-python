@@ -2,6 +2,7 @@
 
 import zmq
 
+from xmsg.core.xMsgExceptions import AddressInUseException
 from xmsg.sys.regdis.xMsgRegService import xMsgRegService
 from xmsg.sys.xMsgProxy import xMsgProxy
 from xmsg.core.xMsgUtil import xMsgUtil
@@ -41,8 +42,7 @@ class xMsgRegistrar:
         """
         self.context = zmq.Context.instance()
         self.proxy = xMsgProxy(self.context, "localhost", 7771)
-        self.reg_service = xMsgRegService(self.context, RegAddress("localhost"))
-        self.node = "local"
+        self.reg_service = xMsgRegService(self.context, RegAddress())
 
     def start(self):
         try:
@@ -50,29 +50,18 @@ class xMsgRegistrar:
             self.reg_service.start()
 
             xMsgUtil.log("Local ip: %s" % xMsgUtil.get_local_ip())
-            msg = ("xMsg %s registration and discovery server has started"
-                   % self.node)
-            xMsgUtil.log(msg)
+            xMsgUtil.log("Local registration and discovery server started")
             self.proxy.start()
-            self._join()
+            self.reg_service.join()
 
-        except zmq.error.ZMQError:
-            xMsgUtil.log("Cannot start node: address already in use...")
+        except AddressInUseException as e:
+            xMsgUtil.log(e.message)
             self.shutdown()
 
     def shutdown(self):
         """Shutdowns the register and destroy the context"""
         xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
         # Kill the thread before terminating the context
-        self.reg_service.stop()
-        # Give it a little time before destroying the context
-        xMsgUtil.sleep(1)
-        # Now we destroy the shared context
-        self.context.destroy()
-
-    def _join(self):
-        """Join method for the registration service"""
-        self.reg_service.join()
 
 
 def main():
@@ -82,18 +71,9 @@ def main():
     ::
         python xmsg/sys/xMsgRegistrar.py
     """
-    registrar = None
-    try:
-        registrar = xMsgRegistrar()
-        registrar.start()
+    registrar = xMsgRegistrar()
+    registrar.start()
 
-    except KeyboardInterrupt:
-        registrar.shutdown()
-        return
-
-    except zmq.error.ZMQError:
-        xMsgUtil.log("Cannot start registrar: address already in use...")
-        return -1
 
 if __name__ == '__main__':
     main()
