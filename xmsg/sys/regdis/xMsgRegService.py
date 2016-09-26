@@ -70,20 +70,17 @@ class xMsgRegService(threading.Thread):
                 send_back(reg_service_response)
 
         """
-        reg_service_socket = self.context.socket(zmq.REP)
-        reg_service_socket.bind(self.address)
+        registrar_socket = self.context.socket(zmq.REP)
+        registrar_socket.bind(self.address)
 
         while threading.currentThread().is_alive() and not self.stopped():
             try:
-                registration_request = reg_service_socket.recv_multipart()
-                if not registration_request:
+                registrar_request = registrar_socket.recv_multipart()
+                if not registrar_request:
                     continue
 
-                reg_service_response = self.process_request(registration_request)
-                reg_service_socket.send_multipart(reg_service_response.msg())
-
-                del registration_request
-                del reg_service_response
+                response = self.process_request(registrar_request)
+                registrar_socket.send_multipart(response.msg())
 
             except zmq.error.ContextTerminated:
                 self.stop()
