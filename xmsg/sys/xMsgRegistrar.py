@@ -40,7 +40,7 @@ class xMsgRegistrar:
         can come and go, thus making xMsg message-space elastic.
         """
         self.context = zmq.Context.instance()
-        self.proxy = xMsgProxy(self.context)
+        self.proxy = xMsgProxy(self.context, "localhost", 7771)
         self.reg_service = xMsgRegService(self.context, RegAddress("localhost"))
         self.node = "local"
 
@@ -82,6 +82,7 @@ def main():
     ::
         python xmsg/sys/xMsgRegistrar.py
     """
+    registrar = None
     try:
         registrar = xMsgRegistrar()
         registrar.start()
