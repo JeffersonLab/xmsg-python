@@ -89,17 +89,16 @@ class xMsgRegService(threading.Thread):
                     registrar_socket.send_multipart(response.msg())
 
                 except zmq.error.ContextTerminated:
-                    self.stop()
-                    return
+                    break
 
                 except KeyboardInterrupt:
-                    self.stop()
-                    return
+                    break
 
                 except Exception as e:
-                    self.stop()
-                    xMsgUtil.log("xMsgRegService received: %s" % e)
-                    return
+                    xMsgUtil.log("xMsgRegService received: %s" % e.message)
+                    break
+        finally:
+            return
 
     def process_request(self, registration_request):
         """Method to process the registration request and interact with the

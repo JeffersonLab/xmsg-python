@@ -42,26 +42,19 @@ class xMsgRegistrar:
         """
         self.context = zmq.Context.instance()
         self.proxy = xMsgProxy(self.context, "localhost", 7771)
-        self.reg_service = xMsgRegService(self.context, RegAddress())
+        self.registrar_service = xMsgRegService(self.context, RegAddress())
 
     def start(self):
         try:
             """Starts the registrar services"""
-            self.reg_service.start()
-
             xMsgUtil.log("Local ip: %s" % xMsgUtil.get_local_ip())
-            xMsgUtil.log("Local registration and discovery server started")
+            self.registrar_service.start()
+            xMsgUtil.log("Local registration and discovery server starting")
             self.proxy.start()
-            self.reg_service.join()
+            self.registrar_service.join()
 
         except AddressInUseException as e:
             xMsgUtil.log(e.message)
-            self.shutdown()
-
-    def shutdown(self):
-        """Shutdowns the register and destroy the context"""
-        xMsgUtil.log("xMsgRegistrar is being shutdown gracefully")
-        # Kill the thread before terminating the context
 
 
 def main():
