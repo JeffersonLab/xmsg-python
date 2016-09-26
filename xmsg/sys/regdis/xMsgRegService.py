@@ -70,26 +70,36 @@ class xMsgRegService(threading.Thread):
                 send_back(reg_service_response)
 
         """
-        registrar_socket = self.context.socket(zmq.REP)
-        registrar_socket.bind(self.address)
-
-        while threading.currentThread().is_alive() and not self.stopped():
-            try:
-                registrar_request = registrar_socket.recv_multipart()
-                if not registrar_request:
-                    continue
-
-                response = self.process_request(registrar_request)
-                registrar_socket.send_multipart(response.msg())
-
-            except zmq.error.ContextTerminated:
-                self.stop()
+        registrar_socket = None
+        try:
+            registrar_socket = self.context.socket(zmq.REP)
+            registrar_socket.bind(self.address)
+        except zmq.ZMQError as e:
+            if e.errno == 48:
+                xMsgUtil.log("Address already in use...")
                 return
+        else:
+            while threading.currentThread().is_alive() and not self.stopped():
+                try:
+                    registrar_request = registrar_socket.recv_multipart()
+                    if not registrar_request:
+                        continue
 
-            except Exception as e:
-                self.stop()
-                xMsgUtil.log("xMsgRegService received: %s" % e)
-                return
+                    response = self.process_request(registrar_request)
+                    registrar_socket.send_multipart(response.msg())
+
+                except zmq.error.ContextTerminated:
+                    self.stop()
+                    return
+
+                except KeyboardInterrupt:
+                    self.stop()
+                    return
+
+                except Exception as e:
+                    self.stop()
+                    xMsgUtil.log("xMsgRegService received: %s" % e)
+                    return
 
     def process_request(self, registration_request):
         """Method to process the registration request and interact with the
