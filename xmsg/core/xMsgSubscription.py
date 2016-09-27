@@ -101,7 +101,6 @@ class xMsgSubscription(object):
                 try:
                     socks = dict(poller.poll(100))
                     if socks.get(self._driver.get_sub_socket()) == zmq.POLLIN:
-                        # serialized data received in the subscription
                         t_data = self._driver.recv()
                         if len(t_data) == 2:
                             continue
@@ -110,9 +109,8 @@ class xMsgSubscription(object):
                 except KeyboardInterrupt:
                     break
 
-                except zmq.error.ZMQError as e:
-                    if e.errno == zmq.ETERM:
-                        self.stop()
+                except zmq.error.ZMQError:
+                    break
 
             self._driver.unsubscribe(self.name)
             del queue
