@@ -1,7 +1,5 @@
 # coding=utf-8
 
-from multiprocessing.queues import Empty
-
 from xmsg.core.xMsgMessage import xMsgMessage
 from xmsg.core.xMsgUtil import xMsgUtil
 
@@ -13,17 +11,11 @@ class Executor(object):
         self._queue = queue
         self._queue_interr = queue_interr
 
-    def _interruptible_get(self):
-        try:
-            return self._queue.get_nowait()
-        except Empty:
-            return None
-
     def run(self):
         try:
             while True:
                 try:
-                    s_msg = self._interruptible_get()
+                    s_msg = self._queue.get()
                     if s_msg:
                         self._queue.task_done()
 
