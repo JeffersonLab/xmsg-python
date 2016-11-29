@@ -3,4 +3,4 @@ protobuf>=2.6
 argparse>=1.2.1
 netifaces>=0.10.4
 pytest
-mockito
+mockito==0.5.3
