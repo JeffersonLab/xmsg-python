@@ -104,7 +104,7 @@ class xMsgUtil(object):
         Returns:
             list: local ips in the machine
         """
-        return ([ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")][:1])
+        return [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith('127')][:1]
 
     @staticmethod
     def list_to_string(list_to_convert):

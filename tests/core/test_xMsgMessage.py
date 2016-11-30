@@ -30,18 +30,13 @@ class TestXMsgMessage(unittest.TestCase):
         data.FLSINT32A.append(1)
         data.FLSINT32A.append(2)
         data.FLSINT32A.append(3)
-        msg = xMsgMessage.create_with_xmsg_data(self.topic, data)
+        msg = xMsgMessage.from_xmsg_data(self.topic, data)
         self.assertEqual("a:b:c", self.message.topic)
         ds_data = xMsgData()
         ds_data.ParseFromString(msg.data)
         self.assertEqual(data, ds_data)
         self.assertEqual(data.T_FLSINT32A, ds_data.T_FLSINT32A)
         self.assertIsInstance(msg, xMsgMessage)
-
-    def test_serialize(self):
-        self.message.metadata = xMsgMeta()
-        for data in self.message.serialize():
-            self.assertIsInstance(data, basestring)
 
     def test_set_metadata(self):
         metadata = xMsgMeta()

@@ -34,7 +34,7 @@ class TestXMsgRegService(unittest.TestCase):
         self.assertEqual(test_case.get_status(), "success")
 
     def test_remove_publisher(self):
-        request = [MsgConstants.REMOVE_PUBLISHER,
+        request = [xMsgConstants.REMOVE_PUBLISHER,
                    self.sender,
                    self.reg_info.SerializeToString()]
         test_case = self.reg_serv.process_request(request)

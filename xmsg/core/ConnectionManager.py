@@ -33,7 +33,7 @@ class ConnectionManager(object):
             xMsgRegDriver
         """
         cached_conn = self._reg_connections.get_connection(registration_address.host,
-                                                           registration_address.pub_port)
+                                                           registration_address.port)
         if cached_conn:
             return cached_conn
         conn = xMsgRegDriver(self.context, registration_address)

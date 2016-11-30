@@ -82,11 +82,6 @@ class TestxMsgRegDriver(unittest.TestCase):
                                    xMsgConstants.REMOVE_ALL_REGISTRATION,
                                    xMsgConstants.FIND_REQUEST_TIMEOUT)
 
-    def test_get_registration_from_local(self):
-        self.set_response(xMsgRegResponse("", "", [self.publisher]))
-        res = self.driver.find(self.publisher, True)
-        self.assertEqual(res.get_data()[0], self.publisher)
-
     def assert_request(self, socket, data, topic, timeout):
         request_object = xMsgRegRequest(topic, data.name, data)
 

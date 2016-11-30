@@ -16,12 +16,6 @@ class TestConnectionManager(unittest.TestCase):
         connection_manager = CM(zmq.Context.instance())
         self.assertIsInstance(connection_manager, CM)
 
-    def test_get_proxy_connection(self):
-        connection_manager = CM(zmq.Context.instance())
-        proxy = connection_manager.get_proxy_connection(ProxyAddress(),
-                                                        xMsgConnectionSetup())
-        self.assertIsInstance(proxy, xMsgConnection)
-
     def test_get_registrar_connection(self):
         connection_manager = CM(zmq.Context.instance())
         registrar = connection_manager.get_registrar_connection(RegAddress())
