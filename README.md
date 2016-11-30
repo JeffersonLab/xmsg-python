@@ -1,5 +1,4 @@
-# xmsg for python [![Build
-Status](https://travis-ci.org/JeffersonLab/xmsg_python.svg?branch=dev)](https://travis-ci.org/JeffersonLab/xmsg_python)
+# xmsg for python [![BuildStatus](https://travis-ci.org/JeffersonLab/xmsg_python.svg?branch=dev)](https://travis-ci.org/JeffersonLab/xmsg_python)
 
 xMsg is a lightweight, yet full featured publish/subscribe messaging system, presenting asynchronous publish/subscribe inter-process communication protocol: an API layer in Java, Python and C++.
 
