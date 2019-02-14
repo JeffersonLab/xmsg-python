@@ -1,5 +1,7 @@
 # xMsg for Python
 
+**WARNING: this project is out of date and unmaintained.**
+
 xMsg is a lightweight, yet full featured publish/subscribe messaging system, presenting asynchronous publish/subscribe inter-process communication protocol: an API layer in Java, Python and C++.
 
 
