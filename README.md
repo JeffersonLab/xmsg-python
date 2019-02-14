@@ -68,8 +68,8 @@ You can find the publisher and subscriber source code at the examples package
 
 ## Authors
 
-For assistance contact authors:
+* Vardan Gyurjyan
+* Sebastián Mancilla
+* Ricardo Oyarzún
 
-* Vardan Gyurjyan    (<gurjyan@jlab.org>)
-* Sebastián Mancilla (<smancill@jlab.org>)
-* Ricardo Oyarzún    (<oyarzun@jlab.org>)
+For assistance send an email to [clara@jlab.org](mailto:clara@jlab.org).
