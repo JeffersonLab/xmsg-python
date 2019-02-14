@@ -1,6 +1,9 @@
-# xmsg for python
+# xMsg for Python
 
 xMsg is a lightweight, yet full featured publish/subscribe messaging system, presenting asynchronous publish/subscribe inter-process communication protocol: an API layer in Java, Python and C++.
+
+
+## Overview
 
 xMsg provides in memory registration database that is used to register xMsg actors (i.e. publishers and subscribers). Hence, xMsg API includes methods for registering and discovering publishers and subscribers. This makes xMsg a suitable framework to build symmetric SOA based applications. For example a services that has a message to publishing can check to see if there are enough subscribers of this particular message type.
 
@@ -13,13 +16,18 @@ xMsg publisher can send a message of any topic. xMsg subscribers subscribe to ab
 xMsg subscriber callbacks (implementing xMsgCallBack interface) will run in a separate thread. For that reason xMsg provides a thread pool, simplifying the job of a user. Note that user provided callback routines must be thread safe and/or thread enabled.
 
 
+## Build notes
+
 ### System Requirements
 
+Ubuntu:
 ```sh
-$ # Ubuntu:
 $ sudo aptitude install libzmq3-dev
 $ sudo aptitude install python-dev
-$ # OSX
+```
+
+macOS (use Homebrew):
+```sh
 $ brew install zmq
 ```
 
@@ -32,11 +40,8 @@ $ pip install -r requirements # install xmsg python dependencies
 $ ./setup.py install
 ```
 
-### Quick Start
-TODO: Quick Start section
 
-
-### Examples
+## Examples
 
 To run the examples:
 
@@ -60,9 +65,8 @@ $ px_subscriber
 
 You can find the publisher and subscriber source code at the examples package
 
----
 
-For more details and API method signatures check the Javadoc.
+## Authors
 
 For assistance contact authors:
 
